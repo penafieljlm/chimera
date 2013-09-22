@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.core.NICData;
-import ph.edu.dlsu.chimera.admin.messages.MessageFinished;
+import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
 import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
 
 /**

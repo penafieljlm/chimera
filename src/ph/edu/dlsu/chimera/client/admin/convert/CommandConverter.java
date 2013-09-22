@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.client.admin.convert;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.client.admin.Command;
-import ph.edu.dlsu.chimera.admin.messages.Message;
+import ph.edu.dlsu.chimera.core.admin.messages.Message;
 
 /**
  *

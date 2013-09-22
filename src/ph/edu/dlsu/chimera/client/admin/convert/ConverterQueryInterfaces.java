@@ -1,7 +1,7 @@
 package ph.edu.dlsu.chimera.client.admin.convert;
 
 import ph.edu.dlsu.chimera.client.admin.Command;
-import ph.edu.dlsu.chimera.admin.messages.Message;
+import ph.edu.dlsu.chimera.core.admin.messages.Message;
 import ph.edu.dlsu.chimera.server.admin.messages.MessageQueryInterfaces;
 
 /**

@@ -1,4 +1,4 @@
-package ph.edu.dlsu.chimera.admin.messages;
+package ph.edu.dlsu.chimera.core.admin.messages;
 
 import java.io.Serializable;
 

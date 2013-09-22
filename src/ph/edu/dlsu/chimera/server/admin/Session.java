@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageException;
 import ph.edu.dlsu.chimera.core.Transceiver;
-import ph.edu.dlsu.chimera.admin.messages.MessageBlank;
+import ph.edu.dlsu.chimera.core.admin.messages.MessageBlank;
 import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.messages.MessageLogin;

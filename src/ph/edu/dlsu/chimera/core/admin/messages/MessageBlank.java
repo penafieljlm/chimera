@@ -1,4 +1,4 @@
-package ph.edu.dlsu.chimera.admin.messages;
+package ph.edu.dlsu.chimera.core.admin.messages;
 
 import java.io.PrintStream;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -9,15 +9,15 @@ import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
 
 /**
- * An instance of this class constitutes a signal meaning that a host is finished communicating with its partner.
+ * An instance of this class constitutes a signal which will not be sent.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class MessageFinished implements ClientShellMessage, ServerMessage {
+public class MessageBlank implements ClientShellMessage, ServerMessage {
 
     /**
-     * Constructs a new MessageFinished object.
+     * Constructs a new MessageBlank object.
      */
-    public MessageFinished() {
+    public MessageBlank() {
     }
 
     /**
@@ -26,7 +26,7 @@ public class MessageFinished implements ClientShellMessage, ServerMessage {
      * @return the appropriate response ServerMessage object.
      */
     public ServerMessage handleShellMessage(PrintStream outStream) {
-        return new MessageBlank();
+        return this;
     }
 
     /**
@@ -37,7 +37,7 @@ public class MessageFinished implements ClientShellMessage, ServerMessage {
      * @throws Exception
      */
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
-        return new MessageBlank();
+        return this;
     }
 
 }

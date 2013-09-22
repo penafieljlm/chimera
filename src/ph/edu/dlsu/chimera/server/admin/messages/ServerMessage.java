@@ -1,7 +1,7 @@
 package ph.edu.dlsu.chimera.server.admin.messages;
 
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
-import ph.edu.dlsu.chimera.admin.messages.Message;
+import ph.edu.dlsu.chimera.core.admin.messages.Message;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
 

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import ph.edu.dlsu.chimera.admin.messages.Message;
+import ph.edu.dlsu.chimera.core.admin.messages.Message;
 
 /**
  * An instance of this class constitutes a transceiver component, which allows for exchange of Message objects between hosts.
