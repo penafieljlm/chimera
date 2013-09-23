@@ -20,14 +20,10 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketGeneri
 public class Gathering extends Deployment {
 
     public Gathering(Assembly assembly, String ifInbound) {
-        super(assembly);
-        super.setName("Data Gathering");
+        super("Data Gathering");
         //inbound assembly
         ConcurrentLinkedQueue<Packet> outSnifferQueue = new ConcurrentLinkedQueue<Packet>();
         super.components.put("in.sniffer", new SnifferNetwork(assembly, outSnifferQueue, ifInbound));
-        ConcurrentLinkedQueue<PacketGeneric> outSorterQueue = new ConcurrentLinkedQueue<PacketGeneric>();
-        super.components.put("in.sorter", new Sorter(assembly, outSnifferQueue, outSorterQueue));
-        //outbound assembly
     }
 
 }
