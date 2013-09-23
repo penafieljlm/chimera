@@ -13,12 +13,14 @@ import java.util.HashMap;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class Deployment extends Component {
+public abstract class Deployment {
+
+    public final String name;
 
     protected final HashMap<String, Component> components;
 
-    public Deployment(Assembly assembly) {
-        super(assembly);
+    public Deployment(String name) {
+        this.name = name;
         this.components = new HashMap<String, Component>();
     }
 
@@ -26,20 +28,15 @@ public abstract class Deployment extends Component {
         return this.components.get(componentName).getDiagnostics();
     }
 
-    @Override
-    public synchronized void kill() {
+    public synchronized void killDeployment() {
         for(String k : this.components.keySet()) {
             this.components.get(k).kill();
         }
-        super.kill();
     }
 
-    @Override
-    protected void componentRun() {
+    protected void startDeployment() {
         for(String k : this.components.keySet()) {
             this.components.get(k).start();
-        }
-        while(super.running) {
         }
     }
 

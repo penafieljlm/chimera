@@ -27,7 +27,7 @@ public class MessageDeployGathering extends MessageDeploy {
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         StringBuilder report = new StringBuilder(((MessageText)(super.handleMessage(session, assembly))).text);
         assembly.setDeployment(new Gathering(assembly, this.interfaceInbound));
-        report = report.append("\nDeployment: '").append(assembly.getDeployment().getName()).append("', is starting!");
+        report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
         return new MessageText(report.toString());
     }
 

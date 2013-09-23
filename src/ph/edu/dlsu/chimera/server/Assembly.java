@@ -37,10 +37,10 @@ public class Assembly {
      */
     public void setDeployment(Deployment deployment) {
         if(this.deployment != null)
-            this.deployment.kill();
+            this.deployment.killDeployment();
         this.deployment = deployment;
         if(this.deployment != null)
-            this.deployment.start();
+            this.deployment.startDeployment();
     }
 
     /**

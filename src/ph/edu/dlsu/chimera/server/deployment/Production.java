@@ -18,8 +18,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.SnifferNetwork;
 public class Production extends Deployment {
 
     public Production(Assembly assembly, String ifInbound) {
-        super(assembly);
-        super.setName("Production");
+        super("Production");
         ConcurrentLinkedQueue<Packet> inSnifferQueue = new ConcurrentLinkedQueue<Packet>();
         super.components.put("in-sniffer", new SnifferNetwork(assembly, inSnifferQueue, ifInbound));
     }

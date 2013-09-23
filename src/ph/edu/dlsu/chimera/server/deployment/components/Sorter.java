@@ -87,8 +87,14 @@ public class Sorter extends Component {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
-        diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
+        if(this.inQueue != null)
+            diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
+        else
+            diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
+        if(this.outQueue != null)
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
+        else
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         diag.add(new Diagnostic("processed", "Processed Packets", this.ctr_proc));
         diag.add(new Diagnostic("eth", "Received Ethernet Packets", this.ctr_eth));
         diag.add(new Diagnostic("eth.arp", "Received ARP Packets", this.ctr_etharp));
@@ -109,9 +115,13 @@ public class Sorter extends Component {
     @Override
     public void componentRun() {
         while(super.running) {
-            while(!this.inQueue.isEmpty()) {
-                Packet in = this.inQueue.poll();
-                this.outQueue.add(this.filterLayer2(in));
+            if(this.inQueue != null) {
+                while(!this.inQueue.isEmpty()) {
+                    Packet in = this.inQueue.poll();
+                    if(this.outQueue != null) {
+                        this.outQueue.add(this.filterLayer2(in));
+                    }
+                }
             }
         }
     }

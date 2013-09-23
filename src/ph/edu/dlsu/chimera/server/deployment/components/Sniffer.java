@@ -46,7 +46,8 @@ public abstract class Sniffer extends Component implements PacketListener {
 
     @Override
     public void packetArrived(Packet packet) {
-        this.outQueue.add(packet);
+        if(this.outQueue != null)
+            this.outQueue.add(packet);
     }
 
     @Override
@@ -58,7 +59,10 @@ public abstract class Sniffer extends Component implements PacketListener {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
+        if(this.outQueue != null)
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
+        else
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         diag.add(new Diagnostic("received", "Packets Received", this.pcap.getStatistics().getReceivedCount()));
         diag.add(new Diagnostic("dropped", "Packets Dropped", this.pcap.getStatistics().getDroppedCount()));
         return diag;
