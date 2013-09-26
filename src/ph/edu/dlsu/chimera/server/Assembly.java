@@ -18,17 +18,15 @@ public class Assembly {
 
     public final AdministrativeModule admin;
     public final UserBase users;
-    public final PortProtocolMap portProtocolMap;
 
     /**
      * The assembly of current active modules.
      */
     private Deployment deployment;
 
-    public Assembly(int port, PortProtocolMap portProtocolMap) {
+    public Assembly(int port) {
         this.admin = new AdministrativeModule(this, port);
         this.users = new UserBase();
-        this.portProtocolMap = portProtocolMap;
     }
 
     /**

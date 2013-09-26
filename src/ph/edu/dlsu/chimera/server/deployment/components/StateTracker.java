@@ -4,21 +4,22 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.net.TCPPacket;
+import net.sourceforge.jpcap.net.UDPPacket;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TCPState;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TCPStateData;
-import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketGeneric;
-import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketL3IPL4TCP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataTCP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataUDP;
 
 /**
  *
@@ -26,11 +27,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketL3IPL4
  */
 public abstract class StateTracker extends Component {
 
-    protected final ConcurrentHashMap<TCPState, TCPStateData> stateTable;
-    protected final ConcurrentLinkedQueue<PacketGeneric> inQueue;
-    protected final ConcurrentLinkedQueue<PacketGeneric> outQueue;
+    protected final ConcurrentHashMap<Connection, ConnectionData> stateTable;
+    protected final ConcurrentLinkedQueue<Packet> inQueue;
+    protected final ConcurrentLinkedQueue<Packet> outQueue;
 
-    public StateTracker(Assembly assembly, ConcurrentLinkedQueue<PacketGeneric> inQueue, ConcurrentLinkedQueue<PacketGeneric> outQueue, ConcurrentHashMap<TCPState, TCPStateData> stateTable) {
+    public StateTracker(Assembly assembly, ConcurrentLinkedQueue<Packet> inQueue, ConcurrentLinkedQueue<Packet> outQueue, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
         super(assembly);
         this.stateTable = stateTable;
         this.inQueue = inQueue;
@@ -42,38 +43,46 @@ public abstract class StateTracker extends Component {
         while (super.running) {
             if(this.inQueue != null) {
                 while(!this.inQueue.isEmpty()) {
-                    PacketGeneric pkt = this.inQueue.poll();
-                    if(pkt instanceof PacketL3IPL4TCP) {
-                        TCPPacket tcp = (TCPPacket) pkt.packet;
-                        TCPState state = this.extractStateId(tcp);
-                        if(state != null) {
-                            if (this.stateTable.containsKey(state)) {
-                                this.updateStateDataTraffic(this.stateTable.get(state));
-                            } else {
-                                this.stateTable.put(state, new TCPStateData(tcp.getTimeval()));
-                                this.updateStateDataTraffic(this.stateTable.get(state));
-                            }
-                        }
+                    //poll packet
+                    Packet pkt = this.inQueue.poll();
+                    //get connection
+                    Connection conn = this.getConnection(pkt);
+                    if(conn != null) {
+                        //create state
+                        this.createStateIfNotExisting(conn, pkt);
+                        //update state (implicit output)
+                        if(this.stateTable.containsKey(conn))
+                            this.updateStateDataTraffic(this.stateTable.get(conn), pkt);
                     }
-                    if(this.outQueue != null)
-                        this.outQueue.add(pkt);
+                    //send output signal
+                    this.outQueue.add(pkt);
                 }
             }
         }
     }
 
-    /**
-     * Creates an appropriate TCPState identifier using the provided TCPPacket.
-     * @param tcp - the packet to deduce the TCPState identifier from.
-     * @return the appropriate TCPState identifier.
-     */
-    protected abstract TCPState extractStateId(TCPPacket tcp);
+    private void createStateIfNotExisting(Connection conn, Packet pkt) {
+        if(!this.stateTable.containsKey(conn)) {
+            if(pkt instanceof TCPPacket)
+                this.stateTable.put(conn, new ConnectionDataTCP(conn, pkt.getTimeval()));
+            if(pkt instanceof UDPPacket)
+                this.stateTable.put(conn, new ConnectionDataUDP(conn, pkt.getTimeval()));
+        }
+    }
 
-    /**
-     * Updates the encounter count flowing towards the appropriate direction.
-     * @param data - the TCPStateData to update.
-     */
-    protected abstract void updateStateDataTraffic(TCPStateData data);
+    private Connection getConnection(Packet pkt) {
+        try {
+            if(pkt instanceof TCPPacket)
+                return new Connection((TCPPacket) pkt);
+            if(pkt instanceof UDPPacket)
+                return new Connection((UDPPacket) pkt);
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(StateTracker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    protected abstract void updateStateDataTraffic(ConnectionData data, Packet recv);
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
@@ -82,10 +91,6 @@ public abstract class StateTracker extends Component {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
         else
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
-        if(this.outQueue != null)
-            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
-        else
-            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         return diag;
     }
     

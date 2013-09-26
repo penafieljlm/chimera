@@ -22,7 +22,7 @@ public class MessageDeploy implements ServerMessage {
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         StringBuilder report = new StringBuilder();
         if(assembly.getDeployment() != null)
-            report = report.append("Deployment: '").append(assembly.getDeployment().getName()).append("', has been aborted!");
+            report = report.append("Deployment: '").append(assembly.getDeployment().name).append("', has been aborted!");
         else
             report = report.append("No deployment to abort!");
         return new MessageText(report.toString());

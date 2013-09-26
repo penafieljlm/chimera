@@ -6,36 +6,30 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.Date;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.util.Timeval;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class TCPStateData {
+public abstract class ConnectionData {
 
+    public final Connection connection;
     public final Date timeCreated;
-    private int inboundEncounters;
-    private int outboundEncounters;
+    protected final ConcurrentLinkedQueue<Packet> inbound;
+    protected final ConcurrentLinkedQueue<Packet> outbound;
+    protected int inboundEncounters;
+    protected int outboundEncounters;
 
-    public TCPStateData(Timeval timeCreated) {
+    public ConnectionData(Connection connection, Timeval timeCreated) {
+        this.connection = connection;
         this.timeCreated = timeCreated.getDate();
         this.inboundEncounters = 0;
         this.outboundEncounters = 0;
-    }
-
-    /**
-     * Decrements the inbound packet encounter counter.
-     */
-    public void inboundIncrement() {
-        this.inboundEncounters++;
-    }
-
-    /**
-     * Increments the outbound packet encounter counter.
-     */
-    public void outboundIncrement() {
-        this.outboundEncounters++;
+        this.inbound = new ConcurrentLinkedQueue<Packet>();
+        this.outbound = new ConcurrentLinkedQueue<Packet>();
     }
 
     /**
@@ -60,6 +54,22 @@ public class TCPStateData {
     public double outboundRate() {
         double sec = this.getStateTime() / 1000000;
         return this.outboundEncounters / sec;
+    }
+
+    /**
+     * Updates the connection data based on the received packet.
+     * @param pkt - the received packet.
+     * @param inbound - true if the packet was received on the interface facing outside.
+     */
+    public void update(Packet pkt, boolean inbound) {
+        if(inbound) {
+            this.inboundEncounters++;
+            this.inbound.add(pkt);
+        }
+        else {
+            this.outboundEncounters++;
+            this.outbound.add(pkt);
+        }
     }
 
 }

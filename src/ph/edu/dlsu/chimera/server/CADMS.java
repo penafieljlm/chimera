@@ -1,8 +1,5 @@
 package ph.edu.dlsu.chimera.server;
 
-import java.util.HashMap;
-import ph.edu.dlsu.chimera.server.deployment.components.data.net.HTTPPacket;
-
 /**
  * 
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
@@ -19,7 +16,6 @@ public class CADMS {
 
     public static void main(String[] args) {
         //create default port protocol map
-        PortProtocolMap portProtocolMap = new PortProtocolMap();
         //create assembly
         int adminPortNum;
         try {
@@ -28,7 +24,7 @@ public class CADMS {
             System.out.print(CADMS.USAGE);
             return;
         }
-        Assembly assembly = new Assembly(adminPortNum, portProtocolMap);
+        Assembly assembly = new Assembly(adminPortNum);
         //start admin service
         assembly.startAdmin();
     }

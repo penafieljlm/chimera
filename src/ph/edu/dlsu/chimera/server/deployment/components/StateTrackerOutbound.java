@@ -5,17 +5,12 @@
 
 package ph.edu.dlsu.chimera.server.deployment.components;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.sourceforge.jpcap.net.TCPPacket;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TCPState;
+import net.sourceforge.jpcap.net.Packet;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TCPStateData;
-import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketGeneric;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 
 /**
  *
@@ -23,27 +18,13 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketGeneri
  */
 public class StateTrackerOutbound extends StateTracker {
 
-    public StateTrackerOutbound(Assembly assembly, ConcurrentLinkedQueue<PacketGeneric> inQueue, ConcurrentLinkedQueue<PacketGeneric> outQueue, ConcurrentHashMap<TCPState, TCPStateData> stateTable) {
+    public StateTrackerOutbound(Assembly assembly, ConcurrentLinkedQueue<Packet> inQueue, ConcurrentLinkedQueue<Packet> outQueue, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
         super(assembly, inQueue, outQueue, stateTable);
     }
 
     @Override
-    protected TCPState extractStateId(TCPPacket tcp) {
-        try {
-            InetAddress outside = InetAddress.getByAddress(tcp.getDestinationAddressBytes());
-            int outsidePort = tcp.getDestinationPort();
-            InetAddress inside = InetAddress.getByAddress(tcp.getSourceAddressBytes());
-            int insidePort = tcp.getSourcePort();
-            return new TCPState(inside, insidePort, outside, outsidePort);
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(StateTrackerInbound.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    protected void updateStateDataTraffic(TCPStateData data) {
-        data.outboundIncrement();
+    protected void updateStateDataTraffic(ConnectionData data, Packet recv) {
+        data.update(recv, false);
     }
 
 }

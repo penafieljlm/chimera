@@ -10,8 +10,6 @@ import net.sourceforge.jpcap.net.Packet;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Deployment;
 import ph.edu.dlsu.chimera.server.deployment.components.SnifferNetwork;
-import ph.edu.dlsu.chimera.server.deployment.components.Sorter;
-import ph.edu.dlsu.chimera.server.deployment.components.data.packet.PacketGeneric;
 
 /**
  *
