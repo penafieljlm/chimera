@@ -6,30 +6,27 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.Date;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.util.Timeval;
+import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class ConnectionData {
+public class ConnectionData {
 
     public final Connection connection;
     public final Date timeCreated;
-    protected final ConcurrentLinkedQueue<Packet> inbound;
-    protected final ConcurrentLinkedQueue<Packet> outbound;
+    public final Assembler inboundAssembler;
     protected int inboundEncounters;
     protected int outboundEncounters;
 
-    public ConnectionData(Connection connection, Timeval timeCreated) {
+    public ConnectionData(Connection connection, Timeval timeCreated, Assembler inboundAssembler) {
         this.connection = connection;
         this.timeCreated = timeCreated.getDate();
+        this.inboundAssembler = inboundAssembler;
         this.inboundEncounters = 0;
         this.outboundEncounters = 0;
-        this.inbound = new ConcurrentLinkedQueue<Packet>();
-        this.outbound = new ConcurrentLinkedQueue<Packet>();
     }
 
     /**
@@ -61,15 +58,11 @@ public abstract class ConnectionData {
      * @param pkt - the received packet.
      * @param inbound - true if the packet was received on the interface facing outside.
      */
-    public void update(Packet pkt, boolean inbound) {
-        if(inbound) {
+    public void update(boolean inbound) {
+        if(inbound)
             this.inboundEncounters++;
-            this.inbound.add(pkt);
-        }
-        else {
+        else
             this.outboundEncounters++;
-            this.outbound.add(pkt);
-        }
     }
 
 }

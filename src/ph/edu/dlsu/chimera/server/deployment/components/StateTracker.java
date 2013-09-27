@@ -4,22 +4,19 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.net.TCPPacket;
 import net.sourceforge.jpcap.net.UDPPacket;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.core.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
+import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataTCP;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataUDP;
 
 /**
  *
@@ -30,23 +27,29 @@ public abstract class StateTracker extends Component {
     protected final ConcurrentHashMap<Connection, ConnectionData> stateTable;
     protected final ConcurrentLinkedQueue<Packet> inQueue;
     protected final ConcurrentLinkedQueue<Packet> outQueue;
+    protected final ConcurrentHashMap<Integer, Assembler> portProtocolMap;
 
-    public StateTracker(Assembly assembly, ConcurrentLinkedQueue<Packet> inQueue, ConcurrentLinkedQueue<Packet> outQueue, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
+    public StateTracker(Assembly assembly, 
+            ConcurrentLinkedQueue<Packet> inQueue,
+            ConcurrentLinkedQueue<Packet> outQueue,
+            ConcurrentHashMap<Connection, ConnectionData> stateTable,
+            ConcurrentHashMap<Integer, Assembler> portProtocolMap) {
         super(assembly);
         this.stateTable = stateTable;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
+        this.portProtocolMap = portProtocolMap;
     }
 
     @Override
     protected void componentRun() {
         while (super.running) {
-            if(this.inQueue != null) {
+            if(this.inQueue != null && this.stateTable != null) {
                 while(!this.inQueue.isEmpty()) {
                     //poll packet
                     Packet pkt = this.inQueue.poll();
                     //get connection
-                    Connection conn = this.getConnection(pkt);
+                    Connection conn = PacketTools.getConnection(pkt);
                     if(conn != null) {
                         //create state
                         this.createStateIfNotExisting(conn, pkt);
@@ -54,8 +57,10 @@ public abstract class StateTracker extends Component {
                         if(this.stateTable.containsKey(conn))
                             this.updateStateDataTraffic(this.stateTable.get(conn), pkt);
                     }
-                    //send output signal
-                    this.outQueue.add(pkt);
+                    if(this.outQueue != null) {
+                        //send output signal
+                        this.outQueue.add(pkt);
+                    }
                 }
             }
         }
@@ -63,23 +68,17 @@ public abstract class StateTracker extends Component {
 
     private void createStateIfNotExisting(Connection conn, Packet pkt) {
         if(!this.stateTable.containsKey(conn)) {
-            if(pkt instanceof TCPPacket)
-                this.stateTable.put(conn, new ConnectionDataTCP(conn, pkt.getTimeval()));
-            if(pkt instanceof UDPPacket)
-                this.stateTable.put(conn, new ConnectionDataUDP(conn, pkt.getTimeval()));
+            Assembler a = null;
+            if(pkt instanceof TCPPacket) {
+                TCPPacket tcp = (TCPPacket) pkt;
+                a = this.portProtocolMap.get(tcp.getDestinationPort()).duplicate();
+            }
+            if(pkt instanceof UDPPacket){
+                UDPPacket udp = (UDPPacket) pkt;
+                a = this.portProtocolMap.get(udp.getDestinationPort()).duplicate();
+            }
+            this.stateTable.put(conn, new ConnectionData(conn, pkt.getTimeval(), a));
         }
-    }
-
-    private Connection getConnection(Packet pkt) {
-        try {
-            if(pkt instanceof TCPPacket)
-                return new Connection((TCPPacket) pkt);
-            if(pkt instanceof UDPPacket)
-                return new Connection((UDPPacket) pkt);
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(StateTracker.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
 
     protected abstract void updateStateDataTraffic(ConnectionData data, Packet recv);
@@ -87,10 +86,18 @@ public abstract class StateTracker extends Component {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
+        if(this.stateTable != null)
+            diag.add(new Diagnostic("states", "State Table Size", this.stateTable.size()));
+        else
+            diag.add(new Diagnostic("states", "State Table Size", "N/A"));
         if(this.inQueue != null)
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
         else
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
+        if(this.outQueue != null)
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.inQueue.size()));
+        else
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         return diag;
     }
     

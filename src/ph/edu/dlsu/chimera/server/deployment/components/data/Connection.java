@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import net.sourceforge.jpcap.capture.PacketCapture;
 import net.sourceforge.jpcap.net.TCPPacket;
 import net.sourceforge.jpcap.net.UDPPacket;
 

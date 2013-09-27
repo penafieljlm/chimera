@@ -17,11 +17,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class StateTable extends Component {
+public class StateTableComponent extends Component {
 
     public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
 
-    public StateTable(Assembly assembly, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
+    public StateTableComponent(Assembly assembly, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
         super(assembly);
         this.stateTable = stateTable;
     }
