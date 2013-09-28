@@ -12,7 +12,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class AssemblerSMTP extends Assembler {
+public final class AssemblerSMTP extends Assembler {
+
+    public AssemblerSMTP() {
+        this.reset();
+    }
 
     @Override
     public boolean isDone() {

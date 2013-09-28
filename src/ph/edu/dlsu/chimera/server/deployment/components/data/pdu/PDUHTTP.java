@@ -5,12 +5,18 @@
 
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
-import net.sourceforge.jpcap.net.Packet;
-
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class PDUHTTP extends PDU {
+
+    private String header;
+    private String body;
+
+    public PDUHTTP(byte[] header, byte[] body) {
+        this.header = new String(header);
+        this.body = new String(body);
+    }
 
 }

@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,24 +35,26 @@ public class PDUAssembler extends Component {
 
     @Override
     protected void componentRun() {
-        while(super.running) {
-            if(this.inQueue != null && this.stateTable != null) {
+        while (super.running) {
+            if (this.inQueue != null && this.stateTable != null) {
                 //poll packet
                 Packet pkt = this.inQueue.poll();
                 //get connection
                 Connection conn = PacketTools.getConnection(pkt);
-                if(conn != null) {
-                    if(this.stateTable.containsKey(conn)) {
+                if (conn != null) {
+                    if (this.stateTable.containsKey(conn)) {
                         //build messages
                         Assembler assembler = this.stateTable.get(conn).inboundAssembler;
-                        if(assembler != null) {
-                            if(!assembler.isDone()) {
+                        if (assembler != null) {
+                            if (!assembler.isDone()) {
                                 assembler.assemblePDU(pkt);
                             }
-                            if(assembler.isDone()) {
+                            if (assembler.isDone()) {
                                 PDU pdu = assembler.poll();
-                                if(this.outQueue != null) {
-                                    this.outQueue.add(pdu);
+                                if (pdu != null) {
+                                    if (this.outQueue != null) {
+                                        this.outQueue.add(pdu);
+                                    }
                                 }
                             }
                         }
@@ -62,5 +63,4 @@ public class PDUAssembler extends Component {
             }
         }
     }
-
 }
