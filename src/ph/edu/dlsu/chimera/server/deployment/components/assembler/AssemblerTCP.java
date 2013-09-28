@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.net.TCPPacket;
+import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
 
 /**
  *
@@ -13,52 +14,44 @@ import net.sourceforge.jpcap.net.TCPPacket;
  */
 public abstract class AssemblerTCP extends Assembler {
 
-    private TCPPacket[] packets;
-    private int expectedSeqNo;
+    private TCPPacketSequence packetSequence;
 
     public AssemblerTCP() {
+        //packet seq does not restart over many messages
+        this.packetSequence = new TCPPacketSequence();
     }
 
     @Override
-    public final boolean assemblePDU(Packet segment) {
-        if (segment instanceof TCPPacket) {
-            //declare tcp packet
+    public boolean appendPDU(Packet segment) {
+        if(segment instanceof TCPPacket) {
             TCPPacket tcp = (TCPPacket) segment;
-            //if not done
-            if (!this.isDone()) {
-                //if not encountered
-                if (!this.encounteredTCPPacket(tcp)) {
-                    if (tcp.getTCPData().length > 0) {
-                        //append packet
-                        TCPPacket[] append = new TCPPacket[1];
-                        append[0] = tcp;
-                        TCPPacket[] nPackets = new TCPPacket[this.packets.length + 1];
-                        System.arraycopy(this.packets, 0, nPackets, 0, this.packets.length);
-                        System.arraycopy(append, 0, nPackets, this.packets.length, append.length);
-                        this.packets = nPackets;
-                        //while expected seq no is present, build tcp
-                    }
-                }
+            if(!this.packetSequence.contains(tcp)) {
+                this.packetSequence.add(tcp);
             }
         }
-        return false;
+        return true;
     }
-
-    private boolean encounteredTCPPacket(TCPPacket tcp) {
-        for (TCPPacket pkt : this.packets) {
-            if (pkt.getAcknowledgementNumber() == tcp.getAcknowledgementNumber()
-                    && pkt.getSequenceNumber() == tcp.getSequenceNumber()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected abstract boolean assembleTCP(TCPPacket tcp);
 
     @Override
-    protected void reset() {
-        this.packets = new TCPPacket[0];
-        this.expectedSeqNo = 1;
+    public boolean assemblePDU() {
+        if(!this.isDone()) {
+            TCPPacket latest = this.packetSequence.poll();
+            while(latest != null) {
+                this.appendTCP(latest);
+                if(this.isDone())
+                    return true;
+                latest = this.packetSequence.poll();
+            }
+            return false;
+        }
+        return true;
     }
+
+    /**
+     * Only called when not done.
+     * @param tcp
+     * @return
+     */
+    protected abstract boolean appendTCP(TCPPacket tcp);
+    
 }

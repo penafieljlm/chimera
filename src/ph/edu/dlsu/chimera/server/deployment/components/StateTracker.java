@@ -71,11 +71,11 @@ public abstract class StateTracker extends Component {
             Assembler a = null;
             if(pkt instanceof TCPPacket) {
                 TCPPacket tcp = (TCPPacket) pkt;
-                a = this.portProtocolMap.get(tcp.getDestinationPort()).duplicate();
+                a = this.portProtocolMap.get(tcp.getDestinationPort()).copyAssemblerType();
             }
             if(pkt instanceof UDPPacket){
                 UDPPacket udp = (UDPPacket) pkt;
-                a = this.portProtocolMap.get(udp.getDestinationPort()).duplicate();
+                a = this.portProtocolMap.get(udp.getDestinationPort()).copyAssemblerType();
             }
             this.stateTable.put(conn, new ConnectionData(conn, pkt.getTimeval(), a));
         }

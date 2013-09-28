@@ -16,7 +16,9 @@ public abstract class Assembler {
 
     public abstract boolean isDone();
 
-    public abstract boolean assemblePDU(Packet segment);
+    public abstract boolean appendPDU(Packet segment);
+
+    public abstract boolean assemblePDU();
 
     public PDU poll() {
         if(this.isDone()) {
@@ -27,7 +29,7 @@ public abstract class Assembler {
         return null;
     }
 
-    public abstract Assembler duplicate();
+    public abstract Assembler copyAssemblerType();
 
     protected abstract void reset();
 

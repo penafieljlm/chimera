@@ -42,17 +42,20 @@ public class PDUAssembler extends Component {
                 //get connection
                 Connection conn = PacketTools.getConnection(pkt);
                 if (conn != null) {
+                    //connection valid
                     if (this.stateTable.containsKey(conn)) {
-                        //build messages
+                        //connection exists
                         Assembler assembler = this.stateTable.get(conn).inboundAssembler;
                         if (assembler != null) {
-                            if (!assembler.isDone()) {
-                                assembler.assemblePDU(pkt);
-                            }
-                            if (assembler.isDone()) {
+                            //assembler exists : append and assemble pdu
+                            assembler.appendPDU(pkt);
+                            if (assembler.assemblePDU()) {
+                                //assembly done
                                 PDU pdu = assembler.poll();
                                 if (pdu != null) {
+                                    //pdu is ok
                                     if (this.outQueue != null) {
+                                        //out queue exists : push
                                         this.outQueue.add(pdu);
                                     }
                                 }

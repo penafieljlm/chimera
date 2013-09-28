@@ -12,7 +12,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class AssemblerFTPControl extends Assembler {
+public class AssemblerTCPFTPData extends Assembler {
 
     @Override
     public boolean isDone() {
@@ -20,12 +20,12 @@ public class AssemblerFTPControl extends Assembler {
     }
 
     @Override
-    public boolean assemblePDU(Packet segment) {
+    public boolean appendPDU(Packet segment) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Assembler duplicate() {
+    public Assembler copyAssemblerType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
