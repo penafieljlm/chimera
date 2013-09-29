@@ -53,6 +53,7 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
                 if(okHeader.contains(AssemblerTCPHTTP.TOKEN_ATTR_VALUE_KEEP_ALIVE)) {
                     //is keep alive
                     this.keepAlive = true;
+                    this.bodyLength = 0;
                     if(okHeader.contains(AssemblerTCPHTTP.TOKEN_ATTR_CONTENT_LEN)) {
                         int lenStart = okHeader.indexOf(AssemblerTCPHTTP.TOKEN_ATTR_CONTENT_LEN) + AssemblerTCPHTTP.TOKEN_HEADER_END.length();
                         int lenEnd = okHeader.indexOf(AssemblerTCPHTTP.TOKEN_DIV, lenStart);
@@ -61,9 +62,10 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
                         try {
                             this.bodyLength = Integer.valueOf(contentLenAttr);
                         } catch(NumberFormatException ex) {
-                            this.bodyLength = 0;
                         }
                     }
+                    if(this.bodyLength == 0)
+                        this.done = true;
                 }
             } else {
                 //continue header
@@ -74,14 +76,12 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
             this.bodyBuilder.append(data);
             if(this.keepAlive) {
                 //wait until body length reached
-                if(this.bodyBuilder.toString().length() >= this.bodyLength) {
+                if(this.bodyBuilder.toString().length() >= this.bodyLength)
                     this.done = true;
-                }
             } else {
                 //wait until fin flag
-                if(tcp.isFin()) {
+                if(tcp.isFin())
                     this.done = true;
-                }
             }
         }
         return this.done;

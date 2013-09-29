@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.net.TCPPacket;
-import ph.edu.dlsu.chimera.core.PacketTools;
+import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
@@ -62,6 +62,8 @@ public class PDUAssembler extends Component {
                             }
                         }
                     }
+                } else {
+                    //TODO: implement for non port protocols
                 }
             }
         }

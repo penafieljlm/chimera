@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.core;
+package ph.edu.dlsu.chimera.util;
 
 import java.net.UnknownHostException;
 import java.util.logging.Level;

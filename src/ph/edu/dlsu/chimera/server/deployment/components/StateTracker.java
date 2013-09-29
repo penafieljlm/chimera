@@ -11,7 +11,7 @@ import net.sourceforge.jpcap.net.Packet;
 import net.sourceforge.jpcap.net.TCPPacket;
 import net.sourceforge.jpcap.net.UDPPacket;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.core.PacketTools;
+import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
@@ -53,7 +53,7 @@ public abstract class StateTracker extends Component {
                     if(conn != null) {
                         //create state
                         this.createStateIfNotExisting(conn, pkt);
-                        //update state (implicit output)
+                        //update state
                         if(this.stateTable.containsKey(conn))
                             this.updateStateDataTraffic(this.stateTable.get(conn), pkt);
                     }

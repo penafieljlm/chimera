@@ -26,7 +26,7 @@ public abstract class AssemblerTCP extends Assembler {
         if(segment instanceof TCPPacket) {
             TCPPacket tcp = (TCPPacket) segment;
             if(!this.packetSequence.contains(tcp)) {
-                this.packetSequence.add(tcp);
+                return this.packetSequence.add(tcp);
             }
         }
         return true;
