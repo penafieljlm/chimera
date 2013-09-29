@@ -5,23 +5,43 @@
 
 package ph.edu.dlsu.chimera.core;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.net.InetAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jnetpcap.PcapIf;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class NICData implements Serializable {
+public final class NICData implements Serializable {
 
     public final String name;
-    public final String netaddress;
-    public final String netmask;
+    public final String description;
+    public final String hardwareAddress;
+    public final NICDataAddress[] addresses;
 
-    public NICData(String name, String netaddress, String netmask) {
-        this.name = name;
-        this.netaddress = netaddress;
-        this.netmask = netmask;
+    public NICData(PcapIf pcapif) {
+        this.name = pcapif.getName();
+        this.description = pcapif.getDescription();
+        StringBuilder sb = new StringBuilder();
+        try {
+            for (byte b : pcapif.getHardwareAddress()) {
+                if (sb.length() > 0) {
+                    sb.append(':');
+                }
+                sb.append(String.format("%02x", b));
+            }
+        } catch (IOException ex) {
+            sb = new StringBuilder("N/A");
+            Logger.getLogger(NICData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        this.hardwareAddress = sb.toString();
+        this.addresses = new NICDataAddress[pcapif.getAddresses().size()];
+        for(int i = 0 ; i < pcapif.getAddresses().size() ; i++) {
+            this.addresses[0] = new NICDataAddress(pcapif.getAddresses().get(i));
+        }
     }
 
 }

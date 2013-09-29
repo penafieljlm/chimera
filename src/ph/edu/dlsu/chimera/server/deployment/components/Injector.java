@@ -6,7 +6,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
 
@@ -16,9 +16,9 @@ import ph.edu.dlsu.chimera.server.Component;
  */
 public class Injector extends Component {
 
-    protected final ConcurrentLinkedQueue<Packet> inQueue;
+    protected final ConcurrentLinkedQueue<PcapPacket> inQueue;
 
-    public Injector(Assembly assembly, ConcurrentLinkedQueue<Packet> inQueue) {
+    public Injector(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue) {
         super(assembly);
         this.inQueue = inQueue;
     }

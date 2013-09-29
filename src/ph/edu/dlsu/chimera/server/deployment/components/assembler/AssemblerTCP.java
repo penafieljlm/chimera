@@ -4,8 +4,9 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
-import net.sourceforge.jpcap.net.Packet;
-import net.sourceforge.jpcap.net.TCPPacket;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
 
 /**
@@ -15,6 +16,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
 public abstract class AssemblerTCP extends Assembler {
 
     private TCPPacketSequence packetSequence;
+    private ConcurrentLinkedQueue<PcapPacket> messagePackets;
 
     public AssemblerTCP() {
         //packet seq does not restart over many messages
@@ -22,11 +24,11 @@ public abstract class AssemblerTCP extends Assembler {
     }
 
     @Override
-    public boolean appendPDU(Packet segment) {
-        if(segment instanceof TCPPacket) {
-            TCPPacket tcp = (TCPPacket) segment;
+    public boolean appendPDU(PcapPacket segment) {
+        if(segment.hasHeader(new Tcp())) {
+            Tcp tcp = segment.getHeader(new Tcp());
             if(!this.packetSequence.contains(tcp)) {
-                return this.packetSequence.add(tcp);
+                return this.packetSequence.add(segment);
             }
         }
         return true;
@@ -35,9 +37,10 @@ public abstract class AssemblerTCP extends Assembler {
     @Override
     public boolean assemblePDU() {
         if(!this.isDone()) {
-            TCPPacket latest = this.packetSequence.poll();
+            PcapPacket latest = this.packetSequence.poll();
             while(latest != null) {
-                this.appendTCP(latest);
+                Tcp tcp = latest.getHeader(new Tcp());
+                this.appendTCP(tcp, latest);
                 if(this.isDone())
                     return true;
                 latest = this.packetSequence.poll();
@@ -47,11 +50,23 @@ public abstract class AssemblerTCP extends Assembler {
         return true;
     }
 
+    @Override
+    protected void reset() {
+        this.packetSequence = new TCPPacketSequence();
+    }
+
     /**
      * Only called when not done.
-     * @param tcp
-     * @return
+     * @param pkt
+     * @return when done
      */
-    protected abstract boolean appendTCP(TCPPacket tcp);
+    protected boolean appendTCP(Tcp tcp, PcapPacket pkt) {
+        this.packetSequence.add(pkt);
+        return this.isDone();
+    }
+
+    protected ConcurrentLinkedQueue<PcapPacket> getMessagePackets() {
+        return this.messagePackets;
+    }
     
 }

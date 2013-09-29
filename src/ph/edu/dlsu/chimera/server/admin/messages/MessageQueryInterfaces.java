@@ -7,7 +7,10 @@ package ph.edu.dlsu.chimera.server.admin.messages;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import net.sourceforge.jpcap.capture.PacketCapture;
+import java.util.List;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapAddr;
+import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageInterfaces;
 import ph.edu.dlsu.chimera.core.NICData;
@@ -21,20 +24,16 @@ import ph.edu.dlsu.chimera.server.admin.Session;
 public class MessageQueryInterfaces implements ServerMessage {
 
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
-        PacketCapture pcap = new PacketCapture();
-        String[] devices = PacketCapture.lookupDevices();
-        ArrayList<NICData> interfaces = new ArrayList<NICData>();
-        for (String device : devices) {
-            String network = "N/A";
-            String netmask = "N/A";
-            try {
-                network = InetAddress.getByAddress(BigInteger.valueOf(pcap.getNetwork(device)).toByteArray()).getHostAddress();
-                netmask = InetAddress.getByAddress(BigInteger.valueOf(pcap.getNetmask(device)).toByteArray()).getHostAddress();
-            } catch (Exception ex) {
-                
+        List<PcapIf> ifaces = new ArrayList<PcapIf>();
+        StringBuilder errbuff = new StringBuilder();
+        int result = Pcap.findAllDevs(ifaces, errbuff);
+        if (result == 0) {
+            ArrayList<NICData> interfaces = new ArrayList<NICData>();
+            for (PcapIf device : ifaces) {
+                interfaces.add(new NICData(device));
             }
-            interfaces.add(new NICData(device, network, netmask));
+            return new MessageInterfaces(interfaces);
         }
-        return new MessageInterfaces(interfaces);
+        throw new Exception("Unable to find devices!");
     }
 }

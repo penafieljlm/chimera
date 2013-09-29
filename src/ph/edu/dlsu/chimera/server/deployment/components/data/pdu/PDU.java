@@ -6,7 +6,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.packet.PcapPacket;
 
 /**
  *
@@ -14,9 +14,9 @@ import net.sourceforge.jpcap.net.Packet;
  */
 public abstract class PDU {
 
-    private final ConcurrentLinkedQueue<Packet> packets;
+    private final ConcurrentLinkedQueue<PcapPacket> packets;
 
-    public PDU(ConcurrentLinkedQueue<Packet> packets) {
+    public PDU(ConcurrentLinkedQueue<PcapPacket> packets) {
         this.packets = packets;
     }
 

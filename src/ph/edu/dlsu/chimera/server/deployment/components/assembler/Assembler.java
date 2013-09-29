@@ -5,7 +5,8 @@
 
 package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
-import net.sourceforge.jpcap.net.Packet;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
 
 /**
@@ -16,7 +17,7 @@ public abstract class Assembler {
 
     public abstract boolean isDone();
 
-    public abstract boolean appendPDU(Packet segment);
+    public abstract boolean appendPDU(PcapPacket segment);
 
     public abstract boolean assemblePDU();
 

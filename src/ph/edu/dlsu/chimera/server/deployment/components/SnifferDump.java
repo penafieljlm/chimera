@@ -7,9 +7,8 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.capture.CaptureFileOpenException;
-import net.sourceforge.jpcap.capture.PacketCapture;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 
@@ -21,14 +20,18 @@ public class SnifferDump extends Sniffer {
 
     public final String dumpfile;
 
-    public SnifferDump(Assembly assembly, ConcurrentLinkedQueue<Packet> outQueue, String filename) {
+    public SnifferDump(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> outQueue, String filename) {
         super(assembly, outQueue);
         this.dumpfile = filename;
     }
 
     @Override
-    protected void open(PacketCapture pcap) throws CaptureFileOpenException {
-        pcap.openOffline(this.dumpfile);
+    protected Pcap open() throws Exception {
+        StringBuilder errbuf = new StringBuilder();
+        Pcap pcap = Pcap.openOffline(this.dumpfile, errbuf);
+        if(pcap == null || errbuf.length() > 0)
+            throw new Exception("Could not open file: " + this.dumpfile);
+        return pcap;
     }
 
     @Override

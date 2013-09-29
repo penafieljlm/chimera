@@ -6,7 +6,6 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.Date;
-import net.sourceforge.jpcap.util.Timeval;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
 
 /**
@@ -16,32 +15,32 @@ import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
 public class ConnectionData {
 
     public final Connection connection;
-    public final Date timeCreated;
+    public final long timeCreated;
     public final Assembler inboundAssembler;
     protected int inboundEncounters;
     protected int outboundEncounters;
 
-    public ConnectionData(Connection connection, Timeval timeCreated, Assembler inboundAssembler) {
+    public ConnectionData(Connection connection, long timeCreated, Assembler inboundAssembler) {
         this.connection = connection;
-        this.timeCreated = timeCreated.getDate();
+        this.timeCreated = timeCreated;
         this.inboundAssembler = inboundAssembler;
         this.inboundEncounters = 0;
         this.outboundEncounters = 0;
     }
 
     /**
-     * @return the length of time this TCPState has existed in microseconds.
+     * @return the length of time this TCPState has existed in milliseconds.
      */
     public long getStateTime() {
         Date now = new Date();
-        return now.getTime() - this.timeCreated.getTime();
+        return now.getTime() - this.timeCreated;
     }
 
     /**
      * @return the inbound rate of this TCPState measured as packet per second.
      */
     public double inboundRate() {
-        double sec = this.getStateTime() / 1000000;
+        double sec = this.getStateTime() / 1000;
         return this.inboundEncounters / sec;
     }
 
@@ -49,7 +48,7 @@ public class ConnectionData {
      * @return the outbound rate of this TCPState measured as packet per second.
      */
     public double outboundRate() {
-        double sec = this.getStateTime() / 1000000;
+        double sec = this.getStateTime() / 1000;
         return this.outboundEncounters / sec;
     }
 

@@ -6,7 +6,7 @@
 package ph.edu.dlsu.chimera.server.deployment;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Deployment;
 import ph.edu.dlsu.chimera.server.deployment.components.SnifferNetwork;
@@ -19,7 +19,7 @@ public class Production extends Deployment {
 
     public Production(Assembly assembly, String ifInbound) {
         super("Production");
-        ConcurrentLinkedQueue<Packet> inSnifferQueue = new ConcurrentLinkedQueue<Packet>();
+        ConcurrentLinkedQueue<PcapPacket> inSnifferQueue = new ConcurrentLinkedQueue<PcapPacket>();
         super.components.put("in-sniffer", new SnifferNetwork(assembly, inSnifferQueue, ifInbound));
     }
 

@@ -4,9 +4,8 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
-import net.sourceforge.jpcap.net.TCPPacket;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUHTTP;
 
@@ -28,16 +27,16 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
     private boolean keepAlive;
     private int bodyLength;
     private boolean done;
-    private ConcurrentLinkedQueue<Packet> packets;
 
     public AssemblerTCPHTTP() {
         this.reset();
     }
 
     @Override
-    protected boolean appendTCP(TCPPacket tcp) {
-        this.packets.add(tcp);
-        String data = new String(tcp.getData());
+    protected boolean appendTCP(Tcp tcp, PcapPacket pkt) {
+        if(super.appendTCP(tcp, pkt))
+            return true;
+        String data = new String(tcp.getPayload());
         if(!this.headerOk) {
             //build header
             if(data.contains(AssemblerTCPHTTP.TOKEN_HEADER_END)) {
@@ -80,7 +79,7 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
                     this.done = true;
             } else {
                 //wait until fin flag
-                if(tcp.isFin())
+                if(tcp.flags_FIN())
                     this.done = true;
             }
         }
@@ -100,20 +99,20 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
     @Override
     protected PDU producePDU() {
         if(this.isDone()) {
-            return new PDUHTTP(this.packets, this.headerBuilder.toString(), this.bodyBuilder.toString());
+            return new PDUHTTP(super.getMessagePackets(), this.headerBuilder.toString(), this.bodyBuilder.toString());
         }
         return null;
     }
 
     @Override
     protected void reset() {
+        super.reset();
         this.headerBuilder = new StringBuilder();
         this.bodyBuilder = new StringBuilder();
         this.headerOk = false;
         this.keepAlive = false;
         this.bodyLength = -1;
         this.done = false;
-        this.packets = new ConcurrentLinkedQueue<Packet>();
     }
     
 }

@@ -7,7 +7,8 @@ package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.Collections;
 import java.util.List;
-import net.sourceforge.jpcap.net.TCPPacket;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.tcpip.Tcp;
 
 /**
  *
@@ -15,7 +16,7 @@ import net.sourceforge.jpcap.net.TCPPacket;
  */
 public class TCPPacketSequence {
 
-    private final List<TCPPacket> list;
+    private final List<PcapPacket> list;
     private int nextSequenceNo;
 
     public TCPPacketSequence() {
@@ -23,19 +24,23 @@ public class TCPPacketSequence {
         this.nextSequenceNo = 1;
     }
 
-    public boolean add(TCPPacket packet) {
-        if(packet.getData().length > 0) {
-            if(!this.contains(packet)) {
-                return this.list.add(packet);
+    public boolean add(PcapPacket packet) {
+        if(packet.hasHeader(new Tcp())) {
+            Tcp tcp = packet.getHeader(new Tcp());
+            if(tcp.getPayloadLength() > 0) {
+                if(!this.contains(tcp)) {
+                    return this.list.add(packet);
+                }
             }
         }
         return false;
     }
 
-    public TCPPacket poll() {
-        for(TCPPacket p : this.list) {
-            if(p.getSequenceNumber() == this.nextSequenceNo && p.getData().length > 0) {
-                this.nextSequenceNo += p.getData().length;
+    public PcapPacket poll() {
+        for(PcapPacket p : this.list) {
+            Tcp ptcp = p.getHeader(new Tcp());
+            if(ptcp.seq() == this.nextSequenceNo && ptcp.getPayloadLength() > 0) {
+                this.nextSequenceNo += ptcp.getPayloadLength();
                 this.list.remove(p);
                 return p;
             }
@@ -43,9 +48,10 @@ public class TCPPacketSequence {
         return null;
     }
 
-    public boolean contains(TCPPacket packet) {
-        for(TCPPacket p : this.list) {
-            if(p.getSequenceNumber() == packet.getSequenceNumber())
+    public boolean contains(Tcp tcp) {
+        for(PcapPacket p : this.list) {
+            Tcp ptcp = p.getHeader(new Tcp());
+            if(ptcp.seq() == tcp.seq())
                 return true;
         }
         return false;

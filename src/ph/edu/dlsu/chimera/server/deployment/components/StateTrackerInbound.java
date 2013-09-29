@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
@@ -19,15 +19,15 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 public class StateTrackerInbound extends StateTracker {
 
     public StateTrackerInbound(Assembly assembly,
-            ConcurrentLinkedQueue<Packet> inQueue,
-            ConcurrentLinkedQueue<Packet> outQueue,
+            ConcurrentLinkedQueue<PcapPacket> inQueue,
+            ConcurrentLinkedQueue<PcapPacket> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
             ConcurrentHashMap<Integer, Assembler> portProtocolMap) {
             super(assembly, inQueue, outQueue, stateTable, portProtocolMap);
     }
     
     @Override
-    protected void updateStateDataTraffic(ConnectionData data, Packet recv) {
+    protected void updateStateDataTraffic(ConnectionData data) {
         data.update(true);
     }
 

@@ -8,9 +8,14 @@ package ph.edu.dlsu.chimera.util;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sourceforge.jpcap.net.Packet;
-import net.sourceforge.jpcap.net.TCPPacket;
-import net.sourceforge.jpcap.net.UDPPacket;
+import org.jnetpcap.packet.JHeader;
+import org.jnetpcap.packet.JRegistry;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.lan.Ethernet;
+import org.jnetpcap.protocol.network.Ip4;
+import org.jnetpcap.protocol.network.Ip6;
+import org.jnetpcap.protocol.tcpip.Tcp;
+import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.server.deployment.components.StateTracker;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 
@@ -20,12 +25,22 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
  */
 public abstract class PacketTools {
 
-    public static Connection getConnection(Packet pkt) {
+    public static Connection getConnection(PcapPacket pkt) {
         try {
-            if(pkt instanceof TCPPacket)
-                return new Connection((TCPPacket) pkt);
-            if(pkt instanceof UDPPacket)
-                return new Connection((UDPPacket) pkt);
+            if(pkt.hasHeader(new Ip4())) {
+                Ip4 ip = pkt.getHeader(new Ip4());
+                if(pkt.hasHeader(new Tcp()))
+                    return new Connection(ip, pkt.getHeader(new Tcp()));
+                if(pkt.hasHeader(new Udp()))
+                    return new Connection(ip, pkt.getHeader(new Udp()));
+            }
+            if(pkt.hasHeader(new Ip6())) {
+                Ip6 ip = pkt.getHeader(new Ip6());
+                if(pkt.hasHeader(new Tcp()))
+                    return new Connection(ip, pkt.getHeader(new Tcp()));
+                if(pkt.hasHeader(new Udp()))
+                    return new Connection(ip, pkt.getHeader(new Udp()));
+            }
         } catch (UnknownHostException ex) {
             Logger.getLogger(StateTracker.class.getName()).log(Level.SEVERE, null, ex);
         }

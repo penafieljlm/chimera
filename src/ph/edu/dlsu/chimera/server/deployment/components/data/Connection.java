@@ -6,9 +6,10 @@ package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import net.sourceforge.jpcap.capture.PacketCapture;
-import net.sourceforge.jpcap.net.TCPPacket;
-import net.sourceforge.jpcap.net.UDPPacket;
+import org.jnetpcap.protocol.network.Ip4;
+import org.jnetpcap.protocol.network.Ip6;
+import org.jnetpcap.protocol.tcpip.Tcp;
+import org.jnetpcap.protocol.tcpip.Udp;
 
 /**
  *
@@ -28,21 +29,39 @@ public class Connection {
         this.destinationPort = destinationPort;
     }
 
-    public Connection(TCPPacket packet) throws UnknownHostException {
+    public Connection(Ip4 ip4, Tcp tcp) throws UnknownHostException {
         this(
-                InetAddress.getByAddress(packet.getSourceAddressBytes()),
-                packet.getSourcePort(),
-                InetAddress.getByAddress(packet.getDestinationAddressBytes()),
-                packet.getDestinationPort()
+                InetAddress.getByAddress(ip4.source()),
+                tcp.source(),
+                InetAddress.getByAddress(ip4.destination()),
+                tcp.destination()
             );
     }
 
-    public Connection(UDPPacket packet) throws UnknownHostException {
+    public Connection(Ip4 ip4, Udp udp) throws UnknownHostException {
         this(
-                InetAddress.getByAddress(packet.getSourceAddressBytes()),
-                packet.getSourcePort(),
-                InetAddress.getByAddress(packet.getDestinationAddressBytes()),
-                packet.getDestinationPort()
+                InetAddress.getByAddress(ip4.source()),
+                udp.source(),
+                InetAddress.getByAddress(ip4.destination()),
+                udp.destination()
+            );
+    }
+
+    public Connection(Ip6 ip6, Tcp tcp) throws UnknownHostException {
+        this(
+                InetAddress.getByAddress(ip6.source()),
+                tcp.source(),
+                InetAddress.getByAddress(ip6.destination()),
+                tcp.destination()
+            );
+    }
+
+    public Connection(Ip6 ip6, Udp udp) throws UnknownHostException {
+        this(
+                InetAddress.getByAddress(ip6.source()),
+                udp.source(),
+                InetAddress.getByAddress(ip6.destination()),
+                udp.destination()
             );
     }
 

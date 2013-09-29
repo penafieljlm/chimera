@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sourceforge.jpcap.capture.PacketCapture;
-import net.sourceforge.jpcap.capture.PacketListener;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
 import ph.edu.dlsu.chimera.core.Diagnostic;
@@ -20,40 +20,51 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
  * 
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class Sniffer extends Component implements PacketListener {
+public abstract class Sniffer extends Component implements PcapPacketHandler<String> {
 
     
-    private final ConcurrentLinkedQueue<Packet> outQueue;
-    private final PacketCapture pcap;
+    private final ConcurrentLinkedQueue<PcapPacket> outQueue;
+    private Pcap pcap;
+    private int received;
 
-    public Sniffer(Assembly assembly, ConcurrentLinkedQueue<Packet> outQueue) {
+    public Sniffer(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> outQueue) {
         super(assembly);
         this.outQueue = outQueue;
-        this.pcap = new PacketCapture();
+        this.received = 0;
     }
 
     @Override
     public void componentRun() {
         try {
-            this.pcap.addPacketListener(this);
-            this.open(this.pcap);
-            this.pcap.capture(-1);
+            this.pcap = this.open();
+            switch(this.pcap.loop(-1, this, "")) {
+                case 0:
+                    //count exhausted
+                    break;
+                case -1:
+                    //error
+                    break;
+                case -2:
+                    //break loop called
+                    break;
+            }
             this.pcap.close();
         } catch (Exception ex) {
             Logger.getLogger(Sniffer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    @Override
-    public void packetArrived(Packet packet) {
+    public void nextPacket(PcapPacket pp, String t) {
+        this.received++;
         if(this.outQueue != null)
-            this.outQueue.add(packet);
+            this.outQueue.add(pp);
+        
     }
 
     @Override
     public synchronized void kill() {
         super.kill();
-        this.pcap.endCapture();
+        this.pcap.breakloop();
     }
 
     @Override
@@ -63,11 +74,10 @@ public abstract class Sniffer extends Component implements PacketListener {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
         else
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
-        diag.add(new Diagnostic("received", "Packets Received", this.pcap.getStatistics().getReceivedCount()));
-        diag.add(new Diagnostic("dropped", "Packets Dropped", this.pcap.getStatistics().getDroppedCount()));
+        diag.add(new Diagnostic("received", "Packets Received", this.received));
         return diag;
     }
 
-    protected abstract void open(PacketCapture pcap) throws Exception;
+    protected abstract Pcap open() throws Exception;
 
 }

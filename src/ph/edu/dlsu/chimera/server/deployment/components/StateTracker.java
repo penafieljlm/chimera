@@ -7,9 +7,9 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
-import net.sourceforge.jpcap.net.TCPPacket;
-import net.sourceforge.jpcap.net.UDPPacket;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.tcpip.Tcp;
+import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
@@ -25,13 +25,13 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 public abstract class StateTracker extends Component {
 
     protected final ConcurrentHashMap<Connection, ConnectionData> stateTable;
-    protected final ConcurrentLinkedQueue<Packet> inQueue;
-    protected final ConcurrentLinkedQueue<Packet> outQueue;
+    protected final ConcurrentLinkedQueue<PcapPacket> inQueue;
+    protected final ConcurrentLinkedQueue<PcapPacket> outQueue;
     protected final ConcurrentHashMap<Integer, Assembler> portProtocolMap;
 
     public StateTracker(Assembly assembly, 
-            ConcurrentLinkedQueue<Packet> inQueue,
-            ConcurrentLinkedQueue<Packet> outQueue,
+            ConcurrentLinkedQueue<PcapPacket> inQueue,
+            ConcurrentLinkedQueue<PcapPacket> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
             ConcurrentHashMap<Integer, Assembler> portProtocolMap) {
         super(assembly);
@@ -47,7 +47,7 @@ public abstract class StateTracker extends Component {
             if(this.inQueue != null && this.stateTable != null) {
                 while(!this.inQueue.isEmpty()) {
                     //poll packet
-                    Packet pkt = this.inQueue.poll();
+                    PcapPacket pkt = this.inQueue.poll();
                     //get connection
                     Connection conn = PacketTools.getConnection(pkt);
                     if(conn != null) {
@@ -55,7 +55,7 @@ public abstract class StateTracker extends Component {
                         this.createStateIfNotExisting(conn, pkt);
                         //update state
                         if(this.stateTable.containsKey(conn))
-                            this.updateStateDataTraffic(this.stateTable.get(conn), pkt);
+                            this.updateStateDataTraffic(this.stateTable.get(conn));
                     }
                     if(this.outQueue != null) {
                         //send output signal
@@ -66,22 +66,22 @@ public abstract class StateTracker extends Component {
         }
     }
 
-    private void createStateIfNotExisting(Connection conn, Packet pkt) {
+    private void createStateIfNotExisting(Connection conn, PcapPacket pkt) {
         if(!this.stateTable.containsKey(conn)) {
             Assembler a = null;
-            if(pkt instanceof TCPPacket) {
-                TCPPacket tcp = (TCPPacket) pkt;
-                a = this.portProtocolMap.get(tcp.getDestinationPort()).copyAssemblerType();
+            if(pkt.hasHeader(new Tcp())) {
+                Tcp tcp = pkt.getHeader(new Tcp());
+                a = this.portProtocolMap.get(tcp.destination()).copyAssemblerType();
             }
-            if(pkt instanceof UDPPacket){
-                UDPPacket udp = (UDPPacket) pkt;
-                a = this.portProtocolMap.get(udp.getDestinationPort()).copyAssemblerType();
+            if(pkt.hasHeader(new Udp())){
+                Udp udp = pkt.getHeader(new Udp());
+                a = this.portProtocolMap.get(udp.destination()).copyAssemblerType();
             }
-            this.stateTable.put(conn, new ConnectionData(conn, pkt.getTimeval(), a));
+            this.stateTable.put(conn, new ConnectionData(conn, pkt.getCaptureHeader().timestampInMillis(), a));
         }
     }
 
-    protected abstract void updateStateDataTraffic(ConnectionData data, Packet recv);
+    protected abstract void updateStateDataTraffic(ConnectionData data);
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {

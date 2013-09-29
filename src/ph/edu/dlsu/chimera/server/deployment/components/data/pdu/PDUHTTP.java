@@ -6,7 +6,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.packet.PcapPacket;
 
 /**
  *
@@ -17,7 +17,7 @@ public class PDUHTTP extends PDU {
     private String header;
     private String body;
 
-    public PDUHTTP(ConcurrentLinkedQueue<Packet> packets, String header, String body) {
+    public PDUHTTP(ConcurrentLinkedQueue<PcapPacket> packets, String header, String body) {
         super(packets);
         this.header = header;
         this.body = body;

@@ -6,8 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.net.Packet;
-import net.sourceforge.jpcap.net.TCPPacket;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
@@ -22,11 +21,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  */
 public class PDUAssembler extends Component {
 
-    public final ConcurrentLinkedQueue<Packet> inQueue;
+    public final ConcurrentLinkedQueue<PcapPacket> inQueue;
     public final ConcurrentLinkedQueue<PDU> outQueue;
     public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
 
-    public PDUAssembler(Assembly assembly, ConcurrentLinkedQueue<Packet> inQueue, ConcurrentLinkedQueue<PDU> outQueue, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
+    public PDUAssembler(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue, ConcurrentLinkedQueue<PDU> outQueue, ConcurrentHashMap<Connection, ConnectionData> stateTable) {
         super(assembly);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
@@ -38,7 +37,7 @@ public class PDUAssembler extends Component {
         while (super.running) {
             if (this.inQueue != null && this.stateTable != null) {
                 //poll packet
-                Packet pkt = this.inQueue.poll();
+                PcapPacket pkt = this.inQueue.poll();
                 //get connection
                 Connection conn = PacketTools.getConnection(pkt);
                 if (conn != null) {

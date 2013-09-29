@@ -7,8 +7,8 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import net.sourceforge.jpcap.capture.PacketCapture;
-import net.sourceforge.jpcap.net.Packet;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 
@@ -20,14 +20,18 @@ public class SnifferNetwork extends Sniffer {
 
     public final String device;
 
-    public SnifferNetwork(Assembly assembly, ConcurrentLinkedQueue<Packet> outQueue, String device) {
+    public SnifferNetwork(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> outQueue, String device) {
         super(assembly, outQueue);
         this.device = device;
     }
 
     @Override
-    protected void open(PacketCapture pcap) throws Exception {
-        pcap.open(this.device, true);
+    protected Pcap open() throws Exception {
+        StringBuilder errbuf = new StringBuilder();
+        Pcap pcap = Pcap.openLive(this.device, Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, null);
+        if(pcap == null || errbuf.length() > 0)
+            throw new Exception("Could not open device: " + this.device);
+        return pcap;
     }
 
     @Override
