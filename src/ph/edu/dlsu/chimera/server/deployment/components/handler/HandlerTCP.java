@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.assembler;
+package ph.edu.dlsu.chimera.server.deployment.components.handler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
@@ -13,12 +13,12 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class AssemblerTCP extends Assembler {
+public abstract class HandlerTCP extends ProtocolHandler {
 
     private TCPPacketSequence packetSequence;
     private ConcurrentLinkedQueue<PcapPacket> messagePackets;
 
-    public AssemblerTCP() {
+    public HandlerTCP() {
         //packet seq does not restart over many messages
         this.packetSequence = new TCPPacketSequence();
     }

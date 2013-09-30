@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.ProtocolHandler;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 
 /**
@@ -22,7 +22,7 @@ public class StateTrackerInbound extends StateTracker {
             ConcurrentLinkedQueue<PcapPacket> inQueue,
             ConcurrentLinkedQueue<PcapPacket> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
-            ConcurrentHashMap<Integer, Assembler> portProtocolMap) {
+            ConcurrentHashMap<Integer, ProtocolHandler> portProtocolMap) {
             super(assembly, inQueue, outQueue, stateTable, portProtocolMap);
     }
     

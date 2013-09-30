@@ -10,7 +10,7 @@ import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
-import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.ProtocolHandler;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
@@ -44,13 +44,13 @@ public class PDUAssembler extends Component {
                     //connection valid
                     if (this.stateTable.containsKey(conn)) {
                         //connection exists
-                        Assembler assembler = this.stateTable.get(conn).inboundAssembler;
-                        if (assembler != null) {
-                            //assembler exists : append and assemble pdu
-                            assembler.appendPDU(pkt);
-                            if (assembler.assemblePDU()) {
+                        ProtocolHandler handler = this.stateTable.get(conn).inboundHandler;
+                        if (handler != null) {
+                            //handler exists : append and assemble pdu
+                            handler.appendPDU(pkt);
+                            if (handler.assemblePDU()) {
                                 //assembly done
-                                PDU pdu = assembler.poll();
+                                PDU pdu = handler.poll();
                                 if (pdu != null) {
                                     //pdu is ok
                                     if (this.outQueue != null) {
@@ -59,6 +59,12 @@ public class PDUAssembler extends Component {
                                     }
                                 }
                             }
+                        }
+                    } else {
+                        //connection does not exists (ie. destroyed)
+                        if (this.outQueue != null) {
+                            //out queue exists : push atomic PDU
+                            this.outQueue.add(pdu);
                         }
                     }
                 } else {

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.server.deployment.components.assembler;
+package ph.edu.dlsu.chimera.server.deployment.components.handler;
 
 import net.sourceforge.jpcap.net.Packet;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
@@ -12,9 +12,9 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class AssemblerTCPSMTP extends Assembler {
+public final class HandlerTCPSMTP extends ProtocolHandler {
 
-    public AssemblerTCPSMTP() {
+    public HandlerTCPSMTP() {
         this.reset();
     }
 
@@ -29,7 +29,7 @@ public final class AssemblerTCPSMTP extends Assembler {
     }
 
     @Override
-    public Assembler copyAssemblerType() {
+    public ProtocolHandler copyHandlerType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -3,9 +3,8 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.server.deployment.components.assembler;
+package ph.edu.dlsu.chimera.server.deployment.components.handler;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
 
@@ -13,7 +12,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class Assembler {
+public abstract class ProtocolHandler {
 
     public abstract boolean isDone();
 
@@ -30,7 +29,7 @@ public abstract class Assembler {
         return null;
     }
 
-    public abstract Assembler copyAssemblerType();
+    public abstract ProtocolHandler copyHandlerType();
 
     protected abstract void reset();
 

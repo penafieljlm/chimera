@@ -6,7 +6,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.Date;
-import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.ProtocolHandler;
 
 /**
  *
@@ -16,14 +16,14 @@ public class ConnectionData {
 
     public final Connection connection;
     public final long timeCreated;
-    public final Assembler inboundAssembler;
+    public final ProtocolHandler inboundHandler;
     protected int inboundEncounters;
     protected int outboundEncounters;
 
-    public ConnectionData(Connection connection, long timeCreated, Assembler inboundAssembler) {
+    public ConnectionData(Connection connection, long timeCreated, ProtocolHandler inboundHandler) {
         this.connection = connection;
         this.timeCreated = timeCreated;
-        this.inboundAssembler = inboundAssembler;
+        this.inboundHandler = inboundHandler;
         this.inboundEncounters = 0;
         this.outboundEncounters = 0;
     }
