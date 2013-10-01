@@ -12,7 +12,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class HandlerTCPFTPControl extends ProtocolHandler {
+public final class AssemblerTCPSMTP extends Assembler {
+
+    public AssemblerTCPSMTP() {
+        this.reset();
+    }
 
     @Override
     public boolean isDone() {
@@ -25,7 +29,7 @@ public class HandlerTCPFTPControl extends ProtocolHandler {
     }
 
     @Override
-    public ProtocolHandler copyHandlerType() {
+    public Assembler copyHandlerType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -35,7 +39,7 @@ public class HandlerTCPFTPControl extends ProtocolHandler {
     }
 
     @Override
-    protected PDU producePDU() {
+    protected PDU internalPDUConstruct() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

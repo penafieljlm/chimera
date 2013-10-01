@@ -12,25 +12,23 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class ProtocolHandler {
+public abstract class Assembler {
 
     public abstract boolean isDone();
 
     public abstract boolean appendPDU(PcapPacket segment);
 
-    public PDU poll() {
+    public abstract boolean assemblePDU();
+
+    public PDU toPdu() {
         if(this.isDone()) {
-            PDU result = this.producePDU();
-            this.reset();
-            return result;
+            return this.internalPDUConstruct();
         }
         return null;
     }
 
-    public abstract ProtocolHandler copyHandlerType();
+    public abstract Assembler copyHandlerType();
 
-    protected abstract void reset();
-
-    protected abstract PDU producePDU();
+    protected abstract PDU internalPDUConstruct();
     
 }

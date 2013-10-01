@@ -9,15 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataTCP;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataUDP;
 
 /**
  *
@@ -26,23 +23,20 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataUDP;
 public abstract class StateTracker extends Component {
 
     public final boolean inbound;
-    protected final ConcurrentHashMap<Connection, ConnectionData> stateTable;
-    protected final ConcurrentLinkedQueue<PcapPacket> inQueue;
-    protected final ConcurrentLinkedQueue<PcapPacket> outQueue;
-    protected final ConcurrentHashMap<Integer, ConnectionDataUDP> udpPortConnectionDataType;
+    private final ConcurrentHashMap<Connection, ConnectionData> stateTable;
+    private final ConcurrentLinkedQueue<PcapPacket> inQueue;
+    private final ConcurrentLinkedQueue<PcapPacket> outQueue;
 
     public StateTracker(Assembly assembly,
-            boolean inbound,
             ConcurrentLinkedQueue<PcapPacket> inQueue,
             ConcurrentLinkedQueue<PcapPacket> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
-            ConcurrentHashMap<Integer, ConnectionDataUDP> udpPortConnectionDataType) {
+            boolean inbound) {
         super(assembly);
-        this.inbound = inbound;
         this.stateTable = stateTable;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
-        this.udpPortConnectionDataType = udpPortConnectionDataType;
+        this.inbound = inbound;
     }
 
     @Override
@@ -52,39 +46,32 @@ public abstract class StateTracker extends Component {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PcapPacket pkt = this.inQueue.poll();
-                    //get connection
-                    Connection conn = PacketTools.getConnection(pkt);
-                    if (conn != null) {                        
-                        //create state / query state
-                        ConnectionData connDat = null;
-                        if(!this.stateTable.containsKey(conn)) {
-                            //create state
-                            connDat = this.createConnectionData(pkt, conn);
-                        } else {
-                            //query state
-                            connDat = this.stateTable.get(conn);
-                        }
-                        if(connDat != null) {
-                            //has appropriate connection data type
-                            //update state
-                            connDat.append(pkt);
-                            //forward packets to assembler / injector
-                            PcapPacket front = this.pollConnectionData(connDat);
-                            while(front != null) {
-                                if(this.outQueue != null) {
-                                    this.outQueue.add(front);
-                                }
-                                front = this.pollConnectionData(connDat);
+                    if (pkt.hasHeader(new Tcp())) {
+                        //tcp packets
+                        Connection conn = PacketTools.getConnection(pkt);
+                        Tcp tcp = pkt.getHeader(new Tcp());
+                        //create state
+                        if (!this.stateTable.containsKey(conn)) {
+                            if (tcp.flags_SYN()) {
+                                this.stateTable.put(conn, new ConnectionData(conn, pkt.getCaptureHeader().timestampInMillis(), this.inbound));
                             }
+                        }
+                        if (this.stateTable.containsKey(conn)) {
+                            //update state
+                            this.updateStateDataTraffic(this.stateTable.get(conn));
                             //delete state
-                            if(connDat.isDone()) {
+                            if(this.stateTable.get(conn).isDone()) {
                                 this.stateTable.remove(conn);
                             }
-                        } else {
-                            //no appropriate connection data type
-                            if(this.outQueue != null) {
+                            //forward
+                            if (this.outQueue != null) {
                                 this.outQueue.add(pkt);
                             }
+                        }
+                    } else {
+                        //non tcp packets
+                        if (this.outQueue != null) {
+                            this.outQueue.add(pkt);
                         }
                     }
                 }
@@ -92,24 +79,7 @@ public abstract class StateTracker extends Component {
         }
     }
 
-    private ConnectionData createConnectionData(PcapPacket pkt, Connection connection) {
-        if(pkt.hasHeader(new Tcp())) {
-            return new ConnectionDataTCP(connection, pkt.getCaptureHeader().timestampInNanos(), this.inbound);
-        }
-        if(pkt.hasHeader(new Udp())) {
-            Udp udp = pkt.getHeader(new Udp());
-            return this.udpPortConnectionDataType.get(udp.destination()).createInstance(connection, pkt.getCaptureHeader().timestampInNanos(), this.inbound);
-        }
-        return null;
-    }
-
-    private PcapPacket pollConnectionData(ConnectionData data) {
-        if(this.inbound ^ data.inbound) {
-            return data.pollFromDestination();
-        } else {
-            return data.pollFromSource();
-        }
-    }
+    protected abstract void updateStateDataTraffic(ConnectionData data);
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
@@ -125,7 +95,7 @@ public abstract class StateTracker extends Component {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
         if (this.outQueue != null) {
-            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.inQueue.size()));
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }

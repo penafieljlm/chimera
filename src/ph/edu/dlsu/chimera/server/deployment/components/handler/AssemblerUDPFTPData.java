@@ -12,7 +12,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class HandlerUDPDNS extends ProtocolHandler {
+public class AssemblerUDPFTPData extends Assembler {
 
     @Override
     public boolean isDone() {
@@ -25,7 +25,7 @@ public class HandlerUDPDNS extends ProtocolHandler {
     }
 
     @Override
-    public ProtocolHandler copyHandlerType() {
+    public Assembler copyHandlerType() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -35,7 +35,7 @@ public class HandlerUDPDNS extends ProtocolHandler {
     }
 
     @Override
-    protected PDU producePDU() {
+    protected PDU internalPDUConstruct() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
