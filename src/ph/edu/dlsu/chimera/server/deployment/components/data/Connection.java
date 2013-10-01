@@ -34,8 +34,7 @@ public class Connection {
                 InetAddress.getByAddress(ip4.source()),
                 tcp.source(),
                 InetAddress.getByAddress(ip4.destination()),
-                tcp.destination()
-            );
+                tcp.destination());
     }
 
     public Connection(Ip4 ip4, Udp udp) throws UnknownHostException {
@@ -43,8 +42,7 @@ public class Connection {
                 InetAddress.getByAddress(ip4.source()),
                 udp.source(),
                 InetAddress.getByAddress(ip4.destination()),
-                udp.destination()
-            );
+                udp.destination());
     }
 
     public Connection(Ip6 ip6, Tcp tcp) throws UnknownHostException {
@@ -52,8 +50,7 @@ public class Connection {
                 InetAddress.getByAddress(ip6.source()),
                 tcp.source(),
                 InetAddress.getByAddress(ip6.destination()),
-                tcp.destination()
-            );
+                tcp.destination());
     }
 
     public Connection(Ip6 ip6, Udp udp) throws UnknownHostException {
@@ -61,26 +58,26 @@ public class Connection {
                 InetAddress.getByAddress(ip6.source()),
                 udp.source(),
                 InetAddress.getByAddress(ip6.destination()),
-                udp.destination()
-            );
+                udp.destination());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Connection))
+        if (!(obj instanceof Connection)) {
             return false;
+        }
 
         Connection con = (Connection) obj;
 
-        return ((con.source.equals(this.source)) && (con.sourcePort == this.sourcePort) && (con.destination.equals(this.destination)) && (con.destinationPort == this.destinationPort)) ||
-                ((con.source.equals(this.destination)) && (con.sourcePort == this.destinationPort) && (con.destination.equals(this.source)) && (con.destinationPort == this.sourcePort));
+        return ((con.source.equals(this.source)) && (con.sourcePort == this.sourcePort) && (con.destination.equals(this.destination)) && (con.destinationPort == this.destinationPort))
+                || ((con.source.equals(this.destination)) && (con.sourcePort == this.destinationPort) && (con.destination.equals(this.source)) && (con.destinationPort == this.sourcePort));
 
     }
 
     @Override
     public int hashCode() {
-        return ((source.hashCode() ^ sourcePort) ^
-                ((destination.hashCode() ^ destinationPort)));
+        return ((source.hashCode() ^ sourcePort)
+                ^ ((destination.hashCode() ^ destinationPort)));
     }
     
 }

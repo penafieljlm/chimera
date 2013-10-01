@@ -5,13 +5,12 @@
 
 package ph.edu.dlsu.chimera.util;
 
+import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jnetpcap.packet.JHeader;
-import org.jnetpcap.packet.JRegistry;
 import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.network.Ip6;
 import org.jnetpcap.protocol.tcpip.Tcp;

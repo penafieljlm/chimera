@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server.deployment.components.handler;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
 
 /**
  *
@@ -15,44 +14,24 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
  */
 public abstract class HandlerTCP extends ProtocolHandler {
 
-    private TCPPacketSequence packetSequence;
     private ConcurrentLinkedQueue<PcapPacket> messagePackets;
 
     public HandlerTCP() {
-        //packet seq does not restart over many messages
-        this.packetSequence = new TCPPacketSequence();
+        
     }
 
     @Override
     public boolean appendPDU(PcapPacket segment) {
         if(segment.hasHeader(new Tcp())) {
             Tcp tcp = segment.getHeader(new Tcp());
-            if(!this.packetSequence.contains(tcp)) {
-                return this.packetSequence.add(segment);
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean assemblePDU() {
-        if(!this.isDone()) {
-            PcapPacket latest = this.packetSequence.poll();
-            while(latest != null) {
-                Tcp tcp = latest.getHeader(new Tcp());
-                this.appendTCP(tcp, latest);
-                if(this.isDone())
-                    return true;
-                latest = this.packetSequence.poll();
-            }
-            return false;
+            this.appendTCP(tcp, segment);
         }
         return true;
     }
 
     @Override
     protected void reset() {
-        this.packetSequence = new TCPPacketSequence();
+        this.messagePackets = new ConcurrentLinkedQueue<PcapPacket>();
     }
 
     /**
@@ -61,7 +40,7 @@ public abstract class HandlerTCP extends ProtocolHandler {
      * @return when done
      */
     protected boolean appendTCP(Tcp tcp, PcapPacket pkt) {
-        this.packetSequence.add(pkt);
+        this.messagePackets.add(pkt);
         return this.isDone();
     }
 

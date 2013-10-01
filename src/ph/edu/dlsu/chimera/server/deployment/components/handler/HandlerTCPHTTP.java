@@ -34,6 +34,7 @@ public final class HandlerTCPHTTP extends HandlerTCP {
 
     @Override
     protected boolean appendTCP(Tcp tcp, PcapPacket pkt) {
+        //assume that packets will be fed in order
         if(super.appendTCP(tcp, pkt))
             return true;
         String data = new String(tcp.getPayload());

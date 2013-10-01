@@ -18,8 +18,6 @@ public abstract class ProtocolHandler {
 
     public abstract boolean appendPDU(PcapPacket segment);
 
-    public abstract boolean assemblePDU();
-
     public PDU poll() {
         if(this.isDone()) {
             PDU result = this.producePDU();

@@ -15,8 +15,9 @@ import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.Component;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.ProtocolHandler;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataTCP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionDataUDP;
 
 /**
  *
@@ -24,21 +25,24 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
  */
 public abstract class StateTracker extends Component {
 
+    public final boolean inbound;
     protected final ConcurrentHashMap<Connection, ConnectionData> stateTable;
     protected final ConcurrentLinkedQueue<PcapPacket> inQueue;
     protected final ConcurrentLinkedQueue<PcapPacket> outQueue;
-    protected final ConcurrentHashMap<Integer, ProtocolHandler> portProtocolMap;
+    protected final ConcurrentHashMap<Integer, ConnectionDataUDP> udpPortConnectionDataType;
 
     public StateTracker(Assembly assembly,
+            boolean inbound,
             ConcurrentLinkedQueue<PcapPacket> inQueue,
             ConcurrentLinkedQueue<PcapPacket> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
-            ConcurrentHashMap<Integer, ProtocolHandler> portProtocolMap) {
+            ConcurrentHashMap<Integer, ConnectionDataUDP> udpPortConnectionDataType) {
         super(assembly);
+        this.inbound = inbound;
         this.stateTable = stateTable;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
-        this.portProtocolMap = portProtocolMap;
+        this.udpPortConnectionDataType = udpPortConnectionDataType;
     }
 
     @Override
@@ -50,36 +54,62 @@ public abstract class StateTracker extends Component {
                     PcapPacket pkt = this.inQueue.poll();
                     //get connection
                     Connection conn = PacketTools.getConnection(pkt);
-                    if (conn != null) {
-                        //create state
-                        if (!this.stateTable.containsKey(conn)) {
-                            ProtocolHandler a = null;
-                            if (pkt.hasHeader(new Tcp())) {
-                                Tcp tcp = pkt.getHeader(new Tcp());
-                                a = this.portProtocolMap.get(tcp.destination()).copyHandlerType();
-                            }
-                            if (pkt.hasHeader(new Udp())) {
-                                Udp udp = pkt.getHeader(new Udp());
-                                a = this.portProtocolMap.get(udp.destination()).copyHandlerType();
-                            }
-                            this.stateTable.put(conn, new ConnectionData(conn, pkt.getCaptureHeader().timestampInMillis(), a));
+                    if (conn != null) {                        
+                        //create state / query state
+                        ConnectionData connDat = null;
+                        if(!this.stateTable.containsKey(conn)) {
+                            //create state
+                            connDat = this.createConnectionData(pkt, conn);
+                        } else {
+                            //query state
+                            connDat = this.stateTable.get(conn);
                         }
-                        //update state
-                        if (this.stateTable.containsKey(conn)) {
-                            this.updateStateDataTraffic(this.stateTable.get(conn));
+                        if(connDat != null) {
+                            //has appropriate connection data type
+                            //update state
+                            connDat.append(pkt);
+                            //forward packets to assembler / injector
+                            PcapPacket front = this.pollConnectionData(connDat);
+                            while(front != null) {
+                                if(this.outQueue != null) {
+                                    this.outQueue.add(front);
+                                }
+                                front = this.pollConnectionData(connDat);
+                            }
+                            //delete state
+                            if(connDat.isDone()) {
+                                this.stateTable.remove(conn);
+                            }
+                        } else {
+                            //no appropriate connection data type
+                            if(this.outQueue != null) {
+                                this.outQueue.add(pkt);
+                            }
                         }
-                        
-                    }
-                    if (this.outQueue != null) {
-                        //send output signal
-                        this.outQueue.add(pkt);
                     }
                 }
             }
         }
     }
 
-    protected abstract void updateStateDataTraffic(ConnectionData data);
+    private ConnectionData createConnectionData(PcapPacket pkt, Connection connection) {
+        if(pkt.hasHeader(new Tcp())) {
+            return new ConnectionDataTCP(connection, pkt.getCaptureHeader().timestampInNanos(), this.inbound);
+        }
+        if(pkt.hasHeader(new Udp())) {
+            Udp udp = pkt.getHeader(new Udp());
+            return this.udpPortConnectionDataType.get(udp.destination()).createInstance(connection, pkt.getCaptureHeader().timestampInNanos(), this.inbound);
+        }
+        return null;
+    }
+
+    private PcapPacket pollConnectionData(ConnectionData data) {
+        if(this.inbound ^ data.inbound) {
+            return data.pollFromDestination();
+        } else {
+            return data.pollFromSource();
+        }
+    }
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
@@ -95,7 +125,7 @@ public abstract class StateTracker extends Component {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
         if (this.outQueue != null) {
-            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.inQueue.size()));
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
