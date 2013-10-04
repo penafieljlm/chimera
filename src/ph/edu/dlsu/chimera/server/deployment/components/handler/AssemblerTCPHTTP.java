@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server.deployment.components.handler;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUHTTP;
 
 /**
@@ -18,38 +17,26 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
 
     public static String TOKEN_ATTR_CONTENT_LEN = "content-length:";
     public static String TOKEN_ATTR_VALUE_KEEP_ALIVE = "connection: keep-alive";
-    
     public static String TOKEN_DIV = "\r\n";
     public static String TOKEN_HEADER_END = AssemblerTCPHTTP.TOKEN_DIV + AssemblerTCPHTTP.TOKEN_DIV;
-
-    private final ConcurrentLinkedQueue<PcapPacket> httpPackets;
-
+    private ConcurrentLinkedQueue<PcapPacket> httpPackets;
     private StringBuilder headerBuilder;
     private StringBuilder bodyBuilder;
     private boolean headerOk;
     private boolean keepAlive;
     private int bodyLength;
-    private boolean done;
 
     public AssemblerTCPHTTP() {
-        this.httpPackets = new ConcurrentLinkedQueue<PcapPacket>();
-        this.headerBuilder = new StringBuilder();
-        this.bodyBuilder = new StringBuilder();
-        this.headerOk = false;
-        this.keepAlive = false;
-        this.bodyLength = -1;
-        this.done = false;
+        this.resetHttp();
     }
 
     @Override
-    protected boolean appendTCP(Tcp tcp, PcapPacket pkt) {
+    protected void appendTCP(Tcp tcp, PcapPacket pkt) {
         this.httpPackets.add(pkt);
-        if(super.appendTCP(tcp, pkt))
-            return true;
         String data = new String(tcp.getPayload());
-        if(!this.headerOk) {
+        if (!this.headerOk) {
             //build header
-            if(data.contains(AssemblerTCPHTTP.TOKEN_HEADER_END)) {
+            if (data.contains(AssemblerTCPHTTP.TOKEN_HEADER_END)) {
                 //end header and append body
                 this.headerOk = true;
                 int dataStart = data.indexOf(AssemblerTCPHTTP.TOKEN_HEADER_END) + AssemblerTCPHTTP.TOKEN_HEADER_END.length();
@@ -59,22 +46,23 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
                 this.bodyBuilder.append(body);
                 //determine content length
                 String okHeader = this.headerBuilder.toString().toLowerCase();
-                if(okHeader.contains(AssemblerTCPHTTP.TOKEN_ATTR_VALUE_KEEP_ALIVE)) {
+                if (okHeader.contains(AssemblerTCPHTTP.TOKEN_ATTR_VALUE_KEEP_ALIVE)) {
                     //is keep alive
                     this.keepAlive = true;
                     this.bodyLength = 0;
-                    if(okHeader.contains(AssemblerTCPHTTP.TOKEN_ATTR_CONTENT_LEN)) {
+                    if (okHeader.contains(AssemblerTCPHTTP.TOKEN_ATTR_CONTENT_LEN)) {
                         int lenStart = okHeader.indexOf(AssemblerTCPHTTP.TOKEN_ATTR_CONTENT_LEN) + AssemblerTCPHTTP.TOKEN_HEADER_END.length();
                         int lenEnd = okHeader.indexOf(AssemblerTCPHTTP.TOKEN_DIV, lenStart);
                         String contentLenAttr = okHeader.substring(lenStart, lenEnd);
                         contentLenAttr = contentLenAttr.trim();
                         try {
                             this.bodyLength = Integer.valueOf(contentLenAttr);
-                        } catch(NumberFormatException ex) {
+                        } catch (NumberFormatException ex) {
                         }
                     }
-                    if(this.bodyLength == 0)
-                        this.done = true;
+                    if (this.bodyLength == 0) {
+                        this.finishHttp();
+                    }
                 }
             } else {
                 //continue header
@@ -83,22 +71,18 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
         } else {
             //build body
             this.bodyBuilder.append(data);
-            if(this.keepAlive) {
+            if (this.keepAlive) {
                 //wait until body length reached
-                if(this.bodyBuilder.toString().length() >= this.bodyLength)
-                    this.done = true;
+                if (this.bodyBuilder.toString().length() >= this.bodyLength) {
+                    this.finishHttp();
+                }
             } else {
                 //wait until fin flag
-                if(tcp.flags_FIN())
-                    this.done = true;
+                if (tcp.flags_FIN()) {
+                    this.finishHttp();
+                }
             }
         }
-        return this.done;
-    }
-
-    @Override
-    public boolean isDone() {
-        return this.done;
     }
 
     @Override
@@ -106,12 +90,19 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
         return new AssemblerTCPHTTP();
     }
 
-    @Override
-    protected PDU internalPDUConstruct() {
-        if(this.isDone()) {
-            return new PDUHTTP(this.httpPackets, this.headerBuilder.toString(), this.bodyBuilder.toString());
-        }
-        return null;
+    private void resetHttp() {
+        this.httpPackets = new ConcurrentLinkedQueue<PcapPacket>();
+        this.headerBuilder = new StringBuilder();
+        this.bodyBuilder = new StringBuilder();
+        this.headerOk = false;
+        this.keepAlive = false;
+        this.bodyLength = -1;
+    }
+
+    private void finishHttp() {
+        PDUHTTP http = new PDUHTTP(this.httpPackets, this.headerBuilder.toString(), this.bodyBuilder.toString());
+        super.outputPDU(http);
+        this.resetHttp();
     }
     
 }

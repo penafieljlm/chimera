@@ -14,8 +14,8 @@ import org.jnetpcap.packet.PcapPacket;
  */
 public class PDUHTTP extends PDU {
 
-    private String header;
-    private String body;
+    public final String header;
+    public final String body;
 
     public PDUHTTP(ConcurrentLinkedQueue<PcapPacket> packets, String header, String body) {
         super(packets);

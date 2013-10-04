@@ -5,6 +5,7 @@
 
 package ph.edu.dlsu.chimera.server.deployment.components.handler;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
 
@@ -14,21 +15,26 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  */
 public abstract class Assembler {
 
-    public abstract boolean isDone();
+    private ConcurrentLinkedQueue<PDU> queue;
 
-    public abstract boolean appendPDU(PcapPacket segment);
-
-    public abstract boolean assemblePDU();
-
-    public PDU toPdu() {
-        if(this.isDone()) {
-            return this.internalPDUConstruct();
-        }
-        return null;
+    public Assembler() {
+        this.queue = new ConcurrentLinkedQueue<PDU>();
     }
+
+    public PDU poll() {
+        return this.queue.poll();
+    }
+
+    public int size() {
+        return this.queue.size();
+    }
+
+    public abstract boolean append(PcapPacket segment);
 
     public abstract Assembler copyHandlerType();
 
-    protected abstract PDU internalPDUConstruct();
+    protected void outputPDU(PDU pdu) {
+        this.queue.add(pdu);
+    }
     
 }

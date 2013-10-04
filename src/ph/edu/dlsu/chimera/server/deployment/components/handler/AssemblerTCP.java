@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.handler;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
@@ -22,40 +21,28 @@ public abstract class AssemblerTCP extends Assembler {
     }
 
     @Override
-    public boolean appendPDU(PcapPacket segment) {
+    public boolean append(PcapPacket segment) {
         if(segment.hasHeader(new Tcp())) {
             Tcp tcp = segment.getHeader(new Tcp());
             if(!this.packetSequence.contains(tcp)) {
-                return this.packetSequence.add(segment);
+                boolean result = this.packetSequence.add(segment);
+                PcapPacket latest = this.packetSequence.poll();
+                while(latest != null) {
+                    Tcp ltcp = latest.getHeader(new Tcp());
+                    this.appendTCP(ltcp, latest);
+                    latest = this.packetSequence.poll();
+                }
+                return result;
             }
-        }
-        return true;
-    }
-
-    @Override
-    public boolean assemblePDU() {
-        if(!this.isDone()) {
-            PcapPacket latest = this.packetSequence.poll();
-            while(latest != null) {
-                Tcp tcp = latest.getHeader(new Tcp());
-                this.appendTCP(tcp, latest);
-                if(this.isDone())
-                    return true;
-                latest = this.packetSequence.poll();
-            }
-            return false;
         }
         return true;
     }
 
     /**
-     * Only called when not done.
+     * Invoked when tcp packet received. Tcp packets are send to this method in order.
+     * @param tcp
      * @param pkt
-     * @return when done
      */
-    protected boolean appendTCP(Tcp tcp, PcapPacket pkt) {
-        this.packetSequence.add(pkt);
-        return this.isDone();
-    }
+    protected abstract void appendTCP(Tcp tcp, PcapPacket pkt);
     
 }

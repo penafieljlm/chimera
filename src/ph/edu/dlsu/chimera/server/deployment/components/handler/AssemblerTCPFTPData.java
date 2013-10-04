@@ -20,7 +20,7 @@ public class AssemblerTCPFTPData extends Assembler {
     }
 
     @Override
-    public boolean appendPDU(Packet segment) {
+    public boolean append(Packet segment) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
