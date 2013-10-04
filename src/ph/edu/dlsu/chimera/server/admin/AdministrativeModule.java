@@ -5,14 +5,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ph.edu.dlsu.chimera.server.Component;
+import ph.edu.dlsu.chimera.server.ComponentActive;
 import ph.edu.dlsu.chimera.server.Assembly;
 
 /**
  * An instance of this class constitutes a module which listens for connections creates handlers which handle those connections.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class AdministrativeModule extends Component {
+public class AdministrativeModule extends ComponentActive {
 
     /**
      * The port which this AdministrativeModule is running on.

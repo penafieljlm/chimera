@@ -4,49 +4,50 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Date;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.util.PacketTools;
+import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.server.IDiagnosable;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ConnectionData {
+public final class ConnectionData implements IDiagnosable {
 
-    public final Connection connection;
-    public final long timeCreated;
-    protected int inboundEncounters;
-    protected int outboundEncounters;
-    protected final boolean inbound;
+    public final long timeCreatedNanos; //nano
+    public final boolean inbound;
+    private int inboundEncounters;
+    private int outboundEncounters;
     private boolean done;
-    private byte srcfin; //0 - none; 1 - fin,ack; 2 - ack
-    private byte dstfin; //0 - none; 1 - fin,ack; 2 - ack
+    private byte inFin; //0 - none; 1 - fin,ack; 2 - ack
+    private byte outFin; //0 - none; 1 - fin,ack; 2 - ack
 
-    public ConnectionData(Connection connection, long timeCreated, boolean inbound) {
-        this.connection = connection;
-        this.timeCreated = timeCreated;
+    public ConnectionData(long timeCreatedNanos, boolean inbound) {
+        this.timeCreatedNanos = timeCreatedNanos;
+        this.inbound = inbound;
         this.inboundEncounters = 0;
         this.outboundEncounters = 0;
-        this.inbound = inbound;
         this.done = false;
-        this.srcfin = 0;
-        this.dstfin = 0;
+        this.inFin = 0;
+        this.outFin = 0;
     }
 
     /**
      * @return the length of time this TCPState has existed in milliseconds.
      */
-    public long getStateTime() {
+    public synchronized long getStateTime() {
         Date now = new Date();
-        return now.getTime() - this.timeCreated;
+        return now.getTime() - (this.timeCreatedNanos / 1000000);
     }
 
     /**
      * @return the inbound rate of this TCPState measured as packet per second.
      */
-    public double inboundRate() {
+    public synchronized double inboundRate() {
         double sec = this.getStateTime() / 1000;
         return this.inboundEncounters / sec;
     }
@@ -54,7 +55,7 @@ public class ConnectionData {
     /**
      * @return the outbound rate of this TCPState measured as packet per second.
      */
-    public double outboundRate() {
+    public synchronized double outboundRate() {
         double sec = this.getStateTime() / 1000;
         return this.outboundEncounters / sec;
     }
@@ -63,48 +64,48 @@ public class ConnectionData {
      * Updates the connection data based on the received packet.
      * @param pkt - the received packet.
      */
-    public void update(PcapPacket pkt) {
+    public synchronized void update(PcapPacket pkt, boolean inbound) {
         if (!this.done) {
             Tcp tcp = pkt.getHeader(new Tcp());
-            if (this.packetIsFromSource(pkt)) {
+            if (inbound) {
                 this.inboundEncounters++;
-                if(tcp.flags_ACK() && this.dstfin == 1) {
-                    this.dstfin = 2;
+                if(tcp.flags_ACK() && this.outFin == 1) {
+                    this.outFin = 2;
                 }
-                if (tcp.flags_FIN() && this.srcfin == 0) {
-                    this.srcfin = 1;
+                if (tcp.flags_FIN() && this.inFin == 0) {
+                    this.inFin = 1;
                 }
             } else {
                 this.outboundEncounters++;
-                if(tcp.flags_ACK() && this.srcfin == 1) {
-                    this.srcfin = 2;
+                if(tcp.flags_ACK() && this.inFin == 1) {
+                    this.inFin = 2;
                 }
-                if (tcp.flags_FIN() && this.dstfin == 0) {
-                    this.dstfin = 1;
+                if (tcp.flags_FIN() && this.outFin == 0) {
+                    this.outFin = 1;
                 }
             }
-            if (tcp.flags_RST() || (this.srcfin == 2 && this.dstfin == 2)) {
+            if (tcp.flags_RST() || (this.inFin == 2 && this.outFin == 2)) {
                 this.done = true;
             }
         }
     }
 
-    public boolean isDone() {
+    public synchronized boolean isDone() {
         return this.done;
     }
 
-    private boolean packetIsFromSource(PcapPacket pkt) {
-        Connection pconn = PacketTools.getConnection(pkt);
-        if (this.inbound) {
-            return this.connection.source.equals(pconn.source)
-                    && this.connection.destination.equals(pconn.destination)
-                    && this.connection.sourcePort == pconn.sourcePort
-                    && this.connection.destinationPort == pconn.destinationPort;
-        } else {
-            return this.connection.source.equals(pconn.destination)
-                    && this.connection.destination.equals(pconn.source)
-                    && this.connection.sourcePort == pconn.destinationPort
-                    && this.connection.destinationPort == pconn.sourcePort;
-        }
+    public synchronized ArrayList<Diagnostic> getDiagnostics() {
+        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
+        Date create = new java.sql.Date(this.timeCreatedNanos / 1000000);
+        diag.add(new Diagnostic("createtime", "Time Created", create.toLocaleString()));
+        diag.add(new Diagnostic("activetime", "Time Active", this.getStateTime() + "ms"));
+        diag.add(new Diagnostic("direction", "Direction", (this.inbound) ? "inbound" : "outbound"));
+        diag.add(new Diagnostic("inbound", "Inbound Packets Encountered", this.inboundEncounters));
+        diag.add(new Diagnostic("outbound", "Outbound Packets Encountered", this.outboundEncounters));
+        diag.add(new Diagnostic("inrate", "Inbound Traffic Rate", this.inboundRate()));
+        diag.add(new Diagnostic("outrate", "Outbound Traffic Rate", this.outboundRate()));
+        diag.add(new Diagnostic("done", "Connection Finished", this.done));
+        return diag;
     }
+
 }

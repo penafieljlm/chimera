@@ -30,13 +30,19 @@ public abstract class Deployment {
 
     public synchronized void killDeployment() {
         for(String k : this.components.keySet()) {
-            this.components.get(k).kill();
+            if(this.components.get(k) instanceof ComponentActive) {
+                ComponentActive ca = (ComponentActive) this.components.get(k);
+                ca.kill();
+            }
         }
     }
 
     protected void startDeployment() {
         for(String k : this.components.keySet()) {
-            this.components.get(k).start();
+            if(this.components.get(k) instanceof ComponentActive) {
+                ComponentActive ca = (ComponentActive) this.components.get(k);
+                ca.start();
+            }
         }
     }
 

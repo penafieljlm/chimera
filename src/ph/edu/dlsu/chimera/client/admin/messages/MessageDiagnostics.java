@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.client.admin.messages;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
@@ -33,13 +33,24 @@ public class MessageDiagnostics implements ClientShellMessage {
      * @return the appropriate response ServerMessage object.
      */
     public ServerMessage handleShellMessage(PrintStream outStream) {
-        if(this.diagnostics == null)
+        if (this.diagnostics == null) {
             outStream.println("The component: '" + this.componentName + "' was not found or is not active!");
-        outStream.println("Diagnostics: " + this.componentName);
-        for(Diagnostic diag : this.diagnostics) {
-            outStream.println("    " + diag.getName() + " : " + diag.getValue());
         }
+        outStream.println("Diagnostics: " + this.componentName);
+        this.handleDiagsShell(outStream, this.diagnostics, "    ");
         return new MessageFinished();
     }
 
+    private void handleDiagsShell(PrintStream outStream, List diags, String prefix) {
+        for (Object o : diags) {
+            if (o instanceof Diagnostic) {
+                Diagnostic diag = (Diagnostic) o;
+                if (diag.getValue() instanceof List) {
+                    this.handleDiagsShell(outStream, (List<Diagnostic>) diag.getValue(), prefix + "    ");
+                } else {
+                    outStream.println(prefix + diag.getName() + " : " + diag.getValue());
+                }
+            }
+        }
+    }
 }

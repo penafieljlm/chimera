@@ -4,25 +4,25 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import java.util.ArrayList;
 
 /**
- * An instance of this class constitutes a Component which runs on its own separate Thread.
+ * An instance of this class constitutes a ComponentActive which runs on its own separate Thread.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class Component extends Thread {
+public abstract class ComponentActive extends Thread implements Component {
 
     /**
      * The assembly which this component is a member of.
      */
     public final Assembly assembly;
     /**
-     * Flags whether or not the Component object is running.
+     * Flags whether or not the ComponentActive object is running.
      */
     protected boolean running;
 
     /**
-     * Constructs a new Component object.
+     * Constructs a new ComponentActive object.
      * @param assembly - the assembly which this component is a member of.
      */
-    public Component(Assembly assembly) {
+    public ComponentActive(Assembly assembly) {
         this.assembly = assembly;
         this.running = false;
     }
@@ -35,7 +35,7 @@ public abstract class Component extends Thread {
     }
 
     /**
-     * @return a report on the current state of the Component object.
+     * @return a report on the current state of the ComponentActive object.
      */
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();

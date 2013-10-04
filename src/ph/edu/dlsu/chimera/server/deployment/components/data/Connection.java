@@ -15,16 +15,16 @@ import org.jnetpcap.protocol.tcpip.Udp;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class Connection {
+public final class Connection {
 
     public final InetAddress source;
     public final int sourcePort;
     public final InetAddress destination;
     public final int destinationPort;
 
-    public Connection(InetAddress sourceIP, int sourcePort, InetAddress destinationIP, int destinationPort) {
-        this.source = sourceIP;
-        this.destination = destinationIP;
+    public Connection(InetAddress source, int sourcePort, InetAddress destination, int destinationPort) {
+        this.source = source;
+        this.destination = destination;
         this.sourcePort = sourcePort;
         this.destinationPort = destinationPort;
     }
@@ -34,8 +34,7 @@ public class Connection {
                 InetAddress.getByAddress(ip4.source()),
                 tcp.source(),
                 InetAddress.getByAddress(ip4.destination()),
-                tcp.destination()
-            );
+                tcp.destination());
     }
 
     public Connection(Ip4 ip4, Udp udp) throws UnknownHostException {
@@ -43,8 +42,7 @@ public class Connection {
                 InetAddress.getByAddress(ip4.source()),
                 udp.source(),
                 InetAddress.getByAddress(ip4.destination()),
-                udp.destination()
-            );
+                udp.destination());
     }
 
     public Connection(Ip6 ip6, Tcp tcp) throws UnknownHostException {
@@ -52,8 +50,7 @@ public class Connection {
                 InetAddress.getByAddress(ip6.source()),
                 tcp.source(),
                 InetAddress.getByAddress(ip6.destination()),
-                tcp.destination()
-            );
+                tcp.destination());
     }
 
     public Connection(Ip6 ip6, Udp udp) throws UnknownHostException {
@@ -61,26 +58,25 @@ public class Connection {
                 InetAddress.getByAddress(ip6.source()),
                 udp.source(),
                 InetAddress.getByAddress(ip6.destination()),
-                udp.destination()
-            );
+                udp.destination());
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Connection))
+    public synchronized boolean equals(Object obj) {
+        if (!(obj instanceof Connection)) {
             return false;
+        }
 
         Connection con = (Connection) obj;
 
-        return ((con.source.equals(this.source)) && (con.sourcePort == this.sourcePort) && (con.destination.equals(this.destination)) && (con.destinationPort == this.destinationPort)) ||
-                ((con.source.equals(this.destination)) && (con.sourcePort == this.destinationPort) && (con.destination.equals(this.source)) && (con.destinationPort == this.sourcePort));
+        return ((con.source.equals(this.source)) && (con.sourcePort == this.sourcePort) && (con.destination.equals(this.destination)) && (con.destinationPort == this.destinationPort))
+                || ((con.source.equals(this.destination)) && (con.sourcePort == this.destinationPort) && (con.destination.equals(this.source)) && (con.destinationPort == this.sourcePort));
 
     }
 
     @Override
-    public int hashCode() {
-        return ((source.hashCode() ^ sourcePort) ^
-                ((destination.hashCode() ^ destinationPort)));
+    public synchronized int hashCode() {
+        return ((source.hashCode() ^ sourcePort)
+                ^ ((destination.hashCode() ^ destinationPort)));
     }
-    
 }

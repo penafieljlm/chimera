@@ -6,46 +6,44 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapDumper;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.lan.Ethernet;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.Component;
+import ph.edu.dlsu.chimera.server.ComponentActive;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class Injector extends Component {
+public final class Injector extends ComponentActive {
 
-    public final String device;
-    protected final ConcurrentLinkedQueue<PcapPacket> inQueue;
-    protected Pcap pcap;
+    public final ConcurrentLinkedQueue<PcapPacket> inQueue;
+    public final Pcap outPcap;
+    public final PcapDumper dumpPcap;
 
-    public Injector(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue, String device) {
+    public Injector(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue, Pcap outPcap, PcapDumper dumpPcap) {
         super(assembly);
-        this.device = device;
         this.inQueue = inQueue;
+        this.outPcap = outPcap;
+        this.dumpPcap = dumpPcap;
     }
 
     @Override
     protected void componentRun() {
-        this.open();
         while (super.running) {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PcapPacket front = this.inQueue.poll();
-                    this.send(front);
+                    if (this.outPcap != null) {
+                        this.outPcap.sendPacket(front.getHeader(new Ethernet()));
+                    }
+                    if (this.dumpPcap != null) {
+                        this.dumpPcap.dump(front.getCaptureHeader(), front.getHeader(new Ethernet()));
+                    }
                 }
             }
         }
-    }
-
-    protected void open() {
-        this.pcap = Pcap.openLive(device, Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, null);
-    }
-
-    protected void send(PcapPacket pkt) {
-        this.pcap.sendPacket(pkt.getHeader(new Ethernet()));
     }
 }

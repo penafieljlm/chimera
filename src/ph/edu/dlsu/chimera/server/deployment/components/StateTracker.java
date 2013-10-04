@@ -13,19 +13,19 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.Component;
+import ph.edu.dlsu.chimera.server.ComponentActive;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class StateTracker extends Component {
+public final class StateTracker extends ComponentActive {
 
     public final boolean inbound;
-    private final ConcurrentHashMap<Connection, ConnectionData> stateTable;
-    private final ConcurrentLinkedQueue<PcapPacket> inQueue;
-    private final ConcurrentLinkedQueue<PcapPacket> outQueue;
+    public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
+    public final ConcurrentLinkedQueue<PcapPacket> inQueue;
+    public final ConcurrentLinkedQueue<PcapPacket> outQueue;
 
     public StateTracker(Assembly assembly,
             ConcurrentLinkedQueue<PcapPacket> inQueue,
@@ -53,14 +53,14 @@ public abstract class StateTracker extends Component {
                         //create state
                         if (!this.stateTable.containsKey(conn)) {
                             if (tcp.flags_SYN()) {
-                                this.stateTable.put(conn, new ConnectionData(conn, pkt.getCaptureHeader().timestampInMillis(), this.inbound));
+                                this.stateTable.put(conn, new ConnectionData(pkt.getCaptureHeader().timestampInNanos(), this.inbound));
                             }
                         }
                         if (this.stateTable.containsKey(conn)) {
                             //update state
-                            this.updateStateDataTraffic(this.stateTable.get(conn));
+                            this.stateTable.get(conn).update(pkt, this.inbound);
                             //delete state
-                            if(this.stateTable.get(conn).isDone()) {
+                            if (this.stateTable.get(conn).isDone()) {
                                 this.stateTable.remove(conn);
                             }
                             //forward
@@ -78,8 +78,6 @@ public abstract class StateTracker extends Component {
             }
         }
     }
-
-    protected abstract void updateStateDataTraffic(ConnectionData data);
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
