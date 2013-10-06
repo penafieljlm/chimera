@@ -6,6 +6,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
 
 /**
@@ -19,5 +20,7 @@ public abstract class PDU {
     public PDU(ConcurrentLinkedQueue<PcapPacket> packets) {
         this.packets = packets;
     }
+
+    public abstract void transmit(Pcap pcapsend);
 
 }

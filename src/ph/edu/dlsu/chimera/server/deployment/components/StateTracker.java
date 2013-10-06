@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.core.Packet;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
@@ -24,12 +25,12 @@ public final class StateTracker extends ComponentActive {
 
     public final boolean inbound;
     public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
-    public final ConcurrentLinkedQueue<PcapPacket> inQueue;
-    public final ConcurrentLinkedQueue<PcapPacket> outQueue;
+    public final ConcurrentLinkedQueue<Packet> inQueue;
+    public final ConcurrentLinkedQueue<Packet> outQueue;
 
     public StateTracker(Assembly assembly,
-            ConcurrentLinkedQueue<PcapPacket> inQueue,
-            ConcurrentLinkedQueue<PcapPacket> outQueue,
+            ConcurrentLinkedQueue<Packet> inQueue,
+            ConcurrentLinkedQueue<Packet> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
             boolean inbound) {
         super(assembly);
@@ -45,20 +46,20 @@ public final class StateTracker extends ComponentActive {
             if (this.inQueue != null && this.stateTable != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
-                    PcapPacket pkt = this.inQueue.poll();
-                    if (pkt.hasHeader(new Tcp())) {
+                    Packet pkt = this.inQueue.poll();
+                    if (pkt.packet.hasHeader(new Tcp())) {
                         //tcp packets
-                        Connection conn = PacketTools.getConnection(pkt);
-                        Tcp tcp = pkt.getHeader(new Tcp());
+                        Connection conn = PacketTools.getConnection(pkt.packet);
+                        Tcp tcp = pkt.packet.getHeader(new Tcp());
                         //create state
                         if (!this.stateTable.containsKey(conn)) {
                             if (tcp.flags_SYN()) {
-                                this.stateTable.put(conn, new ConnectionData(pkt.getCaptureHeader().timestampInNanos(), this.inbound));
+                                this.stateTable.put(conn, new ConnectionData(pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
                             }
                         }
                         if (this.stateTable.containsKey(conn)) {
                             //update state
-                            this.stateTable.get(conn).update(pkt, this.inbound);
+                            this.stateTable.get(conn).update(pkt.packet, this.inbound);
                             //delete state
                             if (this.stateTable.get(conn).isDone()) {
                                 this.stateTable.remove(conn);

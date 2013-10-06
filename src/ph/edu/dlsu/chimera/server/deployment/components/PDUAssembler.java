@@ -7,6 +7,7 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
+import ph.edu.dlsu.chimera.core.Packet;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.ComponentActive;
 import ph.edu.dlsu.chimera.server.deployment.components.handler.Assembler;
@@ -19,11 +20,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
  */
 public final class PDUAssembler extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PcapPacket> inQueue;
+    public final ConcurrentLinkedQueue<Packet> inQueue;
     public final ConcurrentLinkedQueue<PDU> outQueue;
     public final ConcurrentHashMap<Connection, Assembler> streamTable;
 
-    public PDUAssembler(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue, ConcurrentLinkedQueue<PDU> outQueue) {
+    public PDUAssembler(Assembly assembly, ConcurrentLinkedQueue<Packet> inQueue, ConcurrentLinkedQueue<PDU> outQueue) {
         super(assembly);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
@@ -35,7 +36,7 @@ public final class PDUAssembler extends ComponentActive {
         while (super.running) {
             if (this.inQueue != null) {
                 //poll packet
-                PcapPacket pkt = this.inQueue.poll();
+                Packet pkt = this.inQueue.poll();
                 //
             }
         }

@@ -14,18 +14,19 @@ import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.ComponentActive;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.core.Packet;
 
 /**
  * 
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Sniffer extends ComponentActive implements PcapPacketHandler<String> {
+public final class Sniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
 
-    public final ConcurrentLinkedQueue<PcapPacket> outQueue;
+    public final ConcurrentLinkedQueue<Packet> outQueue;
     public final Pcap inPcap;
     public int received;
 
-    public Sniffer(Assembly assembly, Pcap inPcap, ConcurrentLinkedQueue<PcapPacket> outQueue) {
+    public Sniffer(Assembly assembly, Pcap inPcap, ConcurrentLinkedQueue<Packet> outQueue) {
         super(assembly);
         this.outQueue = outQueue;
         this.received = 0;
@@ -35,7 +36,7 @@ public final class Sniffer extends ComponentActive implements PcapPacketHandler<
     @Override
     public void componentRun() {
         try {
-            switch (this.inPcap.loop(-1, this, "")) {
+            switch (this.inPcap.loop(-1, this, this.inPcap)) {
                 case 0:
                     //count exhausted
                     break;
@@ -52,10 +53,10 @@ public final class Sniffer extends ComponentActive implements PcapPacketHandler<
         }
     }
 
-    public void nextPacket(PcapPacket pp, String t) {
+    public void nextPacket(PcapPacket pp, Pcap t) {
         this.received++;
         if (this.outQueue != null) {
-            this.outQueue.add(pp);
+            this.outQueue.add(new Packet(t, pp));
         }
     }
 
