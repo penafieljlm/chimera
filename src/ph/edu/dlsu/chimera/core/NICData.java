@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.core;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jnetpcap.PcapIf;
@@ -20,7 +20,7 @@ public final class NICData implements Serializable {
     public final String name;
     public final String description;
     public final String hardwareAddress;
-    public final NICDataAddress[] addresses;
+    public final ArrayList<NICDataAddress> addresses;
 
     public NICData(PcapIf pcapif) {
         this.name = pcapif.getName();
@@ -38,10 +38,9 @@ public final class NICData implements Serializable {
             Logger.getLogger(NICData.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.hardwareAddress = sb.toString();
-        this.addresses = new NICDataAddress[pcapif.getAddresses().size()];
-        for(int i = 0 ; i < pcapif.getAddresses().size() ; i++) {
-            this.addresses[0] = new NICDataAddress(pcapif.getAddresses().get(i));
+        this.addresses = new ArrayList<NICDataAddress>();
+        for (int i = 0; i < pcapif.getAddresses().size(); i++) {
+            this.addresses.add(new NICDataAddress(pcapif.getAddresses().get(i)));
         }
     }
-
 }

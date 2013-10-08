@@ -2,6 +2,7 @@ package ph.edu.dlsu.chimera.client;
 
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import org.jnetpcap.Pcap;
 import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.client.admin.Command;
 

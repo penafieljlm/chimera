@@ -29,23 +29,23 @@ public abstract class PacketTools {
         try {
             if (pkt.hasHeader(new Tcp())) {
                 Tcp tcp = pkt.getHeader(new Tcp());
-                if (tcp.getParent() instanceof Ip4) {
-                    Ip4 ip = (Ip4) tcp.getParent();
+                if (pkt.hasHeader(new Ip4())) {
+                    Ip4 ip = pkt.getHeader(new Ip4());
                     return new Connection(ip, tcp);
                 }
-                if (tcp.getParent() instanceof Ip6) {
-                    Ip6 ip = (Ip6) tcp.getParent();
+                if (pkt.hasHeader(new Ip6())) {
+                    Ip6 ip = pkt.getHeader(new Ip6());
                     return new Connection(ip, tcp);
                 }
             }
             if (pkt.hasHeader(new Udp())) {
                 Udp udp = pkt.getHeader(new Udp());
-                if (udp.getParent() instanceof Ip4) {
-                    Ip4 ip = (Ip4) udp.getParent();
+                if (pkt.hasHeader(new Ip4())) {
+                    Ip4 ip = pkt.getHeader(new Ip4());
                     return new Connection(ip, udp);
                 }
-                if (udp.getParent() instanceof Ip6) {
-                    Ip6 ip = (Ip6) udp.getParent();
+                if (pkt.hasHeader(new Ip6())) {
+                    Ip6 ip = pkt.getHeader(new Ip6());
                     return new Connection(ip, udp);
                 }
             }
@@ -133,5 +133,4 @@ public abstract class PacketTools {
         jp.scan(Ethernet.ID);
         return jp;
     }
-    
 }

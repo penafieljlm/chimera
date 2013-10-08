@@ -51,7 +51,7 @@ public final class ComponentStateTracker extends ComponentActive {
                         Tcp tcp = pkt.packet.getHeader(new Tcp());
                         //create state
                         if (!this.stateTable.containsKey(conn)) {
-                            if (tcp.flags_SYN()) {
+                            if (tcp.flags_SYN() && !tcp.flags_ACK()) {
                                 this.stateTable.put(conn, new ConnectionData(pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
                             }
                         }
@@ -93,7 +93,7 @@ public final class ComponentStateTracker extends ComponentActive {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
         if (this.outQueue != null) {
-            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.inQueue.size()));
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }

@@ -2,12 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.Date;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.tcpip.Tcp;
 
 /**
  *
@@ -55,6 +55,12 @@ public class PDUAtomic extends PDU {
         return lnow - this.lastSentTimeNano;
     }
 
-    
-
+    @Override
+    public String printDebug() {
+        if(this.packet.hasHeader(new Tcp())) {
+            Tcp tcp = this.packet.getHeader(new Tcp());
+            return "==TCP==\n" + new String(tcp.getPayload());
+        }
+        return super.printDebug();
+    }
 }

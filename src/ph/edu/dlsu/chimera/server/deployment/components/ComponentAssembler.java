@@ -4,10 +4,12 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
+import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
@@ -58,12 +60,12 @@ public final class ComponentAssembler extends ComponentActive {
                         //tcp forward
                         if (pkt.packet.hasHeader(new Tcp())) {
                             this.handleTcp(pkt);
-                            return;
+                            continue;
                         }
                         //default forward
                         if (this.outQueue != null) {
                             this.outQueue.add(pkt);
-                            return;
+                            continue;
                         }
                     }
                 }
@@ -98,5 +100,31 @@ public final class ComponentAssembler extends ComponentActive {
                 }
             }
         }
+    }
+
+    @Override
+    public synchronized ArrayList<Diagnostic> getDiagnostics() {
+        ArrayList<Diagnostic> diag = super.getDiagnostics();
+        if (this.tcpAssemblerTable != null) {
+            diag.add(new Diagnostic("tcpqueues", "TCP Assembler in Deployment", this.tcpAssemblerTable.size()));
+        } else {
+            diag.add(new Diagnostic("tcpqueues", "TCP Assembler in Deployment", "N/A"));
+        }
+        if (this.udpAssemblerTable != null) {
+            diag.add(new Diagnostic("udpqueues", "UDP Assembler in Deployment", this.udpAssemblerTable.size()));
+        } else {
+            diag.add(new Diagnostic("udpqueues", "UDP Assembler in Deployment", "N/A"));
+        }
+        if (this.inQueue != null) {
+            diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
+        } else {
+            diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
+        }
+        if (this.outQueue != null) {
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
+        } else {
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
+        }
+        return diag;
     }
 }

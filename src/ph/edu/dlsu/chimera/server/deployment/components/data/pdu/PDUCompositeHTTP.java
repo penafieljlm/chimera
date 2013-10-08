@@ -5,7 +5,6 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.jnetpcap.packet.PcapPacket;
 
 /**
  *

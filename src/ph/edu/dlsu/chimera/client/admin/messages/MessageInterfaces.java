@@ -7,8 +7,6 @@ package ph.edu.dlsu.chimera.client.admin.messages;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.core.NICData;
 import ph.edu.dlsu.chimera.core.NICDataAddress;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
@@ -33,15 +31,20 @@ public class MessageInterfaces implements ClientShellMessage {
      */
     public ServerMessage handleShellMessage(PrintStream outStream) {
         outStream.println("CHIMERA Network Interfaces:");
+        int intctr = 0;
         for(NICData nic : this.interfaces) {
-            outStream.println("    " + nic.name);
-            outStream.println("        Description: " + nic.description);
-            outStream.println("   Hardware Address: " + nic.hardwareAddress);
+            outStream.println("\nInterface................ " + ++intctr);
+            outStream.println("    Name................. " + nic.name);
+            outStream.println("    Description.......... " + nic.description);
+            outStream.println("    Hardware Address..... " + nic.hardwareAddress);
+            int addrctr = 0;
             for(NICDataAddress addr : nic.addresses) {
-                outStream.println("         IP Address: " + addr.address);
-                outStream.println("        Subnet Mask: " + addr.netmask);
+                outStream.println("        Interface Address " + ++addrctr);
+                outStream.println("            IP Address... " + addr.address);
+                outStream.println("            Subnet Mask.. " + addr.netmask);
             }
         }
+        outStream.println();
         return new MessageFinished();
     }
 

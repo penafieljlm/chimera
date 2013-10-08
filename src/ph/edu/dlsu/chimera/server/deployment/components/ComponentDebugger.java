@@ -31,7 +31,7 @@ public class ComponentDebugger extends ComponentActive {
             if(this.inQueue != null) {
                 while(!this.inQueue.isEmpty()) {
                     PDU pkt = this.inQueue.poll();
-                    System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=\n" + pkt.printDebug());
+                    System.out.println(pkt.printDebug());
                     if(this.outQueue != null) {
                         this.outQueue.add(pkt);
                     }

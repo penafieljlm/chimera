@@ -4,12 +4,9 @@
  */
 package ph.edu.dlsu.chimera.server.admin.messages;
 
-import java.math.BigInteger;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapAddr;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageInterfaces;

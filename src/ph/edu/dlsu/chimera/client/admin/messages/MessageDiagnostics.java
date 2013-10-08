@@ -7,8 +7,6 @@ package ph.edu.dlsu.chimera.client.admin.messages;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
@@ -46,6 +44,7 @@ public class MessageDiagnostics implements ClientShellMessage {
             if (o instanceof Diagnostic) {
                 Diagnostic diag = (Diagnostic) o;
                 if (diag.getValue() instanceof List) {
+                    outStream.println(prefix + diag.getName() + " : ");
                     this.handleDiagsShell(outStream, (List<Diagnostic>) diag.getValue(), prefix + "    ");
                 } else {
                     outStream.println(prefix + diag.getName() + " : " + diag.getValue());
