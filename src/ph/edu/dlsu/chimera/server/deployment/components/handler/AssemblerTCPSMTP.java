@@ -10,8 +10,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUSMTP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUComposite;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUCompositeSMTP;
 
 /**
  *
@@ -23,7 +24,7 @@ public final class AssemblerTCPSMTP extends AssemblerTCP {
     public static String TOKEN_CMD_DATA = "DATA";
     public static String TOKEN_DAT_END = AssemblerTCPSMTP.TOKEN_END + "." + AssemblerTCPSMTP.TOKEN_END;
 
-    private ConcurrentLinkedQueue<PcapPacket> smtpPackets;
+    private ConcurrentLinkedQueue<PDUAtomic> smtpPackets;
     private StringBuilder messageBuilder;
     private boolean dataOpen;
     private boolean expectingCmd;
@@ -33,7 +34,7 @@ public final class AssemblerTCPSMTP extends AssemblerTCP {
     }
 
     @Override
-    protected void appendTCP(Tcp tcp, PcapPacket pkt) {
+    protected void appendTCP(Tcp tcp, PDUAtomic pkt) {
         this.smtpPackets.add(pkt);
         String data = new String(tcp.getPayload());
         if(!this.dataOpen && !this.expectingCmd) {
@@ -64,19 +65,19 @@ public final class AssemblerTCPSMTP extends AssemblerTCP {
     }
 
     @Override
-    public Assembler copyHandlerType() {
+    public Assembler copyAssemblerType() {
         return new AssemblerTCPSMTP();
     }
 
     private void resetSmtp() {
-        this.smtpPackets = new ConcurrentLinkedQueue<PcapPacket>();
+        this.smtpPackets = new ConcurrentLinkedQueue<PDUAtomic>();
         this.messageBuilder = new StringBuilder();
         this.dataOpen = false;
         this.expectingCmd = false;
     }
 
     private void finishSmtp() {
-        PDUSMTP http = new PDUSMTP(this.smtpPackets, this.messageBuilder.toString(), !this.dataOpen);
+        PDUCompositeSMTP http = new PDUCompositeSMTP(this.smtpPackets, this.messageBuilder.toString(), !this.dataOpen);
         super.outputPDU(http);
         this.resetSmtp();
     }

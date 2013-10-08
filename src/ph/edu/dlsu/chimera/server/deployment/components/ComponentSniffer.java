@@ -14,20 +14,22 @@ import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.ComponentActive;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.core.Packet;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 
 /**
  * 
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Sniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
+public final class ComponentSniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
 
-    public final ConcurrentLinkedQueue<Packet> outQueue;
+    public final boolean inbound;
+    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
     public final Pcap inPcap;
     public int received;
 
-    public Sniffer(Assembly assembly, Pcap inPcap, ConcurrentLinkedQueue<Packet> outQueue) {
+    public ComponentSniffer(Assembly assembly, Pcap inPcap, ConcurrentLinkedQueue<PDUAtomic> outQueue, boolean inbound) {
         super(assembly);
+        this.inbound = inbound;
         this.outQueue = outQueue;
         this.received = 0;
         this.inPcap = inPcap;
@@ -49,14 +51,14 @@ public final class Sniffer extends ComponentActive implements PcapPacketHandler<
             }
             this.inPcap.close();
         } catch (Exception ex) {
-            Logger.getLogger(Sniffer.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ComponentSniffer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public void nextPacket(PcapPacket pp, Pcap t) {
         this.received++;
         if (this.outQueue != null) {
-            this.outQueue.add(new Packet(t, pp));
+            this.outQueue.add(new PDUAtomic(t, pp, this.inbound));
         }
     }
 

@@ -7,7 +7,8 @@ package ph.edu.dlsu.chimera.server.deployment.components.handler;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUHTTP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUCompositeHTTP;
 
 /**
  *
@@ -19,7 +20,7 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
     public static String TOKEN_ATTR_VALUE_KEEP_ALIVE = "connection: keep-alive";
     public static String TOKEN_DIV = "\r\n";
     public static String TOKEN_HEADER_END = AssemblerTCPHTTP.TOKEN_DIV + AssemblerTCPHTTP.TOKEN_DIV;
-    private ConcurrentLinkedQueue<PcapPacket> httpPackets;
+    private ConcurrentLinkedQueue<PDUAtomic> httpPackets;
     private StringBuilder headerBuilder;
     private StringBuilder bodyBuilder;
     private boolean headerOk;
@@ -31,7 +32,7 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
     }
 
     @Override
-    protected void appendTCP(Tcp tcp, PcapPacket pkt) {
+    protected void appendTCP(Tcp tcp, PDUAtomic pkt) {
         this.httpPackets.add(pkt);
         String data = new String(tcp.getPayload());
         if (!this.headerOk) {
@@ -86,12 +87,12 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
     }
 
     @Override
-    public Assembler copyHandlerType() {
+    public Assembler copyAssemblerType() {
         return new AssemblerTCPHTTP();
     }
 
     private void resetHttp() {
-        this.httpPackets = new ConcurrentLinkedQueue<PcapPacket>();
+        this.httpPackets = new ConcurrentLinkedQueue<PDUAtomic>();
         this.headerBuilder = new StringBuilder();
         this.bodyBuilder = new StringBuilder();
         this.headerOk = false;
@@ -100,7 +101,7 @@ public final class AssemblerTCPHTTP extends AssemblerTCP {
     }
 
     private void finishHttp() {
-        PDUHTTP http = new PDUHTTP(this.httpPackets, this.headerBuilder.toString(), this.bodyBuilder.toString());
+        PDUCompositeHTTP http = new PDUCompositeHTTP(this.httpPackets, this.headerBuilder.toString(), this.bodyBuilder.toString());
         super.outputPDU(http);
         this.resetHttp();
     }

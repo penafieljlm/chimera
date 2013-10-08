@@ -12,15 +12,15 @@ import org.jnetpcap.packet.PcapPacket;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class PDUSMTP extends PDU {
+public class PDUCompositeHTTP extends PDUComposite {
 
-    public final boolean isCommand;
-    public final String smtp;
+    public final String header;
+    public final String body;
 
-    public PDUSMTP(ConcurrentLinkedQueue<PcapPacket> packets, String smtp, boolean isCommand) {
+    public PDUCompositeHTTP(ConcurrentLinkedQueue<PDUAtomic> packets, String header, String body) {
         super(packets);
-        this.isCommand = isCommand;
-        this.smtp = smtp;
+        this.header = header;
+        this.body = body;
     }
 
 }

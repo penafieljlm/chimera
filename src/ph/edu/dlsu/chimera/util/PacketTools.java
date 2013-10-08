@@ -16,7 +16,7 @@ import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.network.Ip6;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
-import ph.edu.dlsu.chimera.server.deployment.components.StateTracker;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 
 /**
@@ -50,7 +50,7 @@ public abstract class PacketTools {
                 }
             }
         } catch (UnknownHostException ex) {
-            Logger.getLogger(StateTracker.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ComponentStateTracker.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

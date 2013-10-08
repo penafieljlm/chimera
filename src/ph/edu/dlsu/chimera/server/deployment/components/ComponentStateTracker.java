@@ -7,10 +7,9 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.core.Packet;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
@@ -21,16 +20,16 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class StateTracker extends ComponentActive {
+public final class ComponentStateTracker extends ComponentActive {
 
     public final boolean inbound;
     public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
-    public final ConcurrentLinkedQueue<Packet> inQueue;
-    public final ConcurrentLinkedQueue<Packet> outQueue;
+    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
 
-    public StateTracker(Assembly assembly,
-            ConcurrentLinkedQueue<Packet> inQueue,
-            ConcurrentLinkedQueue<Packet> outQueue,
+    public ComponentStateTracker(Assembly assembly,
+            ConcurrentLinkedQueue<PDUAtomic> inQueue,
+            ConcurrentLinkedQueue<PDUAtomic> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
             boolean inbound) {
         super(assembly);
@@ -46,7 +45,7 @@ public final class StateTracker extends ComponentActive {
             if (this.inQueue != null && this.stateTable != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
-                    Packet pkt = this.inQueue.poll();
+                    PDUAtomic pkt = this.inQueue.poll();
                     if (pkt.packet.hasHeader(new Tcp())) {
                         //tcp packets
                         Connection conn = PacketTools.getConnection(pkt.packet);
@@ -58,15 +57,20 @@ public final class StateTracker extends ComponentActive {
                             }
                         }
                         if (this.stateTable.containsKey(conn)) {
+                            ConnectionData conndat = this.stateTable.get(conn);
                             //update state
-                            this.stateTable.get(conn).update(pkt.packet, this.inbound);
-                            //delete state
-                            if (this.stateTable.get(conn).isDone()) {
+                            conndat.update(pkt);
+                            //attempt to delete state
+                            if (conndat.isDone()) {
                                 this.stateTable.remove(conn);
                             }
                             //forward
                             if (this.outQueue != null) {
-                                this.outQueue.add(pkt);
+                                PDUAtomic forward = conndat.inQueue.poll();
+                                while (forward != null) {
+                                    this.outQueue.add(forward);
+                                    forward = conndat.inQueue.poll();
+                                }
                             }
                         }
                     } else {

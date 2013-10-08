@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.handler;
 
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 
 /**
  *
@@ -14,26 +14,15 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.TCPPacketSequence;
  */
 public abstract class AssemblerTCP extends Assembler {
 
-    private TCPPacketSequence packetSequence;
-
     public AssemblerTCP() {
-        this.packetSequence = new TCPPacketSequence();
     }
 
     @Override
-    public boolean append(PcapPacket segment) {
-        if(segment.hasHeader(new Tcp())) {
-            Tcp tcp = segment.getHeader(new Tcp());
-            if(!this.packetSequence.contains(tcp)) {
-                boolean result = this.packetSequence.add(segment);
-                PcapPacket latest = this.packetSequence.poll();
-                while(latest != null) {
-                    Tcp ltcp = latest.getHeader(new Tcp());
-                    this.appendTCP(ltcp, latest);
-                    latest = this.packetSequence.poll();
-                }
-                return result;
-            }
+    public boolean append(PDUAtomic segment) {
+        //will receive tcp packets in order
+        if(segment.packet.hasHeader(new Tcp())) {
+            Tcp tcp = segment.packet.getHeader(new Tcp());
+            this.appendTCP(tcp, segment);
         }
         return true;
     }
@@ -43,6 +32,6 @@ public abstract class AssemblerTCP extends Assembler {
      * @param tcp
      * @param pkt
      */
-    protected abstract void appendTCP(Tcp tcp, PcapPacket pkt);
-    
+    protected abstract void appendTCP(Tcp tcp, PDUAtomic pkt);
+
 }

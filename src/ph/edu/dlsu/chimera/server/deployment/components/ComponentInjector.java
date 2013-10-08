@@ -16,13 +16,13 @@ import ph.edu.dlsu.chimera.server.ComponentActive;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Injector extends ComponentActive {
+public final class ComponentInjector extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PcapPacket> inQueue;
     public final Pcap outPcap;
     public final PcapDumper dumpPcap;
 
-    public Injector(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue, Pcap outPcap, PcapDumper dumpPcap) {
+    public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PcapPacket> inQueue, Pcap outPcap, PcapDumper dumpPcap) {
         super(assembly);
         this.inQueue = inQueue;
         this.outPcap = outPcap;
