@@ -79,7 +79,10 @@ public final class ComponentAssembler extends ComponentActive {
                 Connection conn = PacketTools.getConnection(pkt.packet);
                 if (!this.tcpAssemblerTable.contains(conn)) {
                     //create assembler
-                    this.tcpAssemblerTable.put(conn, (AssemblerTCP) this.tcpPortProtocolLookup.get(conn.destinationPort).copyAssemblerType());
+                    AssemblerTCP asm = this.tcpPortProtocolLookup.get(conn.destinationPort);
+                    if (asm != null) {
+                        this.tcpAssemblerTable.put(conn, (AssemblerTCP) asm.copyAssemblerType());
+                    }
                 }
                 if (this.tcpAssemblerTable.contains(conn)) {
                     AssemblerTCP asm = this.tcpAssemblerTable.get(conn);

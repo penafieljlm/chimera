@@ -20,6 +20,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTCP;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTCPHTTP;
 
 /**
  *
@@ -36,6 +37,7 @@ public class DeploymentDebug extends Deployment {
         ConcurrentLinkedQueue<PDU> assemblerOut = new ConcurrentLinkedQueue<PDU>();
         ConcurrentHashMap<Connection, ConnectionData> stateTable = new ConcurrentHashMap<Connection, ConnectionData>();
         ConcurrentHashMap<Integer, AssemblerTCP> tcpPortProtocolLookup = new ConcurrentHashMap<Integer, AssemblerTCP>();
+        tcpPortProtocolLookup.put(80, new AssemblerTCPHTTP());
         super.components.put("statetable", new ComponentStateTable(stateTable));
         super.components.put("in-sniffer", new ComponentSniffer(assembly, inPcap, snifferOut, true));
         super.components.put("in-statetracker", new ComponentStateTracker(assembly, snifferOut, stateOut, stateTable, true));
