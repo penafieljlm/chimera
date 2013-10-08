@@ -3,7 +3,9 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.server;
+package ph.edu.dlsu.chimera.server.deployment.components;
+
+import ph.edu.dlsu.chimera.server.IDiagnosable;
 
 /**
  *

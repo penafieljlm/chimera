@@ -13,7 +13,6 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.ComponentActive;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 
 /**
@@ -66,11 +65,7 @@ public final class ComponentStateTracker extends ComponentActive {
                             }
                             //forward
                             if (this.outQueue != null) {
-                                PDUAtomic forward = conndat.inQueue.poll();
-                                while (forward != null) {
-                                    this.outQueue.add(forward);
-                                    forward = conndat.inQueue.poll();
-                                }
+                                this.outQueue.add(pkt);
                             }
                         }
                     } else {

@@ -5,7 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import ph.edu.dlsu.chimera.server.ComponentActive;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 import ph.edu.dlsu.chimera.server.Assembly;
 
 /**

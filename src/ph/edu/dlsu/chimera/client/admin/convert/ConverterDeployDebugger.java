@@ -5,18 +5,18 @@
 
 package ph.edu.dlsu.chimera.client.admin.convert;
 
+import ph.edu.dlsu.chimera.server.admin.messages.MessageDeployDebugger;
 import ph.edu.dlsu.chimera.client.admin.Command;
 import ph.edu.dlsu.chimera.core.admin.messages.Message;
-import ph.edu.dlsu.chimera.server.admin.messages.MessageDeployGathering;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ConverterDeployGathering extends CommandConverter {
+public class ConverterDeployDebugger extends CommandConverter {
 
-    public ConverterDeployGathering() {
-        super("Starts the Data Gathering deployment.");
+    public ConverterDeployDebugger() {
+        super("Starts the Debug deployment.");
         super.params.put("ifInbound", "Name of interface facing the external network.");
     }
 
@@ -27,7 +27,7 @@ public class ConverterDeployGathering extends CommandConverter {
         String component = command.getParameterValue("ifInbound");
         if(component == null)
             throw new Exception("The parameter: 'ifInbound' is missing!");
-        return new MessageDeployGathering(component);
+        return new MessageDeployDebugger(component);
     }
 
 }

@@ -5,9 +5,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
@@ -19,8 +17,6 @@ import ph.edu.dlsu.chimera.server.IDiagnosable;
  */
 public final class ConnectionData implements IDiagnosable {
 
-    public final TcpQueue inQueue;
-    public final TcpSent inSent;
     public final long timeCreatedNanos; //nano
     public final boolean inbound;
     
@@ -31,8 +27,6 @@ public final class ConnectionData implements IDiagnosable {
     private byte outFin; //0 - none; 1 - fin,ack; 2 - ack
 
     public ConnectionData(long timeCreatedNanos, boolean inbound) {
-        this.inQueue = new TcpQueue();
-        this.inSent = new TcpSent();
         this.timeCreatedNanos = timeCreatedNanos;
         this.inbound = inbound;
         this.inboundEncounters = 0;
@@ -81,8 +75,6 @@ public final class ConnectionData implements IDiagnosable {
                 if (tcp.flags_FIN() && this.inFin == 0) {
                     this.inFin = 1;
                 }
-                //data
-                this.inQueue.add(pkt);
             } else {
                 this.outboundEncounters++;
                 if(tcp.flags_ACK() && this.inFin == 1) {
@@ -91,8 +83,6 @@ public final class ConnectionData implements IDiagnosable {
                 if (tcp.flags_FIN() && this.outFin == 0) {
                     this.outFin = 1;
                 }
-                //ack
-                this.inSent.acknowledge(pkt);
             }
             if (tcp.flags_RST() || (this.inFin == 2 && this.outFin == 2)) {
                 this.done = true;
@@ -101,7 +91,7 @@ public final class ConnectionData implements IDiagnosable {
     }
 
     public synchronized boolean isDone() {
-        return this.done && this.inQueue.isEmpty() && this.inSent.isEmpty();
+        return this.done;
     }
 
     public synchronized ArrayList<Diagnostic> getDiagnostics() {

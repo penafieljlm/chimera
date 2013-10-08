@@ -6,15 +6,14 @@
 package ph.edu.dlsu.chimera.server.deployment;
 
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.Deployment;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class Training extends Deployment {
+public class DeploymentTraining extends Deployment {
 
-    public Training(Assembly assembly, String inFile) {
+    public DeploymentTraining(Assembly assembly, String inFile) {
         super("Training");
 //        ConcurrentHashMap<Connection, TCPStateData> stateTable = new ConcurrentHashMap<Connection, TCPStateData>();
 //        //inbound assembly

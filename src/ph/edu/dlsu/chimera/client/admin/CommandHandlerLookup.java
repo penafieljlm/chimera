@@ -5,6 +5,7 @@
 
 package ph.edu.dlsu.chimera.client.admin;
 
+import ph.edu.dlsu.chimera.client.admin.convert.ConverterDeployDebugger;
 import java.util.HashMap;
 import java.util.Set;
 import ph.edu.dlsu.chimera.client.admin.convert.CommandConverter;
@@ -27,6 +28,7 @@ public class CommandHandlerLookup {
         this.lookup = new HashMap<String, CommandConverter>();
         this.lookup.put("abort", new ConverterDeploy());
         this.lookup.put("deploy-gathering", new ConverterDeployGathering());
+        this.lookup.put("deploy-debugger", new ConverterDeployDebugger());
         this.lookup.put("diag", new ConverterQueryDiagnostics());
         this.lookup.put("help", new ConverterHelp(this));
         this.lookup.put("ifconfig", new ConverterQueryInterfaces());

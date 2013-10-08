@@ -8,7 +8,6 @@ package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 import java.util.Date;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.server.deployment.components.ComponentInjector;
 
 /**
  *

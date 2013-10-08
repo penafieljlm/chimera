@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -23,4 +22,8 @@ public class PDUCompositeHTTP extends PDUComposite {
         this.body = body;
     }
 
+    @Override
+    public String printDebug() {
+        return this.header + this.body;
+    }
 }

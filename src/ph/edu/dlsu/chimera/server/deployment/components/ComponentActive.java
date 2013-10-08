@@ -1,7 +1,8 @@
-package ph.edu.dlsu.chimera.server;
+package ph.edu.dlsu.chimera.server.deployment.components;
 
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import java.util.ArrayList;
+import ph.edu.dlsu.chimera.server.Assembly;
 
 /**
  * An instance of this class constitutes a ComponentActive which runs on its own separate Thread.

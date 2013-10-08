@@ -9,24 +9,24 @@ import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageText;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
-import ph.edu.dlsu.chimera.server.deployment.DeploymentGathering;
+import ph.edu.dlsu.chimera.server.deployment.DeploymentDebug;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class MessageDeployGathering extends MessageDeploy {
+public class MessageDeployDebugger extends MessageDeploy {
 
     public final String interfaceInbound;
 
-    public MessageDeployGathering(String ifInbound) {
+    public MessageDeployDebugger(String ifInbound) {
         this.interfaceInbound = ifInbound;
     }
 
     @Override
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         StringBuilder report = new StringBuilder(((MessageText)(super.handleMessage(session, assembly))).text);
-        assembly.setDeployment(new DeploymentGathering(assembly, this.interfaceInbound));
+        assembly.setDeployment(new DeploymentDebug(assembly, this.interfaceInbound));
         report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
         return new MessageText(report.toString());
     }

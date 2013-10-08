@@ -10,7 +10,6 @@ import org.jnetpcap.PcapDumper;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.lan.Ethernet;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.ComponentActive;
 
 /**
  *
