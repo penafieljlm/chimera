@@ -9,26 +9,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.PacketTools;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
 
 /**
- *
+ * Tracks states and ensures TCP delivery.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class ComponentStateTracker extends ComponentActive {
 
     public final boolean inbound;
     public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
 
     public ComponentStateTracker(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
-            ConcurrentLinkedQueue<PDUAtomic> outQueue,
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            ConcurrentLinkedQueue<PduAtomic> outQueue,
             ConcurrentHashMap<Connection, ConnectionData> stateTable,
             boolean inbound) {
         super(assembly);
@@ -39,12 +41,19 @@ public final class ComponentStateTracker extends ComponentActive {
     }
 
     @Override
-    protected void componentRun() {
+    protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null && this.stateTable != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
-                    PDUAtomic pkt = this.inQueue.poll();
+                    PduAtomic pkt = this.inQueue.poll();
+                    if (pkt instanceof PduEnd) {
+                        //signal end
+                        if (this.outQueue != null) {
+                            this.outQueue.add(pkt);
+                        }
+                        return;
+                    }
                     if (pkt.packet.hasHeader(new Tcp())) {
                         //tcp packets
                         Connection conn = PacketTools.getConnection(pkt.packet);
@@ -65,7 +74,7 @@ public final class ComponentStateTracker extends ComponentActive {
                             }
                             //forward
                             if (this.outQueue != null) {
-                                this.outQueue.add(pkt);
+                                this.outQueue.add(new PduAtomicTcp(pkt.sniffer, pkt.packet, pkt.inbound, conndat));
                             }
                         }
                     } else {

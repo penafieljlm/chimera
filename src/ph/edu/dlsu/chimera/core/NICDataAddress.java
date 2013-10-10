@@ -15,19 +15,19 @@ import org.jnetpcap.PcapAddr;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class NICDataAddress implements Serializable {
+public final class NicDataAddress implements Serializable {
 
     public final String address;
     public final String netmask;
 
-    public NICDataAddress(PcapAddr addr) {
+    public NicDataAddress(PcapAddr addr) {
         String _address = "N/A";
         String _netmask = "N/A";
         try {
             _address = InetAddress.getByAddress(addr.getAddr().getData()).getHostAddress();
             _netmask = InetAddress.getByAddress(addr.getNetmask().getData()).getHostAddress();
         } catch (UnknownHostException ex) {
-            Logger.getLogger(NICDataAddress.class.getName()).log(Level.FINE, null, ex);
+            Logger.getLogger(NicDataAddress.class.getName()).log(Level.FINE, null, ex);
         }
         this.address = _address;
         this.netmask = _netmask;

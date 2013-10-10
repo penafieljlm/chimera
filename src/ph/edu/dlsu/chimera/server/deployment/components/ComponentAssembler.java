@@ -7,16 +7,16 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.jnetpcap.protocol.tcpip.Tcp;
-import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTCP;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerUDP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTcp;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerUdp;
 import ph.edu.dlsu.chimera.util.PacketTools;
 
 /**
@@ -25,41 +25,48 @@ import ph.edu.dlsu.chimera.util.PacketTools;
  */
 public final class ComponentAssembler extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PDU> outQueue;
-    public final ConcurrentHashMap<Connection, AssemblerTCP> tcpAssemblerTable;
-    public final ConcurrentHashMap<Integer, AssemblerTCP> tcpPortProtocolLookup;
-    public final ConcurrentHashMap<Connection, AssemblerUDP> udpAssemblerTable;
-    public final ConcurrentHashMap<Integer, AssemblerUDP> udpPortProtocolLookup;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final ConcurrentLinkedQueue<Pdu> outQueue;
+    public final ConcurrentHashMap<Connection, AssemblerTcp> tcpAssemblerTable;
+    public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
+    public final ConcurrentHashMap<Connection, AssemblerUdp> udpAssemblerTable;
+    public final ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup;
     public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
 
     public ComponentAssembler(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
-            ConcurrentLinkedQueue<PDU> outQueue,
-            ConcurrentHashMap<Integer, AssemblerTCP> tcpPortProtocolLookup,
-            ConcurrentHashMap<Integer, AssemblerUDP> udpPortProtocolLookup,
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            ConcurrentLinkedQueue<Pdu> outQueue,
+            ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
+            ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<Connection, ConnectionData> stateTable) {
         super(assembly);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
-        this.tcpAssemblerTable = new ConcurrentHashMap<Connection, AssemblerTCP>();
+        this.tcpAssemblerTable = new ConcurrentHashMap<Connection, AssemblerTcp>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
-        this.udpAssemblerTable = new ConcurrentHashMap<Connection, AssemblerUDP>();
+        this.udpAssemblerTable = new ConcurrentHashMap<Connection, AssemblerUdp>();
         this.udpPortProtocolLookup = udpPortProtocolLookup;
         this.stateTable = stateTable;
     }
 
     @Override
-    protected void componentRun() {
+    protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
-                    PDUAtomic pkt = this.inQueue.poll();
+                    PduAtomic pkt = this.inQueue.poll();
+                    if (pkt instanceof PduEnd) {
+                        //signal end
+                        if (this.outQueue != null) {
+                            this.outQueue.add(pkt);
+                        }
+                        return;
+                    }
                     if (pkt.inbound) {
                         //tcp forward
-                        if (pkt.packet.hasHeader(new Tcp())) {
-                            this.handleTcp(pkt);
+                        if (pkt instanceof PduAtomicTcp) {
+                            this.handleTcp((PduAtomicTcp) pkt);
                             continue;
                         }
                         //default forward
@@ -73,19 +80,21 @@ public final class ComponentAssembler extends ComponentActive {
         }
     }
 
-    private void handleTcp(PDUAtomic pkt) {
+    private void handleTcp(PduAtomicTcp pkt) {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
                 Connection conn = PacketTools.getConnection(pkt.packet);
                 if (!this.tcpAssemblerTable.contains(conn)) {
                     //create assembler
-                    AssemblerTCP asm = this.tcpPortProtocolLookup.get(conn.destinationPort);
+                    AssemblerTcp asm = this.tcpPortProtocolLookup.get(conn.destinationPort);
                     if (asm != null) {
-                        this.tcpAssemblerTable.put(conn, (AssemblerTCP) asm.copyAssemblerType());
+                        AssemblerTcp asmnew = (AssemblerTcp) asm.copyAssemblerType();
+                        asmnew.setConnectionData(pkt.connectionData);
+                        this.tcpAssemblerTable.put(conn, asmnew);
                     }
                 }
                 if (this.tcpAssemblerTable.contains(conn)) {
-                    AssemblerTCP asm = this.tcpAssemblerTable.get(conn);
+                    AssemblerTcp asm = this.tcpAssemblerTable.get(conn);
                     //append packet
                     asm.append(pkt);
                     //attempt delete
@@ -94,7 +103,7 @@ public final class ComponentAssembler extends ComponentActive {
                     }
                     //forward pdus
                     if (this.outQueue != null) {
-                        PDU pdu = asm.poll();
+                        Pdu pdu = asm.poll();
                         while (pdu != null) {
                             this.outQueue.add(pdu);
                             pdu = asm.poll();

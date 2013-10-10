@@ -15,14 +15,14 @@ import org.jnetpcap.PcapIf;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class NICData implements Serializable {
+public final class NicData implements Serializable {
 
     public final String name;
     public final String description;
     public final String hardwareAddress;
-    public final ArrayList<NICDataAddress> addresses;
+    public final ArrayList<NicDataAddress> addresses;
 
-    public NICData(PcapIf pcapif) {
+    public NicData(PcapIf pcapif) {
         this.name = pcapif.getName();
         this.description = pcapif.getDescription();
         StringBuilder sb = new StringBuilder();
@@ -35,12 +35,12 @@ public final class NICData implements Serializable {
             }
         } catch (IOException ex) {
             sb = new StringBuilder("N/A");
-            Logger.getLogger(NICData.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(NicData.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.hardwareAddress = sb.toString();
-        this.addresses = new ArrayList<NICDataAddress>();
+        this.addresses = new ArrayList<NicDataAddress>();
         for (int i = 0; i < pcapif.getAddresses().size(); i++) {
-            this.addresses.add(new NICDataAddress(pcapif.getAddresses().get(i)));
+            this.addresses.add(new NicDataAddress(pcapif.getAddresses().get(i)));
         }
     }
 }

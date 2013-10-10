@@ -9,10 +9,10 @@ package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class Pdu {
+public class PduEnd extends PduAtomic {
 
-    public String printDebug() {
-        return "";
+    public PduEnd(boolean inbound) {
+        super(null, null, inbound);
     }
 
 }

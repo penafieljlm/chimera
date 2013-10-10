@@ -10,7 +10,7 @@ import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageInterfaces;
-import ph.edu.dlsu.chimera.core.NICData;
+import ph.edu.dlsu.chimera.core.NicData;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
 
@@ -25,9 +25,9 @@ public class MessageQueryInterfaces implements ServerMessage {
         StringBuilder errbuff = new StringBuilder();
         int result = Pcap.findAllDevs(ifaces, errbuff);
         if (result == 0) {
-            ArrayList<NICData> interfaces = new ArrayList<NICData>();
+            ArrayList<NicData> interfaces = new ArrayList<NicData>();
             for (PcapIf device : ifaces) {
-                interfaces.add(new NICData(device));
+                interfaces.add(new NicData(device));
             }
             return new MessageInterfaces(interfaces);
         }

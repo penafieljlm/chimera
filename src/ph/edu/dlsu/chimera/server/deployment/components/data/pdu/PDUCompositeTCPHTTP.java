@@ -5,18 +5,22 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class PDUCompositeHTTP extends PDUComposite {
+public class PduCompositeTcpHttp extends PduCompositeTcp {
 
     public final String header;
     public final String body;
 
-    public PDUCompositeHTTP(ConcurrentLinkedQueue<PDUAtomic> packets, String header, String body) {
-        super(packets);
+    public PduCompositeTcpHttp(ConcurrentLinkedQueue<PduAtomic> packets,
+            ConnectionData connectionData,
+            String header,
+            String body) {
+        super(packets, connectionData);
         this.header = header;
         this.body = body;
     }

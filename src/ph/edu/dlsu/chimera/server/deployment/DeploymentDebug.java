@@ -17,10 +17,10 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDU;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTCP;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTCPHTTP;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTcp;
+import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTcpHttp;
 
 /**
  *
@@ -32,12 +32,12 @@ public class DeploymentDebug extends Deployment {
         super("Debug");
         StringBuilder err = new StringBuilder();
         Pcap inPcap = Pcap.openLive(ifInbound, Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
-        ConcurrentLinkedQueue<PDUAtomic> snifferOut = new ConcurrentLinkedQueue<PDUAtomic>();
-        ConcurrentLinkedQueue<PDUAtomic> stateOut = new ConcurrentLinkedQueue<PDUAtomic>();
-        ConcurrentLinkedQueue<PDU> assemblerOut = new ConcurrentLinkedQueue<PDU>();
+        ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<PduAtomic>();
+        ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<PduAtomic>();
+        ConcurrentLinkedQueue<Pdu> assemblerOut = new ConcurrentLinkedQueue<Pdu>();
         ConcurrentHashMap<Connection, ConnectionData> stateTable = new ConcurrentHashMap<Connection, ConnectionData>();
-        ConcurrentHashMap<Integer, AssemblerTCP> tcpPortProtocolLookup = new ConcurrentHashMap<Integer, AssemblerTCP>();
-        tcpPortProtocolLookup.put(80, new AssemblerTCPHTTP());
+        ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup = new ConcurrentHashMap<Integer, AssemblerTcp>();
+        tcpPortProtocolLookup.put(80, new AssemblerTcpHttp());
         super.components.put("statetable", new ComponentStateTable(stateTable));
         super.components.put("in-sniffer", new ComponentSniffer(assembly, inPcap, snifferOut, true));
         super.components.put("in-statetracker", new ComponentStateTracker(assembly, snifferOut, stateOut, stateTable, true));

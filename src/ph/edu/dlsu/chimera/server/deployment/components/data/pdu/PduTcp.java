@@ -5,14 +5,14 @@
 
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
+import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class Pdu {
+public interface PduTcp {
 
-    public String printDebug() {
-        return "";
-    }
+    public ConnectionData getConnectionData();
 
 }

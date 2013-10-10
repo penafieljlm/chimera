@@ -9,7 +9,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.handler;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class AssemblerUDP extends Assembler {
+public abstract class AssemblerUdp extends Assembler {
 
 
 }

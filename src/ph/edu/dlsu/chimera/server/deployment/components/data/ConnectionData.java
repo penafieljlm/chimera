@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.IDiagnosable;
 
 /**
@@ -64,7 +64,7 @@ public final class ConnectionData implements IDiagnosable {
      * Updates the connection data based on the received packet.
      * @param pkt - the received packet.
      */
-    public synchronized void update(PDUAtomic pkt) {
+    public synchronized void update(PduAtomic pkt) {
         if (!this.done) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
             if (pkt.inbound) {

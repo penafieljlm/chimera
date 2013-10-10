@@ -11,16 +11,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class PDUComposite extends PDU {
+public abstract class PduComposite extends Pdu {
 
-    private final ConcurrentLinkedQueue<PDUAtomic> packets;
+    private final ConcurrentLinkedQueue<PduAtomic> packets;
 
-    public PDUComposite(ConcurrentLinkedQueue<PDUAtomic> packets) {
+    public PduComposite(ConcurrentLinkedQueue<PduAtomic> packets) {
         this.packets = packets;
     }
 
-    public PDUAtomic[] getPackets() {
-        return (PDUAtomic[]) this.packets.toArray();
+    public PduAtomic[] getPackets() {
+        return (PduAtomic[]) this.packets.toArray();
     }
 
 }

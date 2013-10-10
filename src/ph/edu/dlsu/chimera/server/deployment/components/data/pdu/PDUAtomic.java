@@ -13,7 +13,7 @@ import org.jnetpcap.protocol.tcpip.Tcp;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class PDUAtomic extends PDU {
+public class PduAtomic extends Pdu {
 
     public final Pcap sniffer;
     public final PcapPacket packet;
@@ -21,7 +21,9 @@ public class PDUAtomic extends PDU {
     private Pcap injector;
     private long lastSentTimeNano;
 
-    public PDUAtomic(Pcap sourceInjector, PcapPacket packet, boolean inbound) {
+    public PduAtomic(Pcap sourceInjector,
+            PcapPacket packet,
+            boolean inbound) {
         this.sniffer = sourceInjector;
         this.packet = packet;
         this.inbound = inbound;

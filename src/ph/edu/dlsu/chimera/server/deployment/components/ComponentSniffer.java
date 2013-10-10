@@ -13,7 +13,8 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
 
 /**
  * 
@@ -22,11 +23,14 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 public final class ComponentSniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
 
     public final boolean inbound;
-    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Pcap inPcap;
     public int received;
 
-    public ComponentSniffer(Assembly assembly, Pcap inPcap, ConcurrentLinkedQueue<PDUAtomic> outQueue, boolean inbound) {
+    public ComponentSniffer(Assembly assembly, 
+            Pcap inPcap,
+            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            boolean inbound) {
         super(assembly);
         this.inbound = inbound;
         this.outQueue = outQueue;
@@ -35,29 +39,26 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     }
 
     @Override
-    public void componentRun() {
-        try {
-            switch (this.inPcap.loop(-1, this, this.inPcap)) {
-                case 0:
-                    //count exhausted
-                    break;
-                case -1:
-                    //error
-                    break;
-                case -2:
-                    //break loop called
-                    break;
-            }
-            this.inPcap.close();
-        } catch (Exception ex) {
-            Logger.getLogger(ComponentSniffer.class.getName()).log(Level.SEVERE, null, ex);
+    public void componentRun() throws Exception {
+        switch (this.inPcap.loop(-1, this, this.inPcap)) {
+            case 0:
+                throw new Exception("Count exhausted.");
+            case -1:
+                throw new Exception("Pcap loop error.");
+            case -2:
+                throw new Exception("Break loop called.");
         }
+        if (this.outQueue != null) {
+            //signal end
+            this.outQueue.add(new PduEnd(this.inbound));
+        }
+        this.inPcap.close();
     }
 
     public void nextPacket(PcapPacket pp, Pcap t) {
         this.received++;
         if (this.outQueue != null) {
-            this.outQueue.add(new PDUAtomic(t, pp, this.inbound));
+            this.outQueue.add(new PduAtomic(t, pp, this.inbound));
         }
     }
 

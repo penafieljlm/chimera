@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.data;
 import java.util.Collections;
 import java.util.List;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
@@ -15,7 +15,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
  */
 public final class TcpQueue {
 
-    private final List<PDUAtomic> inQueue;
+    private final List<PduAtomic> inQueue;
     private int inNextSequenceNo; // or number of bytes I have received so far
 
     public TcpQueue() {
@@ -23,7 +23,7 @@ public final class TcpQueue {
         this.inNextSequenceNo = 1;
     }
 
-    public boolean add(PDUAtomic packet) {
+    public boolean add(PduAtomic packet) {
         if (packet.packet.hasHeader(new Tcp())) {
             Tcp tcp = packet.packet.getHeader(new Tcp());
             if (packet.inbound) {
@@ -38,8 +38,8 @@ public final class TcpQueue {
         return false;
     }
 
-    public PDUAtomic poll() {
-        for (PDUAtomic p : this.inQueue) {
+    public PduAtomic poll() {
+        for (PduAtomic p : this.inQueue) {
             Tcp ptcp = p.packet.getHeader(new Tcp());
             if (ptcp.seq() == this.inNextSequenceNo && ptcp.getPayloadLength() > 0) {
                 this.inNextSequenceNo += ptcp.getPayloadLength();
@@ -51,7 +51,7 @@ public final class TcpQueue {
     }
 
     public boolean contains(Tcp tcp) {
-        for (PDUAtomic p : this.inQueue) {
+        for (PduAtomic p : this.inQueue) {
             Tcp ptcp = p.packet.getHeader(new Tcp());
             if (ptcp.seq() == tcp.seq()) {
                 return true;

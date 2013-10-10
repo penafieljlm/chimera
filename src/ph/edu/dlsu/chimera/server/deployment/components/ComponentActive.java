@@ -1,7 +1,11 @@
 package ph.edu.dlsu.chimera.server.deployment.components;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import ph.edu.dlsu.chimera.server.Assembly;
 
 /**
@@ -9,6 +13,11 @@ import ph.edu.dlsu.chimera.server.Assembly;
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class ComponentActive extends Thread implements Component {
+
+    /**
+     * String array of errors.
+     */
+    public final List<Exception> errors;
 
     /**
      * The assembly which this component is a member of.
@@ -24,6 +33,7 @@ public abstract class ComponentActive extends Thread implements Component {
      * @param assembly - the assembly which this component is a member of.
      */
     public ComponentActive(Assembly assembly) {
+        this.errors = Collections.synchronizedList(Collections.EMPTY_LIST);
         this.assembly = assembly;
         this.running = false;
     }
@@ -52,7 +62,12 @@ public abstract class ComponentActive extends Thread implements Component {
         synchronized(this) {
             this.running = true;
         }
-        this.componentRun();
+        try {
+            this.componentRun();
+        } catch (Exception ex) {
+            this.errors.add(ex);
+            Logger.getLogger(ComponentActive.class.getName()).log(Level.WARNING, null, ex);
+        }
         synchronized(this) {
             this.running = false;
         }
@@ -61,6 +76,6 @@ public abstract class ComponentActive extends Thread implements Component {
     /**
      * The task of the component.
      */
-    protected abstract void componentRun();
+    protected abstract void componentRun() throws Exception;
 
 }
