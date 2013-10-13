@@ -10,16 +10,16 @@ import java.util.List;
 import ph.edu.dlsu.chimera.server.deployment.Deployment;
 import ph.edu.dlsu.chimera.server.admin.AdministrativeModule;
 import ph.edu.dlsu.chimera.server.admin.UserBase;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpSrc;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpSrcDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpDstSyn;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpSrc;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpSrcDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpSrcDstSyn;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpSrcSyn;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpDst;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpSrc;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpSrcDst;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpTcpDst;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpTcpDstSyn;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpTcpSrc;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpTcpSrcDst;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpTcpSrcDstSyn;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomicIpTcpSrcSyn;
 
 /**
  * 
@@ -36,23 +36,23 @@ public class Assembly {
     private Deployment deployment;
 
     /**
-     * The criterias that the system uses for measuring statistics.
+     * The criteriasAtomic that the system uses for measuring statistics.
      */
-    public final List<Criteria> criterias;
+    public final List<CriteriaAtomic> criteriasAtomic;
 
     public Assembly(int port) {
         this.admin = new AdministrativeModule(this, port);
         this.users = new UserBase();
-        this.criterias = Collections.synchronizedList(Collections.EMPTY_LIST);
-        this.criterias.add(new CriteriaIpDst());
-        this.criterias.add(new CriteriaIpSrc());
-        this.criterias.add(new CriteriaIpSrcDst());
-        this.criterias.add(new CriteriaIpTcpDst());
-        this.criterias.add(new CriteriaIpTcpDstSyn());
-        this.criterias.add(new CriteriaIpTcpSrc());
-        this.criterias.add(new CriteriaIpTcpSrcDst());
-        this.criterias.add(new CriteriaIpTcpSrcDstSyn());
-        this.criterias.add(new CriteriaIpTcpSrcSyn());
+        this.criteriasAtomic = Collections.synchronizedList(Collections.EMPTY_LIST);
+        this.criteriasAtomic.add(new CriteriaAtomicIpDst());
+        this.criteriasAtomic.add(new CriteriaAtomicIpSrc());
+        this.criteriasAtomic.add(new CriteriaAtomicIpSrcDst());
+        this.criteriasAtomic.add(new CriteriaAtomicIpTcpDst());
+        this.criteriasAtomic.add(new CriteriaAtomicIpTcpDstSyn());
+        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrc());
+        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrcDst());
+        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrcDstSyn());
+        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrcSyn());
     }
 
     /**

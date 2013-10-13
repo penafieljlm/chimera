@@ -9,15 +9,14 @@ import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.IDiagnosable;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Connection implements IDiagnosable {
+public final class Connection extends Statistics {
 
-    public final long timeCreatedNanos; //nano
+    public final SocketPair sockets;
     public final boolean inbound;
     private long inboundEncounters;
     private long outboundEncounters;
@@ -29,8 +28,9 @@ public final class Connection implements IDiagnosable {
     private byte inFin; //0 - none; 1 - fin,ack; 2 - ack
     private byte outFin; //0 - none; 1 - fin,ack; 2 - ack
 
-    public Connection(long timeCreatedNanos, boolean inbound) {
-        this.timeCreatedNanos = timeCreatedNanos;
+    public Connection(SocketPair sockets, long timeCreatedNanos, boolean inbound) {
+        super(timeCreatedNanos);
+        this.sockets = sockets;
         this.inbound = inbound;
         this.inboundEncounters = 0;
         this.outboundEncounters = 0;
@@ -52,24 +52,8 @@ public final class Connection implements IDiagnosable {
         return this.inboundSize + this.outboundSize;
     }
 
-    /**
-     * @return the length of time this TCPState has existed in milliseconds.
-     */
-    public synchronized long getTimeExisted() {
-        Date now = new Date();
-        return now.getTime() - (this.timeCreatedNanos / 1000000);
-    }
-
     public synchronized long getTotalEncounters() {
         return this.inboundEncounters + this.outboundEncounters;
-    }
-
-    /**
-     * @return the traffic rate of this Connection measured as packet per second.
-     */
-    public synchronized double getTrafficRate() {
-        double sec = this.getTimeExisted() / 1000;
-        return (sec > 0) ? this.getTotalEncounters() / sec : this.getTotalEncounters();
     }
 
     /**
@@ -102,24 +86,12 @@ public final class Connection implements IDiagnosable {
         return (this.outboundEncounters > 0) ? this.outboundSize / this.outboundEncounters : this.outboundSize;
     }
 
-    public synchronized long getLastEncounterTime() {
-        return (this.outboundLastEncounterNanos
-                > this.inboundLastEncounterNanos)
-                ? this.outboundLastEncounterNanos :
-                    this.inboundLastEncounterNanos;
-    }
-
     public synchronized long inboundLastEncounterTime() {
         return this.inboundLastEncounterNanos;
     }
 
     public synchronized long outboundLastEncounterTime() {
         return this.outboundLastEncounterNanos;
-    }
-
-    public synchronized long getTimeSinceLastEncounter() {
-        Date now = new Date();
-        return now.getTime() - (this.getLastEncounterTime() / 1000000);
     }
 
     public synchronized double inboundTimeSinceLastEncounter() {
@@ -130,10 +102,6 @@ public final class Connection implements IDiagnosable {
     public synchronized double outboundTimeSinceLastEncounter() {
         Date now = new Date();
         return now.getTime() - (this.outboundLastEncounterNanos / 1000000);
-    }
-
-    public synchronized double getAverageSize() {
-        return (this.getTotalEncounters() > 0) ? this.getTotalSize() / this.getTotalEncounters() : this.getTotalSize();
     }
 
     public synchronized double inAverageSize() {
@@ -151,6 +119,7 @@ public final class Connection implements IDiagnosable {
     public synchronized void update(PduAtomic pkt) {
         if (!this.done) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
+            super.commitEncounter(pkt);
             if (pkt.inbound) {
                 this.inboundEncounters++;
                 this.inboundSize += pkt.packet.size();
@@ -182,31 +151,22 @@ public final class Connection implements IDiagnosable {
         return this.done;
     }
 
+    @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
-        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
-        Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(this.timeCreatedNanos / 1000000);
-        Date lastenc = (this.getLastEncounterTime() < 0) ? null : new java.sql.Date(this.getLastEncounterTime() / 1000000);
+        ArrayList<Diagnostic> diag = super.getDiagnostics();
         Date inencounter = (this.inboundLastEncounterNanos < 0) ? null : new java.sql.Date(this.inboundLastEncounterNanos / 1000000);
         Date outencounter = (this.outboundLastEncounterNanos < 0) ? null : new java.sql.Date(this.outboundLastEncounterNanos / 1000000);
-        diag.add(new Diagnostic("createtime", "Time Created", (create == null) ? "N/A" : create.toLocaleString()));
-        diag.add(new Diagnostic("timeexisted", "Time Existed", this.getTimeExisted() + "ms"));
         diag.add(new Diagnostic("direction", "Direction", (this.inbound) ? "inbound" : "outbound"));
-        diag.add(new Diagnostic("encounters", "Packets Encountered", this.getTotalEncounters()));
         diag.add(new Diagnostic("inboundct", "Inbound Packets Encountered", this.inboundEncounters));
         diag.add(new Diagnostic("outboundct", "Outbound Packets Encountered", this.outboundEncounters));
-        diag.add(new Diagnostic("totalsize", "Traffic Total Size", this.getTotalSize()));
         diag.add(new Diagnostic("inboundsize", "Inbound Traffic Total Size", this.inboundSize));
         diag.add(new Diagnostic("outboundsize", "Outbound Traffic Total Size", this.outboundSize));
-        diag.add(new Diagnostic("averagesize", "Traffic Average Size", this.getAverageSize()));
         diag.add(new Diagnostic("inavgsize", "Inbound Traffic Average Size", this.inboundAverageSize()));
         diag.add(new Diagnostic("outavgsize", "Outbound Traffic Average Size", this.outboundAverageSize()));
-        diag.add(new Diagnostic("trafficrate", "Traffic Rate", this.getTrafficRate() + "pkts/sec"));
         diag.add(new Diagnostic("inrate", "Inbound Traffic Rate", this.inboundRate() + "pkts/sec"));
         diag.add(new Diagnostic("outrate", "Outbound Traffic Rate", this.outboundRate() + "pkts/sec"));
-        diag.add(new Diagnostic("lastencounter", "Last Encounter", (lastenc == null) ? "N/A" : lastenc.toLocaleString()));
         diag.add(new Diagnostic("inlastencounter", "Inbound Last Encounter", (inencounter == null) ? "N/A" : inencounter.toLocaleString()));
         diag.add(new Diagnostic("outlastencounter", "Outbound Last Encounter", (outencounter == null) ? "N/A" : outencounter.toLocaleString()));
-        diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTime() < 0) ? "N/A" : this.getTimeSinceLastEncounter() + "ms"));
         diag.add(new Diagnostic("inidletime", "Inbound Idle Time", (this.inboundLastEncounterNanos < 0) ? "N/A" : this.inboundTimeSinceLastEncounter() + "ms"));
         diag.add(new Diagnostic("outideltime", "Outbound Idle Time", (this.outboundLastEncounterNanos < 0) ? "N/A" : this.outboundTimeSinceLastEncounter() + "ms"));
         diag.add(new Diagnostic("done", "Connection Finished", this.done));

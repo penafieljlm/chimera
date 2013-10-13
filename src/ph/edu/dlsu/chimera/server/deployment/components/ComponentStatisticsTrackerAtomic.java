@@ -10,25 +10,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsTracker extends ComponentActive {
+public class ComponentStatisticsTrackerAtomic extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
-    public final List<Criteria> criterias;
-    public final ConcurrentHashMap<Criteria, Statistics> statisticsTable;
+    public final List<CriteriaAtomic> criterias;
+    public final ConcurrentHashMap<CriteriaAtomic, Statistics> statisticsTable;
 
-    public ComponentStatisticsTracker(Assembly assembly,
+    public ComponentStatisticsTrackerAtomic(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
-            List<Criteria> criterias,
-            ConcurrentHashMap<Criteria, Statistics> statisticsTable) {
+            List<CriteriaAtomic> criterias,
+            ConcurrentHashMap<CriteriaAtomic, Statistics> statisticsTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
@@ -52,13 +52,13 @@ public class ComponentStatisticsTracker extends ComponentActive {
                     }
                     if (pkt.inbound) {
                         //processing here
-                        Criteria[] pktcriterias = new Criteria[this.criterias.size()];
+                        CriteriaAtomic[] pktcriterias = new CriteriaAtomic[this.criterias.size()];
                         //get criterias for this packet
                         for(int i = 0 ; i < this.criterias.size() ; i++) {
                             pktcriterias[i] = this.criterias.get(i).createInstance(pkt);
                         }
                         //create / update criterias
-                        for(Criteria crt : pktcriterias) {
+                        for(CriteriaAtomic crt : pktcriterias) {
                             if(!this.statisticsTable.contains(crt)) {
                                 //create criteria
                                 this.statisticsTable.put(crt, new Statistics(pkt.packet.getCaptureHeader().timestampInNanos()));

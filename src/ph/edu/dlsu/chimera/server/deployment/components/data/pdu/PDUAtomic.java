@@ -8,9 +8,9 @@ import java.util.Date;
 import java.util.HashMap;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
 
 /**
  *
@@ -22,7 +22,8 @@ public class PduAtomic extends Pdu {
     public final PcapPacket packet;
     private Pcap injector;
     private long lastSentTimeNano;
-    private HashMap<Criteria, Statistics> statistics; //type, statistics
+    private HashMap<CriteriaAtomic, Statistics> statistics; //type, statistics
+    private Connection connection;
 
     public PduAtomic(Pcap sourceInjector,
             PcapPacket packet,
@@ -32,28 +33,47 @@ public class PduAtomic extends Pdu {
         this.packet = packet;
         this.injector = null;
         this.lastSentTimeNano = -1;
-        this.statistics = new HashMap<Criteria, Statistics>();
+        this.statistics = new HashMap<CriteriaAtomic, Statistics>();
+        this.connection = null;
     }
 
-    public void addStatistics(Criteria criteria, Statistics statistics) {
-        for(Criteria crt : this.statistics.keySet()) {
-            if(criteria.getClass() == crt.getClass()) {
+    @Override
+    public long size() {
+        return this.packet.size();
+    }
+
+    @Override
+    public long timestampInNanos() {
+        return this.packet.getCaptureHeader().timestampInNanos();
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
+
+    public Connection getConnection() {
+        return this.connection;
+    }
+
+    public void addStatistics(CriteriaAtomic criteria, Statistics statistics) {
+        for (CriteriaAtomic crt : this.statistics.keySet()) {
+            if (criteria.getClass() == crt.getClass()) {
                 return;
             }
         }
         this.statistics.put(criteria, statistics);
     }
 
-    public Statistics getStatisticsByType(Criteria criteria) {
-        for(Criteria crt : this.statistics.keySet()) {
-            if(criteria.getClass() == crt.getClass()) {
+    public Statistics getStatisticsByType(CriteriaAtomic criteria) {
+        for (CriteriaAtomic crt : this.statistics.keySet()) {
+            if (criteria.getClass() == crt.getClass()) {
                 return this.statistics.get(crt);
             }
         }
         return null;
     }
 
-    public Statistics getStatistics(Criteria criteria) {
+    public Statistics getStatistics(CriteriaAtomic criteria) {
         return this.statistics.get(criteria);
     }
 

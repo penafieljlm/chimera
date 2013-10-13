@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
+package ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic;
 
 import java.net.InetAddress;
 import org.jnetpcap.protocol.tcpip.Tcp;
@@ -14,35 +14,29 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class CriteriaIpTcpSrcDstSyn extends Criteria {
+public class CriteriaAtomicIpTcpDstSyn extends CriteriaAtomic {
 
-    public final InetAddress source;
-    public final int sourcePort;
     public final InetAddress destination;
     public final int destinationPort;
 
-    public CriteriaIpTcpSrcDstSyn() {
-        this(null, -1, null, -1);
+    public CriteriaAtomicIpTcpDstSyn() {
+        this(null, -1);
     }
 
-    public CriteriaIpTcpSrcDstSyn(InetAddress source,
-            int sourcePort,
-            InetAddress destination,
+    public CriteriaAtomicIpTcpDstSyn(InetAddress destination,
             int destinationPort) {
-        super("socktcpsrcdstsyn", "Source and Destination TCP Socket Session Creation");
-        this.source = source;
-        this.sourcePort = sourcePort;
+        super("socktcpdstsyn", "Destination TCP Socket Session Creation");
         this.destination = destination;
         this.destinationPort = destinationPort;
     }
 
     @Override
-    public Criteria createInstance(PduAtomic pkt) {
+    public CriteriaAtomic createInstance(PduAtomic pkt) {
         SocketPair socks = ToolsPacket.getConnection(pkt.packet);
         if (socks != null && pkt.packet.hasHeader(new Tcp())) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
             if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                return new CriteriaIpTcpSrcDstSyn(socks.source, socks.sourcePort, socks.destination, socks.destinationPort);
+                return new CriteriaAtomicIpTcpDstSyn(socks.destination, socks.destinationPort);
             }
         }
         return null;
@@ -53,16 +47,10 @@ public class CriteriaIpTcpSrcDstSyn extends Criteria {
         if (obj == null) {
             return false;
         }
-        if (this.getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-        final CriteriaIpTcpSrcDst other = (CriteriaIpTcpSrcDst) obj;
-        if (this.source != other.source && (this.source == null || !this.source.equals(other.source))) {
-            return false;
-        }
-        if (this.sourcePort != other.sourcePort) {
-            return false;
-        }
+        final CriteriaAtomicIpTcpDstSyn other = (CriteriaAtomicIpTcpDstSyn) obj;
         if (this.destination != other.destination && (this.destination == null || !this.destination.equals(other.destination))) {
             return false;
         }
@@ -74,16 +62,14 @@ public class CriteriaIpTcpSrcDstSyn extends Criteria {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.source != null ? this.source.hashCode() : 0);
-        hash = 97 * hash + this.sourcePort;
-        hash = 97 * hash + (this.destination != null ? this.destination.hashCode() : 0);
-        hash = 97 * hash + this.destinationPort;
+        int hash = 5;
+        hash = 17 * hash + (this.destination != null ? this.destination.hashCode() : 0);
+        hash = 17 * hash + this.destinationPort;
         return hash;
     }
 
     @Override
     public String getInstanceString() {
-        return this.source.getHostAddress() + ":" + this.sourcePort + " ->[SYN]-> " + this.destination.getHostAddress() + ":" + this.destinationPort;
+        return "any:any -[IP:TCP:SYN]> " + this.destination.getHostAddress() + ":" + this.destinationPort;
     }
 }

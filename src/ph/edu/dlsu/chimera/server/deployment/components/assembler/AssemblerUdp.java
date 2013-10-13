@@ -11,5 +11,8 @@ package ph.edu.dlsu.chimera.server.deployment.components.assembler;
  */
 public abstract class AssemblerUdp extends Assembler {
 
+    public AssemblerUdp(long timeCreatedNanos) {
+        super(timeCreatedNanos);
+    }
 
 }

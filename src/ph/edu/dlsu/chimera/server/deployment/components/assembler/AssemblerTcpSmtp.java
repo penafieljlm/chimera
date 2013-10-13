@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpSmtp;
 
 /**
@@ -26,11 +25,11 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     private boolean expectingCmd;
 
     public AssemblerTcpSmtp() {
-        this(null);
+        this(-1, null);
     }
 
-    public AssemblerTcpSmtp(Connection connection) {
-        super(connection);
+    public AssemblerTcpSmtp(long timeCreatedNanos, Connection connection) {
+        super(timeCreatedNanos, connection);
         this.resetSmtp();
     }
 
@@ -66,10 +65,9 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     }
 
     @Override
-    public Assembler createAssemblerInstance(PduAtomic firstPacket) {
-        if (firstPacket instanceof PduAtomicTcp) {
-            PduAtomicTcp pkttcp = (PduAtomicTcp) firstPacket;
-            return new AssemblerTcpSmtp(pkttcp.connection);
+    protected AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket) {
+        if (firstPacket.getConnection() != null) {
+            return new AssemblerTcpSmtp(firstPacket.packet.getCaptureHeader().timestampInNanos(), firstPacket.getConnection());
         }
         return null;
     }
@@ -84,6 +82,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     private void finishSmtp(boolean inbound) {
         PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(this.smtpPackets,
                 super.connection,
+                this,
                 this.messageBuilder.toString(),
                 !this.dataOpen,
                 inbound);

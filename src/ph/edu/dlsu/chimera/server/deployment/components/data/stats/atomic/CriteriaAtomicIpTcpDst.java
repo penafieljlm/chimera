@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
+package ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic;
 
 import java.net.InetAddress;
 import org.jnetpcap.protocol.tcpip.Tcp;
@@ -14,16 +14,16 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class CriteriaIpTcpDst extends Criteria {
+public class CriteriaAtomicIpTcpDst extends CriteriaAtomic {
 
     public final InetAddress destination;
     public final int destinationPort;
 
-    public CriteriaIpTcpDst() {
+    public CriteriaAtomicIpTcpDst() {
         this(null, -1);
     }
 
-    public CriteriaIpTcpDst(InetAddress destination,
+    public CriteriaAtomicIpTcpDst(InetAddress destination,
             int destinationPort) {
         super("socktcpdst", "Destination TCP Socket");
         this.destination = destination;
@@ -31,10 +31,10 @@ public class CriteriaIpTcpDst extends Criteria {
     }
 
     @Override
-    public Criteria createInstance(PduAtomic pkt) {
+    public CriteriaAtomic createInstance(PduAtomic pkt) {
         SocketPair socks = ToolsPacket.getConnection(pkt.packet);
         if (socks != null && pkt.packet.hasHeader(new Tcp())) {
-            return new CriteriaIpTcpDst(socks.destination, socks.destinationPort);
+            return new CriteriaAtomicIpTcpDst(socks.destination, socks.destinationPort);
         }
         return null;
     }
@@ -44,10 +44,10 @@ public class CriteriaIpTcpDst extends Criteria {
         if (obj == null) {
             return false;
         }
-        if (this.getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-        final CriteriaIpTcpDst other = (CriteriaIpTcpDst) obj;
+        final CriteriaAtomicIpTcpDst other = (CriteriaAtomicIpTcpDst) obj;
         if (this.destination != other.destination && (this.destination == null || !this.destination.equals(other.destination))) {
             return false;
         }
@@ -60,13 +60,13 @@ public class CriteriaIpTcpDst extends Criteria {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 67 * hash + (this.destination != null ? this.destination.hashCode() : 0);
-        hash = 67 * hash + this.destinationPort;
+        hash = 59 * hash + (this.destination != null ? this.destination.hashCode() : 0);
+        hash = 59 * hash + this.destinationPort;
         return hash;
     }
 
     @Override
     public String getInstanceString() {
-        return "any:any -> " + this.destination.getHostAddress() + ":" + this.destinationPort;
+        return "any:any -[IP:TCP]> " + this.destination.getHostAddress() + ":" + this.destinationPort;
     }
 }

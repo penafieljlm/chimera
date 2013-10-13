@@ -19,10 +19,11 @@ public abstract class AssemblerTcp extends Assembler {
     protected final Connection connection;
 
     public AssemblerTcp() {
-        this(null);
+        this(-1, null);
     }
 
-    public AssemblerTcp(Connection connection) {
+    public AssemblerTcp(long timeCreatedNanos, Connection connection) {
+        super(timeCreatedNanos);
         this.queue = new TcpQueue();
         this.connection = connection;
     }
@@ -38,8 +39,21 @@ public abstract class AssemblerTcp extends Assembler {
                 this.appendTCP(tcp, p);
             }
         }
-        return true;
+        return super.append(segment);
     }
+
+    @Override
+    public Assembler createAssemblerInstance(PduAtomic firstPacket) {
+        if (firstPacket.packet.hasHeader(new Tcp())) {
+            Tcp tcp = firstPacket.packet.getHeader(new Tcp());
+            if(tcp.flags_SYN() && !tcp.flags_ACK()) {
+                return this.createTcpAssemblerInstance(tcp, firstPacket);
+            }
+        }
+        return null;
+    }
+
+    protected abstract AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket);
 
     /**
      * Invoked when tcp packet received. Tcp packets are send to this method in order.

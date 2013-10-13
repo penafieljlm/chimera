@@ -7,13 +7,13 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerUdp;
@@ -66,8 +66,8 @@ public final class ComponentAssembler extends ComponentActive {
                     }
                     if (pkt.inbound) {
                         //tcp forward
-                        if (pkt instanceof PduAtomicTcp) {
-                            this.handleTcp((PduAtomicTcp) pkt);
+                        if (pkt.packet.hasHeader(new Tcp())) {
+                            this.handleTcp(pkt);
                             continue;
                         }
                         //default forward
@@ -81,7 +81,7 @@ public final class ComponentAssembler extends ComponentActive {
         }
     }
 
-    private void handleTcp(PduAtomicTcp pkt) {
+    private void handleTcp(PduAtomic pkt) {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
                 SocketPair socks = ToolsPacket.getConnection(pkt.packet);

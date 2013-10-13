@@ -2,24 +2,25 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
+package ph.edu.dlsu.chimera.server.deployment.components.data;
 
 import java.util.ArrayList;
 import java.util.Date;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.IDiagnosable;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Statistics implements IDiagnosable {
+public class Statistics implements IDiagnosable {
 
     public final long timeCreatedNanos;
-    private long totalEncounters;
-    private long totalSize;
-    private long lastEncounterNanos;
+    protected long totalEncounters;
+    protected long totalSize;
+    protected long lastEncounterNanos;
 
     public Statistics(long timeCreatedNano) {
         this.timeCreatedNanos = timeCreatedNano;
@@ -28,10 +29,10 @@ public final class Statistics implements IDiagnosable {
         this.lastEncounterNanos = timeCreatedNano;
     }
 
-    public synchronized void commitEncounter(PduAtomic pkt) {
+    public synchronized void commitEncounter(Pdu pkt) {
         this.totalEncounters++;
-        this.totalSize += pkt.packet.size();
-        this.lastEncounterNanos = pkt.packet.getCaptureHeader().timestampInNanos();
+        this.totalSize += pkt.size();
+        this.lastEncounterNanos = pkt.timestampInNanos();
     }
 
     public synchronized long getTimeExisted() {

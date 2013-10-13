@@ -14,7 +14,6 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
 
 /**
@@ -62,11 +61,12 @@ public final class ComponentStateTracker extends ComponentActive {
                         //create state
                         if (!this.stateTable.containsKey(socks)) {
                             if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                this.stateTable.put(socks, new Connection(pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
+                                this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
                             }
                         }
                         if (this.stateTable.containsKey(socks)) {
                             Connection connection = this.stateTable.get(socks);
+                            pkt.setConnection(connection);
                             //update state
                             connection.update(pkt);
                             //attempt to delete state
@@ -75,7 +75,7 @@ public final class ComponentStateTracker extends ComponentActive {
                             }
                             //forward
                             if (this.outQueue != null) {
-                                this.outQueue.add(new PduAtomicTcp(pkt.sniffer, pkt.packet, pkt.inbound, connection));
+                                this.outQueue.add(pkt);
                             }
                         }
                     } else {

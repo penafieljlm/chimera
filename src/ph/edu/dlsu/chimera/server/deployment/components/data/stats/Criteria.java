@@ -2,10 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
-
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
@@ -22,14 +19,7 @@ public abstract class Criteria {
     }
 
     /**
-     * @param pkt - packet to create criteria instance from.
-     * @return an instance of a criteria type from the packet; null if packet is not compatible with the criteria type.
-     */
-    public abstract Criteria createInstance(PduAtomic pkt);
-
-    /**
-     * @return a String object describing this Criteria instance.
+     * @return a String object describing this CriteriaAtomic instance.
      */
     public abstract String getInstanceString();
-
 }

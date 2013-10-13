@@ -21,4 +21,8 @@ public abstract class Pdu {
         return null;
     }
 
+    public abstract long size();
+
+    public abstract long timestampInNanos();
+
 }

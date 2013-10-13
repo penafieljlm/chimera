@@ -5,11 +5,9 @@
 package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpHttp;
 
 /**
@@ -30,11 +28,11 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     private int bodyLength;
 
     public AssemblerTcpHttp() {
-        this(null);
+        this(-1, null);
     }
 
-    public AssemblerTcpHttp(Connection connection) {
-        super(connection);
+    public AssemblerTcpHttp(long timeCreatedNanos, Connection connection) {
+        super(timeCreatedNanos, connection);
         this.resetHttp();
     }
 
@@ -94,10 +92,9 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     }
 
     @Override
-    public Assembler createAssemblerInstance(PduAtomic firstPacket) {
-        if (firstPacket instanceof PduAtomicTcp) {
-            PduAtomicTcp pkttcp = (PduAtomicTcp) firstPacket;
-            return new AssemblerTcpHttp(pkttcp.connection);
+    protected AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket) {
+        if (firstPacket.getConnection() != null) {
+            return new AssemblerTcpHttp(firstPacket.packet.getCaptureHeader().timestampInNanos(), firstPacket.getConnection());
         }
         return null;
     }
@@ -114,6 +111,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     private void finishHttp(boolean inbound) {
         PduCompositeTcpHttp http = new PduCompositeTcpHttp(this.httpPackets,
                 super.connection,
+                this,
                 this.headerBuilder.toString(),
                 this.bodyBuilder.toString(),
                 inbound);
