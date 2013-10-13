@@ -64,8 +64,9 @@ public class ComponentStatisticsTracker extends ComponentActive {
                                 this.statisticsTable.put(crt, new Statistics(pkt.packet.getCaptureHeader().timestampInNanos()));
                             }
                             if(this.statisticsTable.contains(crt)) {
-                                //update criteria statisticsTable
+                                //update criteria statisticsTable and associate criteria to packet
                                 this.statisticsTable.get(crt).commitEncounter(pkt);
+                                pkt.addStatistics(crt, this.statisticsTable.get(crt));
                             }
                         }
                         //forward packet

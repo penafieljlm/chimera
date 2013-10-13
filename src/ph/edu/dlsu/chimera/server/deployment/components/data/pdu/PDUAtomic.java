@@ -5,9 +5,12 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.Date;
+import java.util.HashMap;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Statistics;
 
 /**
  *
@@ -19,6 +22,7 @@ public class PduAtomic extends Pdu {
     public final PcapPacket packet;
     private Pcap injector;
     private long lastSentTimeNano;
+    private HashMap<Criteria, Statistics> statistics; //type, statistics
 
     public PduAtomic(Pcap sourceInjector,
             PcapPacket packet,
@@ -28,6 +32,29 @@ public class PduAtomic extends Pdu {
         this.packet = packet;
         this.injector = null;
         this.lastSentTimeNano = -1;
+        this.statistics = new HashMap<Criteria, Statistics>();
+    }
+
+    public void addStatistics(Criteria criteria, Statistics statistics) {
+        for(Criteria crt : this.statistics.keySet()) {
+            if(criteria.getClass() == crt.getClass()) {
+                return;
+            }
+        }
+        this.statistics.put(criteria, statistics);
+    }
+
+    public Statistics getStatisticsByType(Criteria criteria) {
+        for(Criteria crt : this.statistics.keySet()) {
+            if(criteria.getClass() == crt.getClass()) {
+                return this.statistics.get(crt);
+            }
+        }
+        return null;
+    }
+
+    public Statistics getStatistics(Criteria criteria) {
+        return this.statistics.get(criteria);
     }
 
     public Pcap getDestinationInjector() {
@@ -54,14 +81,5 @@ public class PduAtomic extends Pdu {
         Date now = new Date();
         long lnow = now.getTime() * 1000000;
         return lnow - this.lastSentTimeNano;
-    }
-
-    @Override
-    public String printDebug() {
-        if(this.packet.hasHeader(new Tcp())) {
-            Tcp tcp = this.packet.getHeader(new Tcp());
-            return "==TCP==\n" + new String(tcp.getPayload());
-        }
-        return super.printDebug();
     }
 }
