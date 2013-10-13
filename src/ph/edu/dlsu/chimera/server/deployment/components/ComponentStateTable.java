@@ -7,44 +7,66 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentStateTable implements Component {
+public final class ComponentStateTable extends ComponentActive {
 
-    private final ConcurrentHashMap<Connection, ConnectionData> stateTable;
+    public final ConcurrentHashMap<SocketPair, Connection> stateTable;
+    public final long stateTimeoutMs;
 
-    public ComponentStateTable(ConcurrentHashMap<Connection, ConnectionData> stateTable) {
+    public ComponentStateTable(Assembly assembly,
+            ConcurrentHashMap<SocketPair, Connection> stateTable,
+            long stateTimeoutMs) {
+        super(assembly);
+        this.setPriority(Thread.MIN_PRIORITY);
         this.stateTable = stateTable;
+        this.stateTimeoutMs = stateTimeoutMs;
     }
 
+    @Override
+    protected void componentRun() throws Exception {
+        while (super.running) {
+            if (this.stateTable != null) {
+                for (SocketPair socks : this.stateTable.keySet()) {
+                    if (this.stateTable.get(socks).getTimeSinceLastEncounter() > this.stateTimeoutMs) {
+                        //state timed out
+                        this.stateTable.remove(socks);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public ArrayList<Diagnostic> getDiagnostics() {
-        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
+        ArrayList<Diagnostic> diag = super.getDiagnostics();
         if (this.stateTable != null) {
-            for (Connection conn : this.stateTable.keySet()) {
-                ConnectionData conndat = this.stateTable.get(conn);
+            for (SocketPair socks : this.stateTable.keySet()) {
+                Connection connection = this.stateTable.get(socks);
                 StringBuilder keybld = new StringBuilder();
                 String ins;
                 int insprt;
                 String ext;
                 int extprt;
-                if (conndat.inbound) {
-                    ins = conn.destination.getHostAddress();
-                    insprt = conn.destinationPort;
-                    ext = conn.source.getHostAddress();
-                    extprt = conn.sourcePort;
+                if (connection.inbound) {
+                    ins = socks.destination.getHostAddress();
+                    insprt = socks.destinationPort;
+                    ext = socks.source.getHostAddress();
+                    extprt = socks.sourcePort;
                 } else {
-                    ins = conn.source.getHostAddress();
-                    insprt = conn.sourcePort;
-                    ext = conn.destination.getHostAddress();
-                    extprt = conn.destinationPort;
+                    ins = socks.source.getHostAddress();
+                    insprt = socks.sourcePort;
+                    ext = socks.destination.getHostAddress();
+                    extprt = socks.destinationPort;
                 }
                 keybld = keybld.append(ext).append(":").append(extprt).append(" <-> ").append(ins).append(":").append(insprt);
-                diag.add(new Diagnostic(keybld.toString(), keybld.toString(), conndat.getDiagnostics()));
+                diag.add(new Diagnostic(keybld.toString(), keybld.toString(), connection.getDiagnostics()));
             }
         }
         return diag;

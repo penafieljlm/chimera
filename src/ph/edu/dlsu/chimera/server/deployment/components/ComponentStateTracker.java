@@ -10,10 +10,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.PacketTools;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
+import ph.edu.dlsu.chimera.util.ToolsPacket;
+import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
 
@@ -24,16 +24,17 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
 public final class ComponentStateTracker extends ComponentActive {
 
     public final boolean inbound;
-    public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
+    public final ConcurrentHashMap<SocketPair, Connection> stateTable;
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
 
     public ComponentStateTracker(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
-            ConcurrentHashMap<Connection, ConnectionData> stateTable,
+            ConcurrentHashMap<SocketPair, Connection> stateTable,
             boolean inbound) {
         super(assembly);
+        this.setPriority(Thread.NORM_PRIORITY);
         this.stateTable = stateTable;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
@@ -56,25 +57,25 @@ public final class ComponentStateTracker extends ComponentActive {
                     }
                     if (pkt.packet.hasHeader(new Tcp())) {
                         //tcp packets
-                        Connection conn = PacketTools.getConnection(pkt.packet);
+                        SocketPair socks = ToolsPacket.getConnection(pkt.packet);
                         Tcp tcp = pkt.packet.getHeader(new Tcp());
                         //create state
-                        if (!this.stateTable.containsKey(conn)) {
+                        if (!this.stateTable.containsKey(socks)) {
                             if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                this.stateTable.put(conn, new ConnectionData(pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
+                                this.stateTable.put(socks, new Connection(pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
                             }
                         }
-                        if (this.stateTable.containsKey(conn)) {
-                            ConnectionData conndat = this.stateTable.get(conn);
+                        if (this.stateTable.containsKey(socks)) {
+                            Connection connection = this.stateTable.get(socks);
                             //update state
-                            conndat.update(pkt);
+                            connection.update(pkt);
                             //attempt to delete state
-                            if (conndat.isDone()) {
-                                this.stateTable.remove(conn);
+                            if (connection.isDone()) {
+                                this.stateTable.remove(socks);
                             }
                             //forward
                             if (this.outQueue != null) {
-                                this.outQueue.add(new PduAtomicTcp(pkt.sniffer, pkt.packet, pkt.inbound, conndat));
+                                this.outQueue.add(new PduAtomicTcp(pkt.sniffer, pkt.packet, pkt.inbound, connection));
                             }
                         }
                     } else {

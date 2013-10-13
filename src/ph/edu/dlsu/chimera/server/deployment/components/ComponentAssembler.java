@@ -10,14 +10,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerTcp;
-import ph.edu.dlsu.chimera.server.deployment.components.handler.AssemblerUdp;
-import ph.edu.dlsu.chimera.util.PacketTools;
+import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
+import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerUdp;
+import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
  *
@@ -27,24 +27,25 @@ public final class ComponentAssembler extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<Pdu> outQueue;
-    public final ConcurrentHashMap<Connection, AssemblerTcp> tcpAssemblerTable;
+    public final ConcurrentHashMap<SocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
-    public final ConcurrentHashMap<Connection, AssemblerUdp> udpAssemblerTable;
+    public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup;
-    public final ConcurrentHashMap<Connection, ConnectionData> stateTable;
+    public final ConcurrentHashMap<SocketPair, Connection> stateTable;
 
     public ComponentAssembler(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<Pdu> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
-            ConcurrentHashMap<Connection, ConnectionData> stateTable) {
+            ConcurrentHashMap<SocketPair, Connection> stateTable) {
         super(assembly);
+        this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
-        this.tcpAssemblerTable = new ConcurrentHashMap<Connection, AssemblerTcp>();
+        this.tcpAssemblerTable = new ConcurrentHashMap<SocketPair, AssemblerTcp>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
-        this.udpAssemblerTable = new ConcurrentHashMap<Connection, AssemblerUdp>();
+        this.udpAssemblerTable = new ConcurrentHashMap<SocketPair, AssemblerUdp>();
         this.udpPortProtocolLookup = udpPortProtocolLookup;
         this.stateTable = stateTable;
     }
@@ -83,23 +84,24 @@ public final class ComponentAssembler extends ComponentActive {
     private void handleTcp(PduAtomicTcp pkt) {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
-                Connection conn = PacketTools.getConnection(pkt.packet);
-                if (!this.tcpAssemblerTable.contains(conn)) {
+                SocketPair socks = ToolsPacket.getConnection(pkt.packet);
+                if (!this.tcpAssemblerTable.contains(socks)) {
                     //create assembler
-                    AssemblerTcp asm = this.tcpPortProtocolLookup.get(conn.destinationPort);
+                    AssemblerTcp asm = this.tcpPortProtocolLookup.get(socks.destinationPort);
                     if (asm != null) {
-                        AssemblerTcp asmnew = (AssemblerTcp) asm.copyAssemblerType();
-                        asmnew.setConnectionData(pkt.connectionData);
-                        this.tcpAssemblerTable.put(conn, asmnew);
+                        AssemblerTcp asmnew = (AssemblerTcp) asm.createAssemblerInstance(pkt);
+                        if (asmnew != null) {
+                            this.tcpAssemblerTable.put(socks, asmnew);
+                        }
                     }
                 }
-                if (this.tcpAssemblerTable.contains(conn)) {
-                    AssemblerTcp asm = this.tcpAssemblerTable.get(conn);
+                if (this.tcpAssemblerTable.contains(socks)) {
+                    AssemblerTcp asm = this.tcpAssemblerTable.get(socks);
                     //append packet
                     asm.append(pkt);
                     //attempt delete
-                    if (!this.stateTable.contains(conn)) {
-                        this.tcpAssemblerTable.remove(conn);
+                    if (!this.stateTable.contains(socks)) {
+                        this.tcpAssemblerTable.remove(socks);
                     }
                     //forward pdus
                     if (this.outQueue != null) {

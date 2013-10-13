@@ -2,11 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.handler;
+package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpSmtp;
 
 /**
@@ -24,6 +26,11 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     private boolean expectingCmd;
 
     public AssemblerTcpSmtp() {
+        this(null);
+    }
+
+    public AssemblerTcpSmtp(Connection connection) {
+        super(connection);
         this.resetSmtp();
     }
 
@@ -35,7 +42,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
             this.messageBuilder.append(data);
             if (data.endsWith(AssemblerTcpSmtp.TOKEN_DAT_END)) {
                 //data segment ends
-                this.finishSmtp();
+                this.finishSmtp(pkt.inbound);
             }
         } else {
             StringBuilder tdata = new StringBuilder(data);
@@ -45,7 +52,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
                 tdata = tdata.delete(0, msgend);
                 this.messageBuilder = this.messageBuilder.append(msgstr);
                 String msg = this.messageBuilder.toString();
-                this.finishSmtp();
+                this.finishSmtp(pkt.inbound);
                 if (msg.toUpperCase().startsWith(AssemblerTcpSmtp.TOKEN_CMD_DATA)) {
                     //data clause received
                     this.dataOpen = true;
@@ -59,8 +66,12 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     }
 
     @Override
-    public Assembler copyAssemblerType() {
-        return new AssemblerTcpSmtp();
+    public Assembler createAssemblerInstance(PduAtomic firstPacket) {
+        if (firstPacket instanceof PduAtomicTcp) {
+            PduAtomicTcp pkttcp = (PduAtomicTcp) firstPacket;
+            return new AssemblerTcpSmtp(pkttcp.connection);
+        }
+        return null;
     }
 
     private void resetSmtp() {
@@ -70,8 +81,12 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
         this.expectingCmd = false;
     }
 
-    private void finishSmtp() {
-        PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(this.smtpPackets, super.connectionData, this.messageBuilder.toString(), !this.dataOpen);
+    private void finishSmtp(boolean inbound) {
+        PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(this.smtpPackets,
+                super.connection,
+                this.messageBuilder.toString(),
+                !this.dataOpen,
+                inbound);
         super.outputPDU(http);
         this.resetSmtp();
     }

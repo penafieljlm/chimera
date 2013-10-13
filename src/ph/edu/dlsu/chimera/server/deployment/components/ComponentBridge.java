@@ -22,6 +22,7 @@ public class ComponentBridge extends ComponentActive implements PcapPacketHandle
     
     public ComponentBridge(Assembly assembly, Pcap inPcap, Pcap outPcap) {
         super(assembly);
+        this.setPriority(Thread.MAX_PRIORITY);
         this.inPcap = inPcap;
         this.outPcap = outPcap;
     }

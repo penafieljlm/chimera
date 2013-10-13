@@ -17,16 +17,15 @@ public class PduAtomic extends Pdu {
 
     public final Pcap sniffer;
     public final PcapPacket packet;
-    public final boolean inbound;
     private Pcap injector;
     private long lastSentTimeNano;
 
     public PduAtomic(Pcap sourceInjector,
             PcapPacket packet,
             boolean inbound) {
+        super(inbound);
         this.sniffer = sourceInjector;
         this.packet = packet;
-        this.inbound = inbound;
         this.injector = null;
         this.lastSentTimeNano = -1;
     }

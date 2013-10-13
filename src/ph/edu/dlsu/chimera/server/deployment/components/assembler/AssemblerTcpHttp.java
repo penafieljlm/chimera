@@ -2,12 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.handler;
+package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpHttp;
 
 /**
@@ -28,6 +30,11 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     private int bodyLength;
 
     public AssemblerTcpHttp() {
+        this(null);
+    }
+
+    public AssemblerTcpHttp(Connection connection) {
+        super(connection);
         this.resetHttp();
     }
 
@@ -62,7 +69,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
                         }
                     }
                     if (this.bodyLength == 0) {
-                        this.finishHttp();
+                        this.finishHttp(pkt.inbound);
                     }
                 }
             } else {
@@ -75,20 +82,24 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
             if (this.keepAlive) {
                 //wait until body length reached
                 if (this.bodyBuilder.toString().length() >= this.bodyLength) {
-                    this.finishHttp();
+                    this.finishHttp(pkt.inbound);
                 }
             } else {
                 //wait until fin flag
                 if (tcp.flags_FIN()) {
-                    this.finishHttp();
+                    this.finishHttp(pkt.inbound);
                 }
             }
         }
     }
 
     @Override
-    public Assembler copyAssemblerType() {
-        return new AssemblerTcpHttp();
+    public Assembler createAssemblerInstance(PduAtomic firstPacket) {
+        if (firstPacket instanceof PduAtomicTcp) {
+            PduAtomicTcp pkttcp = (PduAtomicTcp) firstPacket;
+            return new AssemblerTcpHttp(pkttcp.connection);
+        }
+        return null;
     }
 
     private void resetHttp() {
@@ -100,8 +111,12 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
         this.bodyLength = -1;
     }
 
-    private void finishHttp() {
-        PduCompositeTcpHttp http = new PduCompositeTcpHttp(this.httpPackets, super.connectionData, this.headerBuilder.toString(), this.bodyBuilder.toString());
+    private void finishHttp(boolean inbound) {
+        PduCompositeTcpHttp http = new PduCompositeTcpHttp(this.httpPackets,
+                super.connection,
+                this.headerBuilder.toString(),
+                this.bodyBuilder.toString(),
+                inbound);
         super.outputPDU(http);
         this.resetHttp();
     }

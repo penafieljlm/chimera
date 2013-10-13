@@ -5,7 +5,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 
 /**
  *
@@ -17,10 +17,11 @@ public class PduCompositeTcpSmtp extends PduCompositeTcp {
     public final String smtp;
 
     public PduCompositeTcpSmtp(ConcurrentLinkedQueue<PduAtomic> packets,
-            ConnectionData connectionData,
+            Connection connection,
             String smtp,
-            boolean isCommand) {
-        super(packets, connectionData);
+            boolean isCommand,
+            boolean inbound) {
+        super(packets, connection, inbound);
         this.isCommand = isCommand;
         this.smtp = smtp;
     }

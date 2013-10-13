@@ -24,6 +24,7 @@ public final class ComponentInjector extends ComponentActive {
 
     public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PduAtomic> inQueue, Pcap outPcap, PcapDumper dumpPcap) {
         super(assembly);
+        this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
         this.outPcap = outPcap;
         this.dumpPcap = dumpPcap;

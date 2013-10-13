@@ -5,7 +5,7 @@
 
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 
 /**
  *
@@ -13,6 +13,6 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
  */
 public interface PduTcp {
 
-    public ConnectionData getConnectionData();
+    public Connection getConnection();
 
 }

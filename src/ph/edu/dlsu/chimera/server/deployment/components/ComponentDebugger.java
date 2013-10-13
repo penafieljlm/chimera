@@ -23,6 +23,7 @@ public class ComponentDebugger extends ComponentActive {
             ConcurrentLinkedQueue<Pdu> inQueue,
             ConcurrentLinkedQueue<Pdu> outQueue) {
         super(assembly);
+        this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
     }

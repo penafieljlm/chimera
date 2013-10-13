@@ -2,10 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.handler;
+package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.TcpQueue;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
@@ -16,15 +16,15 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 public abstract class AssemblerTcp extends Assembler {
 
     public final TcpQueue queue;
-    protected ConnectionData connectionData;
+    protected final Connection connection;
 
     public AssemblerTcp() {
-        this.queue = new TcpQueue();
-        this.connectionData = null;
+        this(null);
     }
 
-    public void setConnectionData(ConnectionData connectionData) {
-        this.connectionData = connectionData;
+    public AssemblerTcp(Connection connection) {
+        this.queue = new TcpQueue();
+        this.connection = connection;
     }
 
     @Override

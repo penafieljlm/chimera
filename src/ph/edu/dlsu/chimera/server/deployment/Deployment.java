@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.deployment;
 
 import ph.edu.dlsu.chimera.core.Diagnostic;
@@ -18,12 +17,13 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 public abstract class Deployment {
 
     public final String name;
-
     protected final HashMap<String, Component> components;
+    protected boolean isRunning;
 
     public Deployment(String name) {
         this.name = name;
         this.components = new HashMap<String, Component>();
+        this.isRunning = false;
     }
 
     public ArrayList<Diagnostic> getDiagnostics(String componentName) {
@@ -31,21 +31,26 @@ public abstract class Deployment {
     }
 
     public synchronized void killDeployment() {
-        for(String k : this.components.keySet()) {
-            if(this.components.get(k) instanceof ComponentActive) {
+        for (String k : this.components.keySet()) {
+            if (this.components.get(k) instanceof ComponentActive) {
                 ComponentActive ca = (ComponentActive) this.components.get(k);
                 ca.kill();
             }
         }
+        this.isRunning = false;
     }
 
     public void startDeployment() {
-        for(String k : this.components.keySet()) {
-            if(this.components.get(k) instanceof ComponentActive) {
+        this.isRunning = true;
+        for (String k : this.components.keySet()) {
+            if (this.components.get(k) instanceof ComponentActive) {
                 ComponentActive ca = (ComponentActive) this.components.get(k);
                 ca.start();
             }
         }
     }
 
+    public boolean isRunning() {
+        return this.isRunning;
+    }
 }

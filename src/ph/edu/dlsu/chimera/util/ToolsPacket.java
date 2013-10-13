@@ -17,36 +17,36 @@ import org.jnetpcap.protocol.network.Ip6;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
+import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class PacketTools {
+public abstract class ToolsPacket {
 
-    public static Connection getConnection(PcapPacket pkt) {
+    public static SocketPair getConnection(PcapPacket pkt) {
         try {
             if (pkt.hasHeader(new Tcp())) {
                 Tcp tcp = pkt.getHeader(new Tcp());
                 if (pkt.hasHeader(new Ip4())) {
                     Ip4 ip = pkt.getHeader(new Ip4());
-                    return new Connection(ip, tcp);
+                    return new SocketPair(ip, tcp);
                 }
                 if (pkt.hasHeader(new Ip6())) {
                     Ip6 ip = pkt.getHeader(new Ip6());
-                    return new Connection(ip, tcp);
+                    return new SocketPair(ip, tcp);
                 }
             }
             if (pkt.hasHeader(new Udp())) {
                 Udp udp = pkt.getHeader(new Udp());
                 if (pkt.hasHeader(new Ip4())) {
                     Ip4 ip = pkt.getHeader(new Ip4());
-                    return new Connection(ip, udp);
+                    return new SocketPair(ip, udp);
                 }
                 if (pkt.hasHeader(new Ip6())) {
                     Ip6 ip = pkt.getHeader(new Ip6());
-                    return new Connection(ip, udp);
+                    return new SocketPair(ip, udp);
                 }
             }
         } catch (UnknownHostException ex) {
@@ -99,7 +99,7 @@ public abstract class PacketTools {
         byte[] data = new byte[0];
         JHeader h = tcp;
         while (h != null) {
-            data = ArrayTools.concat(h.getHeader(), data);
+            data = ToolsArray.concat(h.getHeader(), data);
             h = h.getParent();
         }
         //packet with tcp payload omitted
@@ -108,7 +108,7 @@ public abstract class PacketTools {
         while (h != null) {
             if (h instanceof Tcp) {
                 Tcp _tcp = (Tcp) h;
-                _tcp = PacketTools.reverse(_tcp);
+                _tcp = ToolsPacket.reverse(_tcp);
                 _tcp.flags(0);
                 _tcp.flags_ACK(true);
                 _tcp.ack(ack);
@@ -116,16 +116,16 @@ public abstract class PacketTools {
             }
             if (h instanceof Ip6) {
                 Ip6 _ip6 = (Ip6) h;
-                _ip6 = PacketTools.reverse(_ip6);
+                _ip6 = ToolsPacket.reverse(_ip6);
             }
             if (h instanceof Ip4) {
                 Ip4 _ip4 = (Ip4) h;
-                _ip4 = PacketTools.reverse(_ip4);
+                _ip4 = ToolsPacket.reverse(_ip4);
                 _ip4.checksum(_ip4.calculateChecksum());
             }
             if (h instanceof Ethernet) {
                 Ethernet _eth = (Ethernet) h;
-                _eth = PacketTools.reverse(_eth);
+                _eth = ToolsPacket.reverse(_eth);
                 _eth.checksum(_eth.calculateChecksum());
             }
             h = h.getParent();

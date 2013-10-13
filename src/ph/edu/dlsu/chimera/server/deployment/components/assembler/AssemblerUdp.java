@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.server.deployment.components.handler;
+package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 /**
  *

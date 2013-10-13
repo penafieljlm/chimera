@@ -15,7 +15,9 @@ public abstract class PduComposite extends Pdu {
 
     private final ConcurrentLinkedQueue<PduAtomic> packets;
 
-    public PduComposite(ConcurrentLinkedQueue<PduAtomic> packets) {
+    public PduComposite(ConcurrentLinkedQueue<PduAtomic> packets,
+            boolean inbound) {
+        super(inbound);
         this.packets = packets;
     }
 

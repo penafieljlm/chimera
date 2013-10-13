@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 
 /**
  *
@@ -14,17 +14,17 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
  */
 public class PduAtomicTcp extends PduAtomic implements PduTcp {
 
-    public final ConnectionData connectionData;
+    public final Connection connection;
 
     public PduAtomicTcp(Pcap sourceInjector,
             PcapPacket packet,
             boolean inbound,
-            ConnectionData connectionData) {
+            Connection connection) {
         super(sourceInjector, packet, inbound);
-        this.connectionData = connectionData;
+        this.connection = connection;
     }
 
-    public ConnectionData getConnectionData() {
-        return this.connectionData;
+    public Connection getConnection() {
+        return this.connection;
     }
 }

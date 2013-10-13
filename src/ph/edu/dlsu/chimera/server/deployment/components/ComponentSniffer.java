@@ -27,11 +27,12 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public final Pcap inPcap;
     public int received;
 
-    public ComponentSniffer(Assembly assembly, 
+    public ComponentSniffer(Assembly assembly,
             Pcap inPcap,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
             boolean inbound) {
         super(assembly);
+        this.setPriority(Thread.MAX_PRIORITY);
         this.inbound = inbound;
         this.outQueue = outQueue;
         this.received = 0;
@@ -42,15 +43,23 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public void componentRun() throws Exception {
         switch (this.inPcap.loop(-1, this, this.inPcap)) {
             case 0:
+                if (this.outQueue != null) {
+                    //signal end
+                    this.outQueue.add(new PduEnd(this.inbound));
+                }
                 throw new Exception("Count exhausted.");
             case -1:
+                if (this.outQueue != null) {
+                    //signal end
+                    this.outQueue.add(new PduEnd(this.inbound));
+                }
                 throw new Exception("Pcap loop error.");
             case -2:
+                if (this.outQueue != null) {
+                    //signal end
+                    this.outQueue.add(new PduEnd(this.inbound));
+                }
                 throw new Exception("Break loop called.");
-        }
-        if (this.outQueue != null) {
-            //signal end
-            this.outQueue.add(new PduEnd(this.inbound));
         }
         this.inPcap.close();
     }

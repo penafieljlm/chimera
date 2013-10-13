@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.server.deployment.components.handler;
+package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
@@ -31,7 +31,7 @@ public abstract class Assembler {
 
     public abstract boolean append(PduAtomic segment);
 
-    public abstract Assembler copyAssemblerType();
+    public abstract Assembler createAssemblerInstance(PduAtomic firstPacket);
 
     protected void outputPDU(PduComposite pdu) {
         this.queue.add(pdu);

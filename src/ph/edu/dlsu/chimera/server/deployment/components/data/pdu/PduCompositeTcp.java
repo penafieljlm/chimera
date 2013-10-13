@@ -5,7 +5,7 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
+import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
 
 /**
  *
@@ -13,15 +13,16 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.ConnectionData;
  */
 public class PduCompositeTcp extends PduComposite implements PduTcp {
 
-    public final ConnectionData connectionData;
+    public final Connection connection;
 
     public PduCompositeTcp(ConcurrentLinkedQueue<PduAtomic> packets,
-            ConnectionData connectionData) {
-        super(packets);
-        this.connectionData = connectionData;
+            Connection connection,
+            boolean inbound) {
+        super(packets, inbound);
+        this.connection = connection;
     }
 
-    public ConnectionData getConnectionData() {
-        return this.connectionData;
+    public Connection getConnection() {
+        return this.connection;
     }
 }

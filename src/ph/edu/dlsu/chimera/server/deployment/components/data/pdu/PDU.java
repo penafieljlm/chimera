@@ -11,8 +11,14 @@ package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
  */
 public abstract class Pdu {
 
+    public final boolean inbound;
+
+    public Pdu(boolean inbound) {
+        this.inbound = inbound;
+    }
+
     public String printDebug() {
-        return "";
+        return null;
     }
 
 }
