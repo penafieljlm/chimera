@@ -17,21 +17,25 @@ import ph.edu.dlsu.chimera.util.ToolsTime;
  */
 public class Statistics implements IDiagnosable {
 
+    public static final int STAT_CSV_VAL_COUNT = 5;
     public final long timeCreatedNanos;
     protected long totalEncounters;
     protected long totalSize;
     protected long lastEncounterNanos;
+    protected long lastLastEncounterNanos;
 
     public Statistics(long timeCreatedNano) {
         this.timeCreatedNanos = timeCreatedNano;
         this.totalEncounters = 0;
         this.totalSize = 0;
         this.lastEncounterNanos = timeCreatedNano;
+        this.lastLastEncounterNanos = timeCreatedNano;
     }
 
     public synchronized void commitEncounter(Pdu pkt) {
         this.totalEncounters++;
         this.totalSize += pkt.size();
+        this.lastLastEncounterNanos = this.lastEncounterNanos;
         this.lastEncounterNanos = pkt.timestampInNanos();
     }
 
@@ -56,6 +60,10 @@ public class Statistics implements IDiagnosable {
         return ToolsTime.nowMs() - ToolsTime.nsToMs((this.lastEncounterNanos));
     }
 
+    public synchronized long getLastEncounterDeltaNs() {
+        return this.lastEncounterNanos - this.lastLastEncounterNanos;
+    }
+
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
         Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.timeCreatedNanos));
@@ -71,5 +79,15 @@ public class Statistics implements IDiagnosable {
         diag.add(new Diagnostic("lastencounter", "Last Encounter", (lastenc == null) ? "N/A" : lastenc.toLocaleString()));
         diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTimeNs() < 0) ? "N/A" : this.getTimeSinceLastEncounterMs() + "ms"));
         return diag;
+    }
+
+    public synchronized String[] toCsvValues() {
+        String[] val = new String[Statistics.STAT_CSV_VAL_COUNT];
+        val[0] = "" + this.getTrafficRatePerSec();
+        val[1] = "" + this.getAverageSize();
+        val[2] = "" + this.getLastEncounterDeltaNs();
+        val[3] = "" + this.totalEncounters;
+        val[4] = "" + this.totalSize;
+        return val;
     }
 }

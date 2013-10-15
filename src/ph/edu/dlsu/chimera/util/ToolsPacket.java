@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jnetpcap.packet.JHeader;
+import org.jnetpcap.packet.JHeaderPool;
 import org.jnetpcap.packet.JMemoryPacket;
 import org.jnetpcap.packet.JPacket;
 import org.jnetpcap.packet.PcapPacket;
@@ -24,8 +25,15 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class ToolsPacket {
+    
+    private static final JHeaderPool headerPool = new JHeaderPool();
 
-    public static SocketPair getConnection(PcapPacket pkt) {
+    public static String getPacketProtocolName(PcapPacket pkt) {
+        int id = pkt.getHeaderIdByIndex(pkt.getHeaderCount() - 1);
+        return ToolsPacket.headerPool.getHeader(id).getName();
+    }
+
+    public static SocketPair getSocketPair(PcapPacket pkt) {
         try {
             if (pkt.hasHeader(new Tcp())) {
                 Tcp tcp = pkt.getHeader(new Tcp());

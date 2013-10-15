@@ -32,7 +32,7 @@ public class CriteriaAtomicIpTcpSrcSyn extends Criteria {
 
     @Override
     public Criteria createInstance(PduAtomic pkt) {
-        SocketPair socks = ToolsPacket.getConnection(pkt.packet);
+        SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
         if (socks != null && pkt.packet.hasHeader(new Tcp())) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
             if (tcp.flags_SYN() && !tcp.flags_ACK()) {

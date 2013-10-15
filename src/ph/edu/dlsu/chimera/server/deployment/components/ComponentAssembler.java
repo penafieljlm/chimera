@@ -91,7 +91,7 @@ public final class ComponentAssembler extends ComponentActive {
     private void handleTcp(PduAtomic pkt) {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
-                SocketPair socks = ToolsPacket.getConnection(pkt.packet);
+                SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
                 if (!this.tcpAssemblerTable.contains(socks)) {
                     //create assembler
                     AssemblerTcp asm = this.tcpPortProtocolLookup.get(socks.destinationPort);

@@ -32,7 +32,7 @@ public class CriteriaAtomicIpTcpSrc extends Criteria {
 
     @Override
     public Criteria createInstance(PduAtomic pkt) {
-        SocketPair socks = ToolsPacket.getConnection(pkt.packet);
+        SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
         if (socks != null && pkt.packet.hasHeader(new Tcp())) {
             return new CriteriaAtomicIpTcpSrc(socks.source, socks.sourcePort);
         }

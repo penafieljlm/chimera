@@ -25,19 +25,18 @@ public abstract class ToolsArray {
         return result;
     }
 
-    public static Object[] concat(Object[] left, Object[] right) {
+    public static <T extends Object> T[] concat(T[] left, T[] right) {
         Object[] result = new Object[left.length + right.length];
         System.arraycopy(left, 0, result, 0, left.length);
         System.arraycopy(right, 0, result, left.length, right.length);
-        return result;
+        return (T[]) result;
     }
 
-    public static Object[] concat(Object[]... arg) {
+    public static <T extends Object> T[] concat(T[]... arg) {
         Object[] result = new Object[0];
         for (Object[] a : arg) {
             result = ToolsArray.concat(result, a);
         }
-        return result;
+        return (T[]) result;
     }
-    
 }

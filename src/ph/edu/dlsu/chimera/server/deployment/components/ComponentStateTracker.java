@@ -56,7 +56,7 @@ public final class ComponentStateTracker extends ComponentActive {
                     }
                     if (pkt.packet.hasHeader(new Tcp())) {
                         //tcp packets
-                        SocketPair socks = ToolsPacket.getConnection(pkt.packet);
+                        SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
                         Tcp tcp = pkt.packet.getHeader(new Tcp());
                         //create state
                         if (!this.stateTable.containsKey(socks)) {
