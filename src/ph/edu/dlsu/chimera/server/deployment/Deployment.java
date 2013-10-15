@@ -7,6 +7,7 @@ package ph.edu.dlsu.chimera.server.deployment;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import java.util.ArrayList;
 import java.util.HashMap;
+import ph.edu.dlsu.chimera.server.IDiagnosable;
 import ph.edu.dlsu.chimera.server.deployment.components.Component;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 
@@ -26,8 +27,11 @@ public abstract class Deployment {
         this.isRunning = false;
     }
 
-    public ArrayList<Diagnostic> getDiagnostics(String componentName) {
-        return this.components.get(componentName).getDiagnostics();
+    public Component getComponent(String componentName) throws Exception {
+        Component component = this.components.get(componentName);
+        if(component == null)
+            throw new Exception("No such component: " + componentName + "!");
+        return component;
     }
 
     public synchronized void killDeployment() {

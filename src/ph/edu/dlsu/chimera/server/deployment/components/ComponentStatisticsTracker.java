@@ -9,26 +9,26 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsTrackerAtomic extends ComponentActive {
+public class ComponentStatisticsTracker extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
-    public final List<CriteriaAtomic> criterias;
-    public final ConcurrentHashMap<CriteriaAtomic, Statistics> statisticsTable;
+    public final List<Criteria> criterias;
+    public final ConcurrentHashMap<Criteria, Statistics> statisticsTable;
 
-    public ComponentStatisticsTrackerAtomic(Assembly assembly,
+    public ComponentStatisticsTracker(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
-            List<CriteriaAtomic> criterias,
-            ConcurrentHashMap<CriteriaAtomic, Statistics> statisticsTable) {
+            List<Criteria> criterias,
+            ConcurrentHashMap<Criteria, Statistics> statisticsTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
@@ -43,7 +43,7 @@ public class ComponentStatisticsTrackerAtomic extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt instanceof PduEnd) {
+                    if (pkt instanceof PduAtomicEnd) {
                         //signal end
                         if (this.outQueue != null) {
                             this.outQueue.add(pkt);
@@ -52,21 +52,23 @@ public class ComponentStatisticsTrackerAtomic extends ComponentActive {
                     }
                     if (pkt.inbound) {
                         //processing here
-                        CriteriaAtomic[] pktcriterias = new CriteriaAtomic[this.criterias.size()];
+                        Criteria[] pktcriterias = new Criteria[this.criterias.size()];
                         //get criterias for this packet
-                        for(int i = 0 ; i < this.criterias.size() ; i++) {
+                        for (int i = 0; i < this.criterias.size(); i++) {
                             pktcriterias[i] = this.criterias.get(i).createInstance(pkt);
                         }
                         //create / update criterias
-                        for(CriteriaAtomic crt : pktcriterias) {
-                            if(!this.statisticsTable.contains(crt)) {
-                                //create criteria
-                                this.statisticsTable.put(crt, new Statistics(pkt.packet.getCaptureHeader().timestampInNanos()));
-                            }
-                            if(this.statisticsTable.contains(crt)) {
-                                //update criteria statisticsTable and associate criteria to packet
-                                this.statisticsTable.get(crt).commitEncounter(pkt);
-                                pkt.addStatistics(crt, this.statisticsTable.get(crt));
+                        for (Criteria crt : pktcriterias) {
+                            if (crt != null) {
+                                if (!this.statisticsTable.contains(crt)) {
+                                    //create criteria
+                                    this.statisticsTable.put(crt, new Statistics(pkt.timestampInNanos()));
+                                }
+                                if (this.statisticsTable.contains(crt)) {
+                                    //update criteria statisticsTable and associate criteria to packet
+                                    this.statisticsTable.get(crt).commitEncounter(pkt);
+                                    pkt.addStatistics(crt, this.statisticsTable.get(crt));
+                                }
                             }
                         }
                         //forward packet

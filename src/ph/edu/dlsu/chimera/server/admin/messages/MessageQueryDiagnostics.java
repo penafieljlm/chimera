@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server.admin.messages;
 
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageDiagnostics;
-import ph.edu.dlsu.chimera.client.admin.messages.MessageException;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
 
@@ -26,7 +25,7 @@ public class MessageQueryDiagnostics implements ServerMessage {
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         if(assembly.getDeployment() == null)
             throw new Exception("A deployment phase is not being executed!");
-        return new MessageDiagnostics(this.component, assembly.getDeployment().getDiagnostics(this.component));
+        return new MessageDiagnostics(this.component, assembly.getDeployment().getComponent(this.component).getDiagnostics());
     }
 
 }

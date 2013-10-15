@@ -29,7 +29,7 @@ public abstract class AssemblerTcp extends Assembler {
     }
 
     @Override
-    public boolean append(PduAtomic segment) {
+    public void append(PduAtomic segment) {
         //will receive tcp packets in order
         if (segment.packet.hasHeader(new Tcp())) {
             this.queue.add(segment);
@@ -39,7 +39,7 @@ public abstract class AssemblerTcp extends Assembler {
                 this.appendTCP(tcp, p);
             }
         }
-        return super.append(segment);
+        super.append(segment);
     }
 
     @Override

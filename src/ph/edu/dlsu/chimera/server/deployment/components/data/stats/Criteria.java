@@ -4,6 +4,8 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
 
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
@@ -19,7 +21,13 @@ public abstract class Criteria {
     }
 
     /**
-     * @return a String object describing this CriteriaAtomic instance.
+     * @return a String object describing this Criteria instance.
      */
     public abstract String getInstanceString();
+
+    /**
+     * @param pkt - packet to create criteria instance from.
+     * @return an instance of a criteria type from the packet; null if packet is not compatible with the criteria type.
+     */
+    public abstract Criteria createInstance(PduAtomic pkt);
 }

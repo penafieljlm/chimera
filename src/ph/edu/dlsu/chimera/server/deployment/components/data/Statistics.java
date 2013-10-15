@@ -9,7 +9,7 @@ import java.util.Date;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.IDiagnosable;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**
  *
@@ -35,13 +35,12 @@ public class Statistics implements IDiagnosable {
         this.lastEncounterNanos = pkt.timestampInNanos();
     }
 
-    public synchronized long getTimeExisted() {
-        Date now = new Date();
-        return now.getTime() - (this.timeCreatedNanos / 1000000);
+    public synchronized long getTimeExistedMs() {
+        return ToolsTime.nowMs() - ToolsTime.nsToMs((this.timeCreatedNanos));
     }
 
-    public synchronized double getTrafficRate() {
-        double sec = this.getTimeExisted() / 1000;
+    public synchronized double getTrafficRatePerSec() {
+        double sec = this.getTimeExistedMs() / 1000;
         return (sec > 0) ? this.totalEncounters / sec : this.totalEncounters;
     }
 
@@ -49,29 +48,28 @@ public class Statistics implements IDiagnosable {
         return (this.totalEncounters > 0) ? this.totalSize / this.totalEncounters : this.totalSize;
     }
 
-    public synchronized long getLastEncounterTime() {
+    public synchronized long getLastEncounterTimeNs() {
         return this.lastEncounterNanos;
     }
 
-    public synchronized double getTimeSinceLastEncounter() {
-        Date now = new Date();
-        return now.getTime() - (this.lastEncounterNanos / 1000000);
+    public synchronized double getTimeSinceLastEncounterMs() {
+        return ToolsTime.nowMs() - ToolsTime.nsToMs((this.lastEncounterNanos));
     }
 
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
-        Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(this.timeCreatedNanos / 1000000);
-        Date update = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(this.lastEncounterNanos / 1000000);
-        Date lastenc = (this.getLastEncounterTime() < 0) ? null : new java.sql.Date(this.getLastEncounterTime() / 1000000);
+        Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.timeCreatedNanos));
+        Date update = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.lastEncounterNanos));
+        Date lastenc = (this.getLastEncounterTimeNs() < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.getLastEncounterTimeNs()));
         diag.add(new Diagnostic("createtime", "Time Created", (create == null) ? "N/A" : create.toLocaleString()));
         diag.add(new Diagnostic("encounters", "Packets Encountered", this.totalEncounters));
         diag.add(new Diagnostic("totalsize", "Traffic Total Size", this.totalSize));
         diag.add(new Diagnostic("lastencounter", "Last Encounter", (update == null) ? "N/A" : update.toLocaleString()));
-        diag.add(new Diagnostic("timexisted", "Time Existed", this.getTimeExisted() + "ms"));
-        diag.add(new Diagnostic("trafficrate", "Traffic Rate", this.getTrafficRate() + "pkts/sec"));
+        diag.add(new Diagnostic("timexisted", "Time Existed", this.getTimeExistedMs() + "ms"));
+        diag.add(new Diagnostic("trafficrate", "Traffic Rate", this.getTrafficRatePerSec() + "pkts/sec"));
         diag.add(new Diagnostic("averagesize", "Traffic Average Size", this.getAverageSize()));
         diag.add(new Diagnostic("lastencounter", "Last Encounter", (lastenc == null) ? "N/A" : lastenc.toLocaleString()));
-        diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTime() < 0) ? "N/A" : this.getTimeSinceLastEncounter() + "ms"));
+        diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTimeNs() < 0) ? "N/A" : this.getTimeSinceLastEncounterMs() + "ms"));
         return diag;
     }
 }

@@ -34,7 +34,7 @@ public final class ComponentStateTable extends ComponentActive {
         while (super.running) {
             if (this.stateTable != null) {
                 for (SocketPair socks : this.stateTable.keySet()) {
-                    if (this.stateTable.get(socks).getTimeSinceLastEncounter() > this.stateTimeoutMs) {
+                    if (this.stateTable.get(socks).getTimeSinceLastEncounterMs() > this.stateTimeoutMs) {
                         //state timed out
                         this.stateTable.remove(socks);
                     }

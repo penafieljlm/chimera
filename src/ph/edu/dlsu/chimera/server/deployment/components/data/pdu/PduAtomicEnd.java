@@ -9,9 +9,9 @@ package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class PduEnd extends PduAtomic {
+public class PduAtomicEnd extends PduAtomic {
 
-    public PduEnd(boolean inbound) {
+    public PduAtomicEnd(boolean inbound) {
         super(null, null, inbound);
     }
 

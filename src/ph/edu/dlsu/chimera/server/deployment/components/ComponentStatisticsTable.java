@@ -9,38 +9,38 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic.CriteriaAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsTableAtomic extends ComponentActive {
+public class ComponentStatisticsTable extends ComponentActive {
 
-    public final List<CriteriaAtomic> criteriasAtomic;
-    public final ConcurrentHashMap<CriteriaAtomic, Statistics> statisticsTableAtomic;
+    public final List<Criteria> criterias;
+    public final ConcurrentHashMap<Criteria, Statistics> statisticsTable;
     public final long statsTimeoutMs;
 
-    public ComponentStatisticsTableAtomic(Assembly assembly,
-            List<CriteriaAtomic> criteriasAtomic,
-            ConcurrentHashMap<CriteriaAtomic, Statistics> statisticsTableAtomic,
+    public ComponentStatisticsTable(Assembly assembly,
+            List<Criteria> criterias,
+            ConcurrentHashMap<Criteria, Statistics> statisticsTableAtomic,
             long statsTimeoutMs) {
         super(assembly);
         this.setPriority(Thread.MIN_PRIORITY);
-        this.criteriasAtomic = criteriasAtomic;
-        this.statisticsTableAtomic = statisticsTableAtomic;
+        this.criterias = criterias;
+        this.statisticsTable = statisticsTableAtomic;
         this.statsTimeoutMs = statsTimeoutMs;
     }
 
     @Override
     protected void componentRun() throws Exception {
         while (super.running) {
-            if (this.statisticsTableAtomic != null) {
-                for (CriteriaAtomic crt : this.statisticsTableAtomic.keySet()) {
-                    if (this.statisticsTableAtomic.get(crt).getTimeSinceLastEncounter() > this.statsTimeoutMs) {
+            if (this.statisticsTable != null) {
+                for (Criteria crt : this.statisticsTable.keySet()) {
+                    if (this.statisticsTable.get(crt).getTimeSinceLastEncounterMs() > this.statsTimeoutMs) {
                         //state timed out
-                        this.statisticsTableAtomic.remove(crt);
+                        this.statisticsTable.remove(crt);
                     }
                 }
             }
@@ -50,11 +50,11 @@ public class ComponentStatisticsTableAtomic extends ComponentActive {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        for (CriteriaAtomic crt : this.criteriasAtomic) {
+        for (Criteria crt : this.criterias) {
             ArrayList<Diagnostic> instances = new ArrayList<Diagnostic>();
-            for (CriteriaAtomic statcrt : this.statisticsTableAtomic.keySet()) {
+            for (Criteria statcrt : this.statisticsTable.keySet()) {
                 if (crt.getClass() == statcrt.getClass()) {
-                    Statistics stats = this.statisticsTableAtomic.get(statcrt);
+                    Statistics stats = this.statisticsTable.get(statcrt);
                     instances.add(new Diagnostic(statcrt.getInstanceString(), statcrt.getInstanceString(), stats.getDiagnostics()));
                 }
             }

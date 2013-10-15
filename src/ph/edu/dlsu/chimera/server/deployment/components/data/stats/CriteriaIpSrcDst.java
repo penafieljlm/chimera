@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic;
+package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
 
 import java.net.InetAddress;
 import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
@@ -13,24 +13,27 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class CriteriaAtomicIpDst extends CriteriaAtomic {
+public class CriteriaIpSrcDst extends Criteria {
 
+    public final InetAddress source;
     public final InetAddress destination;
 
-    public CriteriaAtomicIpDst() {
-        this(null);
+    public CriteriaIpSrcDst() {
+        this(null, null);
     }
 
-    public CriteriaAtomicIpDst(InetAddress destination) {
-        super("ipdst", "Destination IP");
+    public CriteriaIpSrcDst(InetAddress source,
+            InetAddress destination) {
+        super("ipsrcdst", "Source and Destination IP");
+        this.source = source;
         this.destination = destination;
     }
 
     @Override
-    public CriteriaAtomic createInstance(PduAtomic pkt) {
+    public Criteria createInstance(PduAtomic pkt) {
         SocketPair socks = ToolsPacket.getConnection(pkt.packet);
         if (socks != null) {
-            return new CriteriaAtomicIpDst(socks.destination);
+            return new CriteriaIpSrcDst(socks.source, socks.destination);
         }
         return null;
     }
@@ -43,7 +46,10 @@ public class CriteriaAtomicIpDst extends CriteriaAtomic {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CriteriaAtomicIpDst other = (CriteriaAtomicIpDst) obj;
+        final CriteriaIpSrcDst other = (CriteriaIpSrcDst) obj;
+        if (this.source != other.source && (this.source == null || !this.source.equals(other.source))) {
+            return false;
+        }
         if (this.destination != other.destination && (this.destination == null || !this.destination.equals(other.destination))) {
             return false;
         }
@@ -52,12 +58,13 @@ public class CriteriaAtomicIpDst extends CriteriaAtomic {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 71 * hash + (this.destination != null ? this.destination.hashCode() : 0);
+        int hash = 5;
+        hash = 67 * hash + (this.source != null ? this.source.hashCode() : 0);
+        hash = 67 * hash + (this.destination != null ? this.destination.hashCode() : 0);
         return hash;
     }
     @Override
     public String getInstanceString() {
-        return "any -[IP]> " + this.destination.getHostAddress();
+        return this.source.getHostAddress() + " -[IP]> " + this.destination.getHostAddress();
     }
 }

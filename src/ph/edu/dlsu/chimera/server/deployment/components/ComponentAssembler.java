@@ -13,10 +13,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduEnd;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerUdp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeEnd;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
@@ -26,7 +27,8 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
 public final class ComponentAssembler extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<Pdu> outQueue;
+    public final ConcurrentLinkedQueue<PduComposite> outQueueComposite;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueueAtomic;
     public final ConcurrentHashMap<SocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
     public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
@@ -35,14 +37,16 @@ public final class ComponentAssembler extends ComponentActive {
 
     public ComponentAssembler(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<Pdu> outQueue,
+            ConcurrentLinkedQueue<PduComposite> outQueueComposite,
+            ConcurrentLinkedQueue<PduAtomic> outQueueAtomic,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
-        this.outQueue = outQueue;
+        this.outQueueComposite = outQueueComposite;
+        this.outQueueAtomic = outQueueAtomic;
         this.tcpAssemblerTable = new ConcurrentHashMap<SocketPair, AssemblerTcp>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
         this.udpAssemblerTable = new ConcurrentHashMap<SocketPair, AssemblerUdp>();
@@ -57,10 +61,13 @@ public final class ComponentAssembler extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt instanceof PduEnd) {
+                    if (pkt instanceof PduAtomicEnd) {
                         //signal end
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
+                        if (this.outQueueComposite != null) {
+                            this.outQueueComposite.add(new PduCompositeEnd(pkt.inbound));
+                        }
+                        if (this.outQueueAtomic != null) {
+                            this.outQueueAtomic.add(pkt);
                         }
                         return;
                     }
@@ -71,8 +78,8 @@ public final class ComponentAssembler extends ComponentActive {
                             continue;
                         }
                         //default forward
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
+                        if (this.outQueueAtomic != null) {
+                            this.outQueueAtomic.add(pkt);
                             continue;
                         }
                     }
@@ -104,10 +111,10 @@ public final class ComponentAssembler extends ComponentActive {
                         this.tcpAssemblerTable.remove(socks);
                     }
                     //forward pdus
-                    if (this.outQueue != null) {
-                        Pdu pdu = asm.poll();
+                    if (this.outQueueComposite != null) {
+                        PduComposite pdu = asm.poll();
                         while (pdu != null) {
-                            this.outQueue.add(pdu);
+                            this.outQueueComposite.add(pdu);
                             pdu = asm.poll();
                         }
                     }
@@ -134,8 +141,8 @@ public final class ComponentAssembler extends ComponentActive {
         } else {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
-        if (this.outQueue != null) {
-            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
+        if (this.outQueueComposite != null) {
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueueComposite.size()));
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }

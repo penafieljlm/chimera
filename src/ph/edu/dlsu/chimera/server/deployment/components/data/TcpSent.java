@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**
  * responsible for sure delivery
@@ -15,11 +16,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
  */
 public class TcpSent {
 
-    public static final long TCP_TIMEOUT_NANO = 300000000000L;
-
+    public final long tcpTimeoutMs;
     private final List<PduAtomic> sent;
 
-    public TcpSent() {
+    public TcpSent(long tcpTimeoutMs) {
+        this.tcpTimeoutMs = tcpTimeoutMs;
         this.sent = Collections.synchronizedList(Collections.EMPTY_LIST);
     }
 
@@ -74,8 +75,8 @@ public class TcpSent {
 
     public synchronized List<PduAtomic> getTimedOutPackets() {
         List<PduAtomic> result = Collections.synchronizedList(Collections.EMPTY_LIST);
-        for(PduAtomic pkt : this.sent) {
-            if(TcpSent.TCP_TIMEOUT_NANO < pkt.getTimeSinceSent()) {
+        for (PduAtomic pkt : this.sent) {
+            if (this.tcpTimeoutMs < ToolsTime.nsToMs(pkt.getTimeSinceSentNanos())) {
                 result.add(pkt);
             }
         }

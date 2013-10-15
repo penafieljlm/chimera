@@ -32,7 +32,6 @@ public final class TcpQueue {
                         return this.inQueue.add(packet);
                     }
                 }
-            } else {
             }
         }
         return false;

@@ -49,7 +49,6 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
                 String header = data.substring(0, dataStart);
                 String body = data.substring(dataStart);
                 this.headerBuilder.append(header);
-                this.bodyBuilder.append(body);
                 //determine content length
                 String okHeader = this.headerBuilder.toString().toLowerCase();
                 if (okHeader.contains(AssemblerTcpHttp.TOKEN_ATTR_VALUE_KEEP_ALIVE)) {
@@ -65,6 +64,9 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
                             this.bodyLength = Integer.valueOf(contentLenAttr);
                         } catch (NumberFormatException ex) {
                         }
+                    }
+                    if (this.bodyLength != 0) {
+                        this.bodyBuilder.append(body);
                     }
                     if (this.bodyLength == 0) {
                         this.finishHttp(pkt.inbound);

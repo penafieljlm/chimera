@@ -18,7 +18,6 @@ public abstract class ComponentActive extends Thread implements Component {
      * String array of errors.
      */
     public final List<Exception> errors;
-
     /**
      * The assembly which this component is a member of.
      */
@@ -51,7 +50,16 @@ public abstract class ComponentActive extends Thread implements Component {
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
         diag.add(new Diagnostic("running", "Is Running", this.running));
+        diag.add(new Diagnostic("errors", "New Error Count", this.errors.size()));
         return diag;
+    }
+
+    public synchronized ArrayList<Exception> pollErrors() {
+        synchronized(this.errors) {
+            ArrayList<Exception> errs = new ArrayList<Exception>(this.errors);
+            this.errors.clear();
+            return errs;
+        }
     }
 
     /**
@@ -59,16 +67,18 @@ public abstract class ComponentActive extends Thread implements Component {
      */
     @Override
     public void run() {
-        synchronized(this) {
+        synchronized (this) {
             this.running = true;
         }
         try {
             this.componentRun();
         } catch (Exception ex) {
-            this.errors.add(ex);
+            synchronized (this.errors) {
+                this.errors.add(ex);
+            }
             Logger.getLogger(ComponentActive.class.getName()).log(Level.WARNING, null, ex);
         }
-        synchronized(this) {
+        synchronized (this) {
             this.running = false;
         }
     }
@@ -77,5 +87,4 @@ public abstract class ComponentActive extends Thread implements Component {
      * The task of the component.
      */
     protected abstract void componentRun() throws Exception;
-
 }

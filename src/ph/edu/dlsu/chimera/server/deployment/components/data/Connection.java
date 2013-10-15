@@ -9,6 +9,7 @@ import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**
  *
@@ -60,7 +61,7 @@ public final class Connection extends Statistics {
      * @return the inbound rate of this Connection measured as packet per second.
      */
     public synchronized double inboundRate() {
-        double sec = this.getTimeExisted() / 1000;
+        double sec = this.getTimeExistedMs() / 1000;
         return (sec > 0) ? this.inboundEncounters / sec : this.inboundEncounters;
     }
 
@@ -68,7 +69,7 @@ public final class Connection extends Statistics {
      * @return the outbound rate of this Connection measured as packet per second.
      */
     public synchronized double outboundRate() {
-        double sec = this.getTimeExisted() / 1000;
+        double sec = this.getTimeExistedMs() / 1000;
         return (sec > 0) ? this.outboundEncounters / sec : this.outboundEncounters;
     }
 
@@ -86,22 +87,20 @@ public final class Connection extends Statistics {
         return (this.outboundEncounters > 0) ? this.outboundSize / this.outboundEncounters : this.outboundSize;
     }
 
-    public synchronized long inboundLastEncounterTime() {
+    public synchronized long inboundLastEncounterTimeNs() {
         return this.inboundLastEncounterNanos;
     }
 
-    public synchronized long outboundLastEncounterTime() {
+    public synchronized long outboundLastEncounterTimeNs() {
         return this.outboundLastEncounterNanos;
     }
 
-    public synchronized double inboundTimeSinceLastEncounter() {
-        Date now = new Date();
-        return now.getTime() - (this.inboundLastEncounterNanos / 1000000);
+    public synchronized double inboundTimeSinceLastEncounterMs() {
+        return ToolsTime.nowMs() - ToolsTime.nsToMs(this.inboundLastEncounterNanos);
     }
 
-    public synchronized double outboundTimeSinceLastEncounter() {
-        Date now = new Date();
-        return now.getTime() - (this.outboundLastEncounterNanos / 1000000);
+    public synchronized double outboundTimeSinceLastEncounterMs() {
+        return ToolsTime.nowMs() - ToolsTime.nsToMs(this.outboundLastEncounterNanos);
     }
 
     public synchronized double inAverageSize() {
@@ -154,8 +153,8 @@ public final class Connection extends Statistics {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        Date inencounter = (this.inboundLastEncounterNanos < 0) ? null : new java.sql.Date(this.inboundLastEncounterNanos / 1000000);
-        Date outencounter = (this.outboundLastEncounterNanos < 0) ? null : new java.sql.Date(this.outboundLastEncounterNanos / 1000000);
+        Date inencounter = (this.inboundLastEncounterNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.inboundLastEncounterNanos));
+        Date outencounter = (this.outboundLastEncounterNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.outboundLastEncounterNanos));
         diag.add(new Diagnostic("direction", "Direction", (this.inbound) ? "inbound" : "outbound"));
         diag.add(new Diagnostic("inboundct", "Inbound Packets Encountered", this.inboundEncounters));
         diag.add(new Diagnostic("outboundct", "Outbound Packets Encountered", this.outboundEncounters));
@@ -167,8 +166,8 @@ public final class Connection extends Statistics {
         diag.add(new Diagnostic("outrate", "Outbound Traffic Rate", this.outboundRate() + "pkts/sec"));
         diag.add(new Diagnostic("inlastencounter", "Inbound Last Encounter", (inencounter == null) ? "N/A" : inencounter.toLocaleString()));
         diag.add(new Diagnostic("outlastencounter", "Outbound Last Encounter", (outencounter == null) ? "N/A" : outencounter.toLocaleString()));
-        diag.add(new Diagnostic("inidletime", "Inbound Idle Time", (this.inboundLastEncounterNanos < 0) ? "N/A" : this.inboundTimeSinceLastEncounter() + "ms"));
-        diag.add(new Diagnostic("outideltime", "Outbound Idle Time", (this.outboundLastEncounterNanos < 0) ? "N/A" : this.outboundTimeSinceLastEncounter() + "ms"));
+        diag.add(new Diagnostic("inidletime", "Inbound Idle Time", (this.inboundLastEncounterNanos < 0) ? "N/A" : this.inboundTimeSinceLastEncounterMs() + "ms"));
+        diag.add(new Diagnostic("outideltime", "Outbound Idle Time", (this.outboundLastEncounterNanos < 0) ? "N/A" : this.outboundTimeSinceLastEncounterMs() + "ms"));
         diag.add(new Diagnostic("done", "Connection Finished", this.done));
         return diag;
     }

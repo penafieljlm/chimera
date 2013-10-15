@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.data.stats.atomic;
+package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
 
 import java.net.InetAddress;
 import org.jnetpcap.protocol.tcpip.Tcp;
@@ -14,27 +14,30 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class CriteriaAtomicIpTcpSrc extends CriteriaAtomic {
+public class CriteriaAtomicIpTcpSrcSyn extends Criteria {
 
     public final InetAddress source;
     public final int sourcePort;
 
-    public CriteriaAtomicIpTcpSrc() {
+    public CriteriaAtomicIpTcpSrcSyn() {
         this(null, -1);
     }
 
-    public CriteriaAtomicIpTcpSrc(InetAddress source,
+    public CriteriaAtomicIpTcpSrcSyn(InetAddress source,
             int sourcePort) {
-        super("socktcpsrc", "Source TCP Socket");
+        super("socktcpsrcsyn", "Source TCP Socket Session Creation");
         this.source = source;
         this.sourcePort = sourcePort;
     }
 
     @Override
-    public CriteriaAtomic createInstance(PduAtomic pkt) {
+    public Criteria createInstance(PduAtomic pkt) {
         SocketPair socks = ToolsPacket.getConnection(pkt.packet);
         if (socks != null && pkt.packet.hasHeader(new Tcp())) {
-            return new CriteriaAtomicIpTcpSrc(socks.source, socks.sourcePort);
+            Tcp tcp = pkt.packet.getHeader(new Tcp());
+            if (tcp.flags_SYN() && !tcp.flags_ACK()) {
+                return new CriteriaAtomicIpTcpSrcSyn(socks.source, socks.sourcePort);
+            }
         }
         return null;
     }
@@ -47,7 +50,7 @@ public class CriteriaAtomicIpTcpSrc extends CriteriaAtomic {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final CriteriaAtomicIpTcpSrc other = (CriteriaAtomicIpTcpSrc) obj;
+        final CriteriaAtomicIpTcpSrcSyn other = (CriteriaAtomicIpTcpSrcSyn) obj;
         if (this.source != other.source && (this.source == null || !this.source.equals(other.source))) {
             return false;
         }
@@ -59,13 +62,14 @@ public class CriteriaAtomicIpTcpSrc extends CriteriaAtomic {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + (this.source != null ? this.source.hashCode() : 0);
-        hash = 83 * hash + this.sourcePort;
+        int hash = 5;
+        hash = 59 * hash + (this.source != null ? this.source.hashCode() : 0);
+        hash = 59 * hash + this.sourcePort;
         return hash;
     }
+
     @Override
     public String getInstanceString() {
-        return this.source.getHostAddress() + ":" + this.sourcePort + " -[IP:TCP]> any:any";
+        return this.source.getHostAddress() + ":" + this.sourcePort + " -[IP:TCP:SYN]> any:any";
     }
 }
