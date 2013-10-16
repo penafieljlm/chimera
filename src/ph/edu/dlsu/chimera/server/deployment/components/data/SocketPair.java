@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server.deployment.components.data;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import org.jnetpcap.protocol.network.Ip4;
-import org.jnetpcap.protocol.network.Ip6;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
@@ -42,22 +41,6 @@ public final class SocketPair {
                 InetAddress.getByAddress(ip4.source()),
                 udp.source(),
                 InetAddress.getByAddress(ip4.destination()),
-                udp.destination());
-    }
-
-    public SocketPair(Ip6 ip6, Tcp tcp) throws UnknownHostException {
-        this(
-                InetAddress.getByAddress(ip6.source()),
-                tcp.source(),
-                InetAddress.getByAddress(ip6.destination()),
-                tcp.destination());
-    }
-
-    public SocketPair(Ip6 ip6, Udp udp) throws UnknownHostException {
-        this(
-                InetAddress.getByAddress(ip6.source()),
-                udp.source(),
-                InetAddress.getByAddress(ip6.destination()),
                 udp.destination());
     }
 

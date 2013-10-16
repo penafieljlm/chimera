@@ -17,7 +17,6 @@ import ph.edu.dlsu.chimera.util.ToolsTime;
  */
 public class Statistics implements IDiagnosable {
 
-    public static final int STAT_CSV_VAL_COUNT = 5;
     public final long timeCreatedNanos;
     protected long totalEncounters;
     protected long totalSize;
@@ -29,7 +28,15 @@ public class Statistics implements IDiagnosable {
         this.totalEncounters = 0;
         this.totalSize = 0;
         this.lastEncounterNanos = timeCreatedNano;
-        this.lastLastEncounterNanos = timeCreatedNano;
+        this.lastLastEncounterNanos = -1;
+    }
+
+    public long getTotalEncounters() {
+        return this.totalEncounters;
+    }
+
+    public long getTotalSize() {
+        return this.totalSize;
     }
 
     public synchronized void commitEncounter(Pdu pkt) {
@@ -61,7 +68,7 @@ public class Statistics implements IDiagnosable {
     }
 
     public synchronized long getLastEncounterDeltaNs() {
-        return this.lastEncounterNanos - this.lastLastEncounterNanos;
+        return (this.lastLastEncounterNanos < 0) ? -1 : this.lastEncounterNanos - this.lastLastEncounterNanos;
     }
 
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
@@ -79,15 +86,5 @@ public class Statistics implements IDiagnosable {
         diag.add(new Diagnostic("lastencounter", "Last Encounter", (lastenc == null) ? "N/A" : lastenc.toLocaleString()));
         diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTimeNs() < 0) ? "N/A" : this.getTimeSinceLastEncounterMs() + "ms"));
         return diag;
-    }
-
-    public synchronized String[] toCsvValues() {
-        String[] val = new String[Statistics.STAT_CSV_VAL_COUNT];
-        val[0] = "" + this.getTrafficRatePerSec();
-        val[1] = "" + this.getAverageSize();
-        val[2] = "" + this.getLastEncounterDeltaNs();
-        val[3] = "" + this.totalEncounters;
-        val[4] = "" + this.totalSize;
-        return val;
     }
 }

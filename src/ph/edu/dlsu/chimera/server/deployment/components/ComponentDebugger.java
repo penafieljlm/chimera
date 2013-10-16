@@ -7,8 +7,6 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeEnd;
 
 /**
  *
@@ -34,13 +32,6 @@ public class ComponentDebugger<TPdu extends Pdu> extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     TPdu pkt = this.inQueue.poll();
-                    if (pkt instanceof PduAtomicEnd || pkt instanceof PduCompositeEnd) {
-                        //signal end
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
-                        }
-                        return;
-                    }
                     System.out.println(pkt.printDebug());
                     if (this.outQueue != null) {
                         this.outQueue.add(pkt);

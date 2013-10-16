@@ -39,4 +39,18 @@ public abstract class ToolsArray {
         }
         return (T[]) result;
     }
+
+    public static <T extends Object> T[] append(T[] a, T e) {
+        Object[] o = new Object[1];
+        o[0] = e;
+        return (T[]) ToolsArray.concat(a, o);
+    }
+
+    public static <T extends Object> T[] append(T[] a, T... e) {
+        T[] ta = a;
+        for(T t : e) {
+            ta = ToolsArray.append(ta, t);
+        }
+        return ta;
+    }
 }

@@ -13,11 +13,9 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerUdp;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeEnd;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
@@ -61,16 +59,6 @@ public final class ComponentAssembler extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt instanceof PduAtomicEnd) {
-                        //signal end
-                        if (this.outQueueComposite != null) {
-                            this.outQueueComposite.add(new PduCompositeEnd(pkt.inbound));
-                        }
-                        if (this.outQueueAtomic != null) {
-                            this.outQueueAtomic.add(pkt);
-                        }
-                        return;
-                    }
                     if (pkt.inbound) {
                         //tcp forward
                         if (pkt.packet.hasHeader(new Tcp())) {

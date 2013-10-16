@@ -11,7 +11,6 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
-import ph.edu.dlsu.chimera.util.ToolsArray;
 import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**
@@ -19,8 +18,7 @@ import ph.edu.dlsu.chimera.util.ToolsTime;
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class Assembler extends Statistics {
-
-    public static final int ASSM_CSV_VAL_COUNT = 1;
+    
     private ConcurrentLinkedQueue<PduComposite> queue;
     private long currentConstructionStartedMs;
 
@@ -64,12 +62,5 @@ public abstract class Assembler extends Statistics {
         diag.add(new Diagnostic("curconststart", "Time Current Construction Started", conststart.toLocaleString()));
         diag.add(new Diagnostic("curconsttime", "Ongoing Construction Time", this.getOngoingConstructionTimeMs() + "ms"));
         return diag;
-    }
-
-    @Override
-    public synchronized String[] toCsvValues() {
-        String[] val = new String[Assembler.ASSM_CSV_VAL_COUNT];
-        val[0] = "" + this.getOngoingConstructionTimeMs();
-        return ToolsArray.concat(super.toCsvValues(), val);
     }
 }

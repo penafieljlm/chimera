@@ -6,15 +6,12 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 
 /**
  * 
@@ -43,22 +40,10 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public void componentRun() throws Exception {
         switch (this.inPcap.loop(-1, this, this.inPcap)) {
             case 0:
-                if (this.outQueue != null) {
-                    //signal end
-                    this.outQueue.add(new PduAtomicEnd(this.inbound));
-                }
                 throw new Exception("Count exhausted.");
             case -1:
-                if (this.outQueue != null) {
-                    //signal end
-                    this.outQueue.add(new PduAtomicEnd(this.inbound));
-                }
                 throw new Exception("Pcap loop error.");
             case -2:
-                if (this.outQueue != null) {
-                    //signal end
-                    this.outQueue.add(new PduAtomicEnd(this.inbound));
-                }
                 throw new Exception("Break loop called.");
         }
         this.inPcap.close();

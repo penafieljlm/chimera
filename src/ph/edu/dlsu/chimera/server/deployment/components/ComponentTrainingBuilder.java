@@ -9,14 +9,9 @@ import java.io.FileWriter;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
-import ph.edu.dlsu.chimera.util.ToolsArray;
-import ph.edu.dlsu.chimera.util.ToolsPacket;
+import ph.edu.dlsu.chimera.util.ToolsMachineLearning;
 
 /**
  *
@@ -44,7 +39,6 @@ public class ComponentTrainingBuilder extends ComponentActive {
         this.tagTrainingAsNormal = tagTrainingAsNormal;
     }
 
-    //atomic : per packet, get related statistics data and state data, and create a training set entry
     @Override
     protected void componentRun() throws Exception {
         CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFileName));
@@ -52,38 +46,11 @@ public class ComponentTrainingBuilder extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
-                    String[] set = new String[3];
-                    //packet protocol
-                    set[0] = ToolsPacket.getPacketProtocolName(pkt.packet);
-                    //destination port
-                    SocketPair conn = ToolsPacket.getSocketPair(pkt.packet);
-                    if (conn != null) {
-                        set[1] = "" + conn.destinationPort;
-                    }
-                    //packet size
-                    set[2] = "" + pkt.packet.size();
-                    //connection statistics
-                    if (pkt.getConnection() != null) {
-                        set = ToolsArray.concat(set, pkt.getConnection().toCsvValues());
-                    } else {
-                        set = ToolsArray.concat(set, new String[Statistics.STAT_CSV_VAL_COUNT + Connection.CONN_CSV_VAL_COUNT]);
-                    }
-                    //custom statistics
-                    for (Criteria crt : this.criterias) {
-                        Statistics st = pkt.getStatisticsByType(crt);
-                        if (st != null) {
-                            set = ToolsArray.concat(set, st.toCsvValues());
-                        } else {
-                            set = ToolsArray.concat(set, new String[Statistics.STAT_CSV_VAL_COUNT]);
+                    if (pkt.inbound) {
+                        writer.writeNext(ToolsMachineLearning.getInstance(pkt, this.criterias));
+                        if (this.outQueue != null) {
+                            this.outQueue.add(pkt);
                         }
-                    }
-                    //verdict
-                    String[] verdict = new String[1];
-                    verdict[0] = "" + this.tagTrainingAsNormal;
-                    set = ToolsArray.concat(set, verdict);
-                    writer.writeNext(set);
-                    if (this.outQueue != null) {
-                        this.outQueue.add(pkt);
                     }
                 }
             }

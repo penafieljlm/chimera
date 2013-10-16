@@ -14,7 +14,6 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
 import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 
 /**
  * Tracks states and ensures TCP delivery.
@@ -47,13 +46,6 @@ public final class ComponentStateTracker extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt instanceof PduAtomicEnd) {
-                        //signal end
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
-                        }
-                        return;
-                    }
                     if (pkt.packet.hasHeader(new Tcp())) {
                         //tcp packets
                         SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);

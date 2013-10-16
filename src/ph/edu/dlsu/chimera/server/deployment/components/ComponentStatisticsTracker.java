@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
 import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
 
@@ -43,13 +42,6 @@ public class ComponentStatisticsTracker extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt instanceof PduAtomicEnd) {
-                        //signal end
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
-                        }
-                        return;
-                    }
                     if (pkt.inbound) {
                         //processing here
                         Criteria[] pktcriterias = new Criteria[this.criterias.size()];

@@ -10,7 +10,6 @@ import org.jnetpcap.PcapDumper;
 import org.jnetpcap.protocol.lan.Ethernet;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomicEnd;
 
 /**
  *
@@ -37,10 +36,6 @@ public final class ComponentInjector extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt instanceof PduAtomicEnd) {
-                        //signal end
-                        return;
-                    }
                     if (this.outPcap != null) {
                         this.outPcap.sendPacket(pkt.packet.getHeader(new Ethernet()));
                     }
