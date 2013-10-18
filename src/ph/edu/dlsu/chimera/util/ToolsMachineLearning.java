@@ -5,9 +5,9 @@
 package ph.edu.dlsu.chimera.util;
 
 import java.util.List;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
+import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
+import ph.edu.dlsu.chimera.server.core.Criteria;
 
 /**
  *

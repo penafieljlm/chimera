@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
+package ph.edu.dlsu.chimera.server.core;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -13,10 +13,10 @@ import java.util.Objects;
  */
 public final class CriteriaInstance {
 
-    public final byte[] criteriaId;
+    public final Object[] criteriaId;
     public final Criteria criteria;
 
-    public CriteriaInstance(byte[] criteriaId, Criteria criteria) {
+    public CriteriaInstance(Object[] criteriaId, Criteria criteria) {
         this.criteriaId = criteriaId;
         this.criteria = criteria;
     }
@@ -25,11 +25,11 @@ public final class CriteriaInstance {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
         final CriteriaInstance other = (CriteriaInstance) obj;
-        if (!Arrays.equals(this.criteriaId, other.criteriaId)) {
+        if (!Arrays.deepEquals(this.criteriaId, other.criteriaId)) {
             return false;
         }
         if (!Objects.equals(this.criteria, other.criteria)) {
@@ -40,9 +40,8 @@ public final class CriteriaInstance {
 
     public int hashCode() {
         int hash = 3;
-        hash = 17 * hash + Arrays.hashCode(this.criteriaId);
-        hash = 17 * hash + Objects.hashCode(this.criteria);
+        hash = 67 * hash + Arrays.deepHashCode(this.criteriaId);
+        hash = 67 * hash + Objects.hashCode(this.criteria);
         return hash;
     }
-
 }

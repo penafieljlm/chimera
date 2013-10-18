@@ -15,7 +15,7 @@ import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
-import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
+import ph.edu.dlsu.chimera.server.core.SocketPair;
 
 /**
  *
@@ -118,4 +118,6 @@ public abstract class ToolsPacket {
         arg.destination(src);
         return arg;
     }
+
+    
 }

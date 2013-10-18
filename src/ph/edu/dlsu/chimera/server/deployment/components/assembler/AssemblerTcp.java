@@ -5,8 +5,8 @@
 package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.TcpQueue;
+import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.server.core.TcpQueue;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**

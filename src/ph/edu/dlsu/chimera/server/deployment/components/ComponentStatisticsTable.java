@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
+import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.server.core.Criteria;
 
 /**
  *

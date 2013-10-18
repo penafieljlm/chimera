@@ -6,8 +6,8 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
+import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.server.core.Criteria;
 
 /**
  *

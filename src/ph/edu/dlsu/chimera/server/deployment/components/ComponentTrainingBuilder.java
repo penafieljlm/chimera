@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
+import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.util.ToolsMachineLearning;
 
 /**

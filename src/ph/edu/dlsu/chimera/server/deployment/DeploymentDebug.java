@@ -15,13 +15,13 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTracker;
-import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
+import ph.edu.dlsu.chimera.server.core.SocketPair;
+import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcpHttp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Statistics;
+import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 
 /**

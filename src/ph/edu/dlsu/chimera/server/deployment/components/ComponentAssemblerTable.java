@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.IDiagnosable;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
-import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
+import ph.edu.dlsu.chimera.server.core.SocketPair;
 
 /**
  *

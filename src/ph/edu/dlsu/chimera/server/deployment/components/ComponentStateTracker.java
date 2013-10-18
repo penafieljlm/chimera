@@ -11,9 +11,9 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
-import ph.edu.dlsu.chimera.server.deployment.components.data.SocketPair;
+import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.Connection;
+import ph.edu.dlsu.chimera.server.core.Connection;
 
 /**
  * Tracks states and ensures TCP delivery.

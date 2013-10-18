@@ -9,7 +9,7 @@ import java.util.List;
 import ph.edu.dlsu.chimera.server.deployment.Deployment;
 import ph.edu.dlsu.chimera.server.admin.AdministrativeModule;
 import ph.edu.dlsu.chimera.server.admin.UserBase;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.Criteria;
+import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpDst;
 import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpSrc;
 import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpSrcDst;
