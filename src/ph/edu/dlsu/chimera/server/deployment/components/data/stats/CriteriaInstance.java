@@ -4,21 +4,23 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.data.stats;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class CriteriaInstance {
 
-    public final String criteriaId;
+    public final byte[] criteriaId;
     public final Criteria criteria;
 
-    public CriteriaInstance(String criteriaId, Criteria criteria) {
+    public CriteriaInstance(byte[] criteriaId, Criteria criteria) {
         this.criteriaId = criteriaId;
         this.criteria = criteria;
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -27,20 +29,20 @@ public final class CriteriaInstance {
             return false;
         }
         final CriteriaInstance other = (CriteriaInstance) obj;
-        if ((this.criteriaId == null) ? (other.criteriaId != null) : !this.criteriaId.equals(other.criteriaId)) {
+        if (!Arrays.equals(this.criteriaId, other.criteriaId)) {
             return false;
         }
-        if (this.criteria != other.criteria && (this.criteria == null || !this.criteria.equals(other.criteria))) {
+        if (!Objects.equals(this.criteria, other.criteria)) {
             return false;
         }
         return true;
     }
 
-    @Override
     public int hashCode() {
         int hash = 3;
-        hash = 83 * hash + (this.criteriaId != null ? this.criteriaId.hashCode() : 0);
-        hash = 83 * hash + (this.criteria != null ? this.criteria.hashCode() : 0);
+        hash = 17 * hash + Arrays.hashCode(this.criteriaId);
+        hash = 17 * hash + Objects.hashCode(this.criteria);
         return hash;
     }
+
 }

@@ -10,6 +10,14 @@ package ph.edu.dlsu.chimera.util;
  */
 public abstract class ToolsArray {
 
+    public static byte[] reverse(byte[] arg) {
+        byte[] ok = new byte[arg.length];
+        for (int i = 0; i < arg.length; i++) {
+            ok[i] = arg[arg.length - (i + 1)];
+        }
+        return ok;
+    }
+
     public static byte[] concat(byte[] left, byte[] right) {
         byte[] result = new byte[left.length + right.length];
         System.arraycopy(left, 0, result, 0, left.length);
@@ -48,7 +56,7 @@ public abstract class ToolsArray {
 
     public static <T extends Object> T[] append(T[] a, T... e) {
         T[] ta = a;
-        for(T t : e) {
+        for (T t : e) {
             ta = ToolsArray.append(ta, t);
         }
         return ta;
