@@ -47,16 +47,20 @@ public class ComponentStatisticsTracker extends ComponentActive {
                         for (Criteria crt : this.criterias) {
                             CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
                             if (pktcrt != null) {
-                                if (!this.statisticsTable.contains(pktcrt)) {
-                                    //create criteria
-                                    this.statisticsTable.put(pktcrt, new Statistics(pkt.timestampInNanos()));
+                                if (this.statisticsTable != null) {
+                                    if (!this.statisticsTable.contains(pktcrt)) {
+                                        //create criteria
+                                        this.statisticsTable.put(pktcrt, new Statistics(pkt.timestampInNanos()));
+                                    }
+                                    if (this.statisticsTable.contains(pktcrt)) {
+                                        //update criteria statisticsTable
+                                        this.statisticsTable.get(pktcrt).commitEncounter(pkt);
+                                    }
+                                    //associate criteria to packet
+                                    pkt.addStatistics(crt, this.statisticsTable.get(pktcrt));
+                                } else {
+                                    throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
                                 }
-                                if (this.statisticsTable.contains(pktcrt)) {
-                                    //update criteria statisticsTable
-                                    this.statisticsTable.get(pktcrt).commitEncounter(pkt);
-                                }
-                                //associate criteria to packet
-                                pkt.addStatistics(crt, this.statisticsTable.get(pktcrt));
                             } else {
                                 pkt.addStatistics(crt, null);
                             }
@@ -64,9 +68,15 @@ public class ComponentStatisticsTracker extends ComponentActive {
                         //forward packet
                         if (this.outQueue != null) {
                             this.outQueue.add(pkt);
+                        } else {
+                            throw new Exception("Error: [Statistics Tracker] outQueue is null.");
                         }
+                    } else {
+                        throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
                     }
                 }
+            } else {
+                throw new Exception("Error: [Statistics Tracker] inQueue is null.");
             }
         }
     }

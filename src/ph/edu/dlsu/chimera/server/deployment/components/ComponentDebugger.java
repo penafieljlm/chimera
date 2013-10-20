@@ -35,8 +35,12 @@ public class ComponentDebugger<TPdu extends Pdu> extends ComponentActive {
                     System.out.println(pkt.printDebug());
                     if (this.outQueue != null) {
                         this.outQueue.add(pkt);
+                    } else {
+                        throw new Exception("Error: [Injector] outQueue is null.");
                     }
                 }
+            } else {
+                throw new Exception("Error: [Debugger] inQueue is null.");
             }
         }
     }

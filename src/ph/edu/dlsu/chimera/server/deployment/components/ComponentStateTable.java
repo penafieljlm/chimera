@@ -39,6 +39,8 @@ public final class ComponentStateTable extends ComponentActive {
                         this.stateTable.remove(socks);
                     }
                 }
+            } else {
+                throw new Exception("Error: [State Table] stateTable is null.");
             }
         }
     }

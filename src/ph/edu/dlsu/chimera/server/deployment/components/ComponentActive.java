@@ -48,7 +48,7 @@ public abstract class ComponentActive extends Thread implements Component {
      * @return a report on the current state of the ComponentActive object.
      */
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
-        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
+        ArrayList<Diagnostic> diag = new ArrayList<>();
         diag.add(new Diagnostic("running", "Is Running", this.running));
         diag.add(new Diagnostic("errors", "New Error Count", this.errors.size()));
         return diag;
@@ -56,7 +56,7 @@ public abstract class ComponentActive extends Thread implements Component {
 
     public synchronized ArrayList<Exception> pollErrors() {
         synchronized(this.errors) {
-            ArrayList<Exception> errs = new ArrayList<Exception>(this.errors);
+            ArrayList<Exception> errs = new ArrayList<>(this.errors);
             this.errors.clear();
             return errs;
         }

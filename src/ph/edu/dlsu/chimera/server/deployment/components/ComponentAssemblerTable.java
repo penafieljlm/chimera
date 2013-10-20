@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.IDiagnosable;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.Assembler;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 
@@ -24,6 +23,7 @@ public class ComponentAssemblerTable implements Component {
     }
 
     public ArrayList<Diagnostic> getDiagnostics() {
+        //TODO: implement
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

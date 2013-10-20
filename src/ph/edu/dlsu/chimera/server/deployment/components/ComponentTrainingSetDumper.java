@@ -17,7 +17,7 @@ import ph.edu.dlsu.chimera.util.ToolsMachineLearning;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentTrainingBuilder extends ComponentActive {
+public class ComponentTrainingSetDumper extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
@@ -25,7 +25,7 @@ public class ComponentTrainingBuilder extends ComponentActive {
     public final String trainingFileName;
     public final boolean tagTrainingAsNormal;
 
-    public ComponentTrainingBuilder(Assembly assembly,
+    public ComponentTrainingSetDumper(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
             List<Criteria> criterias,
@@ -50,9 +50,15 @@ public class ComponentTrainingBuilder extends ComponentActive {
                         writer.writeNext(ToolsMachineLearning.getInstance(pkt, this.criterias));
                         if (this.outQueue != null) {
                             this.outQueue.add(pkt);
+                        } else {
+                            throw new Exception("Error: [Training Set Dumper] outQueue is null.");
                         }
+                    } else {
+                        throw new Exception("Error: [Training Set Dumper] Encountered outbound packet.");
                     }
                 }
+            } else {
+                throw new Exception("Error: [Training Set Dumper] inQueue is null.");
             }
         }
         writer.close();

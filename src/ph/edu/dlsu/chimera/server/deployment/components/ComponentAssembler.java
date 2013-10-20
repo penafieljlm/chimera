@@ -25,8 +25,7 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
 public final class ComponentAssembler extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduComposite> outQueueComposite;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueueAtomic;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final ConcurrentHashMap<SocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
     public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
@@ -43,11 +42,10 @@ public final class ComponentAssembler extends ComponentActive {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
-        this.outQueueComposite = outQueueComposite;
-        this.outQueueAtomic = outQueueAtomic;
-        this.tcpAssemblerTable = new ConcurrentHashMap<SocketPair, AssemblerTcp>();
+        this.outQueue = outQueueAtomic;
+        this.tcpAssemblerTable = new ConcurrentHashMap<>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
-        this.udpAssemblerTable = new ConcurrentHashMap<SocketPair, AssemblerUdp>();
+        this.udpAssemblerTable = new ConcurrentHashMap<>();
         this.udpPortProtocolLookup = udpPortProtocolLookup;
         this.stateTable = stateTable;
     }
@@ -63,20 +61,24 @@ public final class ComponentAssembler extends ComponentActive {
                         //tcp forward
                         if (pkt.packet.hasHeader(new Tcp())) {
                             this.handleTcp(pkt);
-                            continue;
                         }
-                        //default forward
-                        if (this.outQueueAtomic != null) {
-                            this.outQueueAtomic.add(pkt);
-                            continue;
+                        //forward
+                        if (this.outQueue != null) {
+                            this.outQueue.add(pkt);
+                        } else {
+                            throw new Exception("Error: [Assembler] outQueue is null.");
                         }
+                    } else {
+                        throw new Exception("Error: [Assembler] Encountered outbound packet.");
                     }
                 }
+            } else {
+                throw new Exception("Error: [Assembler] inQueue is null.");
             }
         }
     }
 
-    private void handleTcp(PduAtomic pkt) {
+    private void handleTcp(PduAtomic pkt) throws Exception {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
                 SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
@@ -98,16 +100,12 @@ public final class ComponentAssembler extends ComponentActive {
                     if (!this.stateTable.contains(socks)) {
                         this.tcpAssemblerTable.remove(socks);
                     }
-                    //forward pdus
-                    if (this.outQueueComposite != null) {
-                        PduComposite pdu = asm.poll();
-                        while (pdu != null) {
-                            this.outQueueComposite.add(pdu);
-                            pdu = asm.poll();
-                        }
-                    }
                 }
+            } else {
+                throw new Exception("Error: [Assembler] tcpPortProtocolLookup is null.");
             }
+        } else {
+            throw new Exception("Error: [Assembler] tcpAssemblerTable is null.");
         }
     }
 
@@ -115,22 +113,22 @@ public final class ComponentAssembler extends ComponentActive {
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
         if (this.tcpAssemblerTable != null) {
-            diag.add(new Diagnostic("tcpqueues", "TCP Assembler in Deployment", this.tcpAssemblerTable.size()));
+            diag.add(new Diagnostic("tcpqueues", "TCP Assemblers in Deployment", this.tcpAssemblerTable.size()));
         } else {
-            diag.add(new Diagnostic("tcpqueues", "TCP Assembler in Deployment", "N/A"));
+            diag.add(new Diagnostic("tcpqueues", "TCP Assemblers in Deployment", "N/A"));
         }
         if (this.udpAssemblerTable != null) {
-            diag.add(new Diagnostic("udpqueues", "UDP Assembler in Deployment", this.udpAssemblerTable.size()));
+            diag.add(new Diagnostic("udpqueues", "UDP Assemblers in Deployment", this.udpAssemblerTable.size()));
         } else {
-            diag.add(new Diagnostic("udpqueues", "UDP Assembler in Deployment", "N/A"));
+            diag.add(new Diagnostic("udpqueues", "UDP Assemblers in Deployment", "N/A"));
         }
         if (this.inQueue != null) {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
         } else {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
-        if (this.outQueueComposite != null) {
-            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueueComposite.size()));
+        if (this.outQueue != null) {
+            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }

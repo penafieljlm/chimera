@@ -43,6 +43,8 @@ public class ComponentStatisticsTable extends ComponentActive {
                         this.statisticsTable.remove(crt);
                     }
                 }
+            } else {
+                throw new Exception("Error: [Statistics Table] statisticsTable is null.");
             }
         }
     }

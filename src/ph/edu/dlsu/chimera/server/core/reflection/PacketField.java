@@ -5,7 +5,6 @@
 package ph.edu.dlsu.chimera.server.core.reflection;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.structure.JField;

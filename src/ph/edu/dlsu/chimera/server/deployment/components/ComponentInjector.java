@@ -19,14 +19,12 @@ public final class ComponentInjector extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final Pcap outPcap;
-    public final PcapDumper dumpPcap;
 
-    public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PduAtomic> inQueue, Pcap outPcap, PcapDumper dumpPcap) {
+    public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PduAtomic> inQueue, Pcap outPcap) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
         this.outPcap = outPcap;
-        this.dumpPcap = dumpPcap;
     }
 
     @Override
@@ -38,11 +36,12 @@ public final class ComponentInjector extends ComponentActive {
                     PduAtomic pkt = this.inQueue.poll();
                     if (this.outPcap != null) {
                         this.outPcap.sendPacket(pkt.packet.getHeader(new Ethernet()));
-                    }
-                    if (this.dumpPcap != null) {
-                        this.dumpPcap.dump(pkt.packet.getCaptureHeader(), pkt.packet.getHeader(new Ethernet()));
+                    } else {
+                        throw new Exception("Error: [Injector] Unable to access sending device.");
                     }
                 }
+            } else {
+                throw new Exception("Error: [Injector] inQueue is null.");
             }
         }
     }

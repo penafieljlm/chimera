@@ -38,15 +38,20 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
 
     @Override
     public void componentRun() throws Exception {
-        switch (this.inPcap.loop(-1, this, this.inPcap)) {
-            case 0:
-                throw new Exception("Count exhausted.");
-            case -1:
-                throw new Exception("Pcap loop error.");
-            case -2:
-                throw new Exception("Break loop called.");
+        if (this.inPcap != null) {
+            int opresult = this.inPcap.loop(-1, this, this.inPcap);
+            this.inPcap.close();
+            switch (opresult) {
+                case 0:
+                    throw new Exception("Event: [Sniffer] Count exhausted.");
+                case -1:
+                    throw new Exception("Error: [Sniffer] Pcap loop error.");
+                case -2:
+                    throw new Exception("Event: [Sniffer] Break loop called.");
+            }
+        } else {
+            throw new Exception("Error: [Sniffer] Unable to access capture device.");
         }
-        this.inPcap.close();
     }
 
     public void nextPacket(PcapPacket pp, Pcap t) {
