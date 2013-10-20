@@ -20,7 +20,7 @@ public abstract class Pdu {
 
     public Pdu(boolean inbound) {
         this.inbound = inbound;
-        this.statistics = new HashMap<Criteria, Statistics>();
+        this.statistics = new HashMap<>();
     }
 
     public String printDebug() {
@@ -34,15 +34,6 @@ public abstract class Pdu {
             }
         }
         this.statistics.put(criteria, statistics);
-    }
-
-    public Statistics getStatisticsByType(Criteria criteria) {
-        for (Criteria crt : this.statistics.keySet()) {
-            if (criteria.getClass() == crt.getClass()) {
-                return this.statistics.get(crt);
-            }
-        }
-        return null;
     }
 
     public Statistics getStatistics(Criteria criteria) {

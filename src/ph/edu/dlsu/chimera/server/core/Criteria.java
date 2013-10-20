@@ -4,13 +4,11 @@
  */
 package ph.edu.dlsu.chimera.server.core;
 
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.server.core.reflection.PacketField;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
@@ -21,6 +19,7 @@ public final class Criteria {
     public static final String EXP_SUBJECT = "subject[(](((.+)([,]))*([^,]+))[)]";
     public static final String EXP_FILTER = "filter[(](((.+)([,]))*([^,]+))[)]";
     public static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
+    public final String expression;
     public final PacketField[] subjects;
     public final PacketFilter[] filters;
 
@@ -55,6 +54,7 @@ public final class Criteria {
             } else {
                 this.filters = null;
             }
+            this.expression = expression;
         } else {
             throw new Exception("Parse Error: Syntax structure error in expression '" + expression + "'");
         }

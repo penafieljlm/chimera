@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server;
 public class CADMS {
 
     public static String PASSWORD_HASH_ALGO = "MD5";
-
     public static String USAGE = ""
             + "\nCHIMERA APP-DOS MITIGATION SYSTEM USAGE"
             + "\nCommand Line Format: cadms <port>"
@@ -20,13 +19,18 @@ public class CADMS {
         int adminPortNum;
         try {
             adminPortNum = Integer.parseInt(args[0]);
-        } catch(NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             System.out.print(CADMS.USAGE);
             return;
         }
-        Assembly assembly = new Assembly(adminPortNum);
+        Assembly assembly = null;
+        try {
+            assembly = new Assembly(adminPortNum);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return;
+        }
         //start admin service
         assembly.startAdmin();
     }
-
 }

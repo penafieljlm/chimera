@@ -30,7 +30,7 @@ public class MessageDeployDebugger extends MessageDeploy {
     @Override
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         StringBuilder report = new StringBuilder(((MessageText)(super.handleMessage(session, assembly))).text);
-        assembly.setDeployment(new DeploymentDebug(assembly, this.interfaceInbound, assembly.criteriasAtomic, this.statsTimeout, this.stateTimeout));
+        assembly.setDeployment(new DeploymentDebug(assembly, this.interfaceInbound, assembly.getCriterias(), this.statsTimeout, this.stateTimeout));
         report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
         return new MessageText(report.toString());
     }

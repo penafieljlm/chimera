@@ -4,21 +4,20 @@
  */
 package ph.edu.dlsu.chimera.server;
 
-import java.util.Collections;
-import java.util.List;
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
 import ph.edu.dlsu.chimera.server.deployment.Deployment;
 import ph.edu.dlsu.chimera.server.admin.AdministrativeModule;
 import ph.edu.dlsu.chimera.server.admin.UserBase;
 import ph.edu.dlsu.chimera.server.core.Criteria;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpSrc;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpSrcDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaIpTcpDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaAtomicIpTcpDstSyn;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaAtomicIpTcpSrc;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaAtomicIpTcpSrcDst;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaAtomicIpTcpSrcDstSyn;
-import ph.edu.dlsu.chimera.server.deployment.components.data.stats.CriteriaAtomicIpTcpSrcSyn;
 
 /**
  * 
@@ -35,21 +34,78 @@ public class Assembly {
     /**
      * The criteriasAtomic that the system uses for measuring statistics.
      */
-    public final List<Criteria> criteriasAtomic;
+    private Criteria[] criterias;
+    public Config config;
 
-    public Assembly(int port) {
+    public Assembly(int port) throws Exception {
         this.admin = new AdministrativeModule(this, port);
         this.users = new UserBase();
-        this.criteriasAtomic = Collections.synchronizedList(Collections.EMPTY_LIST);
-        this.criteriasAtomic.add(new CriteriaIpDst());
-        this.criteriasAtomic.add(new CriteriaIpSrc());
-        this.criteriasAtomic.add(new CriteriaIpSrcDst());
-        this.criteriasAtomic.add(new CriteriaIpTcpDst());
-        this.criteriasAtomic.add(new CriteriaAtomicIpTcpDstSyn());
-        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrc());
-        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrcDst());
-        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrcDstSyn());
-        this.criteriasAtomic.add(new CriteriaAtomicIpTcpSrcSyn());
+
+        //config file
+        this.config = null;
+        File aConfigFile = new File("chimera.config");
+        JsonReader aConfigReader = null;
+        try {
+            aConfigReader = new JsonReader(new FileInputStream(aConfigFile));
+            this.config = (Config) aConfigReader.readObject();
+        } catch (FileNotFoundException ex) {
+            this.config = new Config();
+            if (!aConfigFile.exists()) {
+                try {
+                    if (aConfigFile.createNewFile()) {
+                        JsonWriter aConfigWriter = new JsonWriter(new FileOutputStream(aConfigFile));
+                        aConfigWriter.write(this.config);
+                    }
+                } catch (IOException ex1) {
+                }
+            }
+        } catch (IOException ex) {
+            throw new Exception("Config file 'chimera.config' is corrupted!");
+        }
+
+        File cConfigFile = new File("criterias.config");
+        ArrayList<String> cExpressions = new ArrayList<>();
+        if (!cConfigFile.exists()) {
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.network.Ip4.destination)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+
+            if (cConfigFile.createNewFile()) {
+                FileWriter cConfigFileWriter = new FileWriter(cConfigFile);
+                for (String exp : cExpressions) {
+                    cConfigFileWriter.append(exp + ";\r\n");
+                }
+            }
+        } else {
+            Scanner cConfigFileScanner = new Scanner(cConfigFile);
+            cConfigFileScanner = cConfigFileScanner.useDelimiter(";");
+            while (cConfigFileScanner.hasNext()) {
+                cExpressions.add(cConfigFileScanner.next().trim());
+            }
+        }
+        this.criterias = new Criteria[cExpressions.size()];
+        for (int i = 0; i < this.criterias.length; i++) {
+            this.criterias[i] = new Criteria(cExpressions.get(i));
+        }
+    }
+
+    public Config getConfig() {
+        return this.config;
+    }
+
+    /**
+     * @return the set of Criteria used by this Assembly.
+     */
+    public Criteria[] getCriterias() {
+        return this.criterias;
     }
 
     /**

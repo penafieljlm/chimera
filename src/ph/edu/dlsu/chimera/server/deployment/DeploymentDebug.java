@@ -21,6 +21,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcpHttp;
 import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 
@@ -32,29 +33,29 @@ public class DeploymentDebug extends Deployment {
 
     public DeploymentDebug(Assembly assembly,
             String ifInbound,
-            List<Criteria> criteriasAtomic,
+            Criteria[] criterias,
             long statsTimeoutMs,
             long stateTimeoutMs) {
         super("Debug");
         StringBuilder err = new StringBuilder();
         Pcap inPcap = Pcap.openLive(ifInbound, Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
-        ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<PduAtomic>();
-        ConcurrentLinkedQueue<PduAtomic> statsAtomicOut = new ConcurrentLinkedQueue<PduAtomic>();
-        ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<PduAtomic>();
-        ConcurrentLinkedQueue<PduComposite> assemblerCompositeOut = new ConcurrentLinkedQueue<PduComposite>();
-        ConcurrentLinkedQueue<PduAtomic> assemblerAtomicOut = new ConcurrentLinkedQueue<PduAtomic>();
+        ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> statsAtomicOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduComposite> assemblerCompositeOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> assemblerAtomicOut = new ConcurrentLinkedQueue<>();
 
-        ConcurrentHashMap<Criteria, Statistics> statsTableAtomic = new ConcurrentHashMap<Criteria, Statistics>();
-        ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<SocketPair, Connection>();
+        ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
+        ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
 
-        ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup = new ConcurrentHashMap<Integer, AssemblerTcp>();
+        ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup = new ConcurrentHashMap<>();
         tcpPortProtocolLookup.put(80, new AssemblerTcpHttp());
 
-        super.components.put("statstbatomic", new ComponentStatisticsTable(assembly, criteriasAtomic, statsTableAtomic, statsTimeoutMs));
+        super.components.put("statstbatomic", new ComponentStatisticsTable(assembly, criterias, statsTableAtomic, statsTimeoutMs));
         super.components.put("statetable", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
         super.components.put("in-sniffer", new ComponentSniffer(assembly, inPcap, snifferOut, true));
-        super.components.put("in-statsatomic", new ComponentStatisticsTracker(assembly, stateOut, statsAtomicOut, criteriasAtomic, statsTableAtomic));
+        super.components.put("in-statsatomic", new ComponentStatisticsTracker(assembly, stateOut, statsAtomicOut, criterias, statsTableAtomic));
         super.components.put("in-statetracker", new ComponentStateTracker(assembly, statsAtomicOut, stateOut, stateTable, true));
         super.components.put("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerCompositeOut, assemblerAtomicOut, tcpPortProtocolLookup, null, stateTable));
         //super.components.put("in-debugger", new ComponentDebugger<PduComposite>(assembly, assemblerCompositeOut, null));
