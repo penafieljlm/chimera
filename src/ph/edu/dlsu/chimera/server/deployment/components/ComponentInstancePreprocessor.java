@@ -10,6 +10,7 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsArray;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
@@ -97,8 +98,19 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         //field - connection outbound total size
         set = ToolsArray.append(set, "" + conn.outboundTotalSize());
 
-        //fields - criterias
+        //field - criterias
+        for(Criteria crt : this.criterias) {
+            Statistics crtstats = pkt.getStatistics(crt);
 
+            //subfield - encounter interval
+            set = ToolsArray.append(set, "" + crtstats.getLastEncounterDeltaNs());
+
+            //subfield - total encounters
+            set = ToolsArray.append(set, "" + crtstats.getTotalEncounters());
+
+            //subfield - total size
+            set = ToolsArray.append(set, "" + crtstats.getTotalSize());
+        }
 
         return set;
     }
