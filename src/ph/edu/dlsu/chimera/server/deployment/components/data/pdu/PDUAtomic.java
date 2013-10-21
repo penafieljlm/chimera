@@ -20,11 +20,13 @@ public class PduAtomic extends Pdu {
     private Pcap injector;
     private long lastSentTimeNano;
     private Connection connection;
+    private String[] instanceData;
 
     public PduAtomic(Pcap sourceInjector,
             PcapPacket packet,
-            boolean inbound) {
-        super(inbound);
+            boolean inbound,
+            long timestampInNanos) {
+        super(inbound, timestampInNanos);
         this.sniffer = sourceInjector;
         this.packet = packet;
         this.injector = null;
@@ -32,14 +34,17 @@ public class PduAtomic extends Pdu {
         this.connection = null;
     }
 
-    @Override
-    public long size() {
-        return this.packet.size();
+    public void setInstanceData(String[] instanceData) {
+        this.instanceData = instanceData;
+    }
+
+    public String[] getInstanceData() {
+        return this.instanceData;
     }
 
     @Override
-    public long timestampInNanos() {
-        return this.packet.getCaptureHeader().timestampInNanos();
+    public long size() {
+        return this.packet.size();
     }
 
     public void setConnection(Connection connection) {

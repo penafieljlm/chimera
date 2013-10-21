@@ -18,13 +18,13 @@ public class PduCompositeTcpHttp extends PduCompositeTcp {
     public final String header;
     public final String body;
 
-    public PduCompositeTcpHttp(ConcurrentLinkedQueue<PduAtomic> packets,
-            Connection connection,
+    public PduCompositeTcpHttp(Connection connection,
             Assembler assembler,
             String header,
             String body,
-            boolean inbound) {
-        super(packets, connection, assembler, inbound);
+            boolean inbound,
+            long timestampInNanos) {
+        super(connection, assembler, inbound, timestampInNanos);
         this.header = header;
         this.body = body;
     }

@@ -22,7 +22,7 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public final boolean inbound;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Pcap inPcap;
-    public int received;
+    private long received;
 
     public ComponentSniffer(Assembly assembly,
             Pcap inPcap,
@@ -58,7 +58,7 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public void nextPacket(PcapPacket pp, Pcap t) {
         this.received++;
         if (this.outQueue != null) {
-            this.outQueue.add(new PduAtomic(t, pp, this.inbound));
+            this.outQueue.add(new PduAtomic(t, pp, this.inbound, pp.getCaptureHeader().timestampInNanos()));
         }
     }
 

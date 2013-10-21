@@ -82,11 +82,11 @@ public class Assembly {
             cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
 
             if (cConfigFile.createNewFile()) {
-                try (FileWriter cConfigFileWriter = new FileWriter(cConfigFile)) {
-                    for (String exp : cExpressions) {
-                        cConfigFileWriter.write(exp + ";\r\n");
-                    }
+                FileWriter cConfigFileWriter = new FileWriter(cConfigFile);
+                for (String exp : cExpressions) {
+                    cConfigFileWriter.write(exp + ";\r\n");
                 }
+                cConfigFileWriter.close();
             }
         } else {
             Scanner cConfigFileScanner = new Scanner(cConfigFile);

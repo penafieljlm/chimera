@@ -43,7 +43,7 @@ public class Statistics implements IDiagnosable {
         this.totalEncounters++;
         this.totalSize += pkt.size();
         this.lastLastEncounterNanos = this.lastEncounterNanos;
-        this.lastEncounterNanos = pkt.timestampInNanos();
+        this.lastEncounterNanos = pkt.timestampInNanos;
     }
 
     public synchronized long getTimeExistedMs() {

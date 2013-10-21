@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
@@ -19,7 +18,6 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     public static String TOKEN_END = "\r\n";
     public static String TOKEN_CMD_DATA = "DATA";
     public static String TOKEN_DAT_END = AssemblerTcpSmtp.TOKEN_END + "." + AssemblerTcpSmtp.TOKEN_END;
-    private ConcurrentLinkedQueue<PduAtomic> smtpPackets;
     private StringBuilder messageBuilder;
     private boolean dataOpen;
     private boolean expectingCmd;
@@ -35,13 +33,12 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
 
     @Override
     protected void appendTCP(Tcp tcp, PduAtomic pkt) {
-        this.smtpPackets.add(pkt);
         String data = new String(tcp.getPayload());
         if (!this.dataOpen && !this.expectingCmd) {
             this.messageBuilder.append(data);
             if (data.endsWith(AssemblerTcpSmtp.TOKEN_DAT_END)) {
                 //data segment ends
-                this.finishSmtp(pkt.inbound);
+                this.finishSmtp(pkt.inbound, pkt.timestampInNanos);
             }
         } else {
             StringBuilder tdata = new StringBuilder(data);
@@ -51,7 +48,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
                 tdata = tdata.delete(0, msgend);
                 this.messageBuilder = this.messageBuilder.append(msgstr);
                 String msg = this.messageBuilder.toString();
-                this.finishSmtp(pkt.inbound);
+                this.finishSmtp(pkt.inbound, pkt.timestampInNanos);
                 if (msg.toUpperCase().startsWith(AssemblerTcpSmtp.TOKEN_CMD_DATA)) {
                     //data clause received
                     this.dataOpen = true;
@@ -73,20 +70,25 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     }
 
     private void resetSmtp() {
-        this.smtpPackets = new ConcurrentLinkedQueue<PduAtomic>();
         this.messageBuilder = new StringBuilder();
         this.dataOpen = false;
         this.expectingCmd = false;
     }
 
-    private void finishSmtp(boolean inbound) {
-        PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(this.smtpPackets,
-                super.connection,
+    private void finishSmtp(boolean inbound, long timestampInNanos) {
+        PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(super.connection,
                 this,
                 this.messageBuilder.toString(),
                 !this.dataOpen,
-                inbound);
+                inbound,
+                timestampInNanos);
         super.outputPDU(http);
         this.resetSmtp();
+    }
+
+    @Override
+    public boolean isAttackDetected() {
+        //TODO : implement
+        return false;
     }
 }

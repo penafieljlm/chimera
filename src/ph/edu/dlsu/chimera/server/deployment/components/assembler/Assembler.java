@@ -24,7 +24,7 @@ public abstract class Assembler extends Statistics {
 
     public Assembler(long timeCreatedNanos) {
         super(timeCreatedNanos);
-        this.queue = new ConcurrentLinkedQueue<PduComposite>();
+        this.queue = new ConcurrentLinkedQueue<>();
         this.currentConstructionStartedMs = ToolsTime.nowMs();
     }
 
@@ -63,4 +63,6 @@ public abstract class Assembler extends Statistics {
         diag.add(new Diagnostic("curconsttime", "Ongoing Construction Time", this.getOngoingConstructionTimeMs() + "ms"));
         return diag;
     }
+
+    public abstract boolean isAttackDetected();
 }

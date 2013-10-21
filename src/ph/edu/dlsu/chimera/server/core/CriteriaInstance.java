@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera.server.core;
 
+import java.net.Inet4Address;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -19,6 +20,21 @@ public final class CriteriaInstance {
     public CriteriaInstance(Object[] criteriaId, Criteria criteria) {
         this.criteriaId = criteriaId;
         this.criteria = criteria;
+    }
+
+    public String getStringId() {
+        StringBuilder id = new StringBuilder("|");
+        for (Object o : this.criteriaId) {
+            if (o instanceof Object[]) {
+                Object[] oba = (Object[]) o;
+                for(Object obae : oba) {
+                    id = id.append("[").append(obae.toString()).append("]");
+                }
+            } else {
+                id = id.append(o.toString());
+            }
+        }
+        return id.toString();
     }
 
     public boolean equals(Object obj) {

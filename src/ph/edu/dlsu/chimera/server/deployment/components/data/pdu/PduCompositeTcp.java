@@ -14,10 +14,10 @@ import ph.edu.dlsu.chimera.server.core.Connection;
  */
 public abstract class PduCompositeTcp extends PduComposite {
 
-    public PduCompositeTcp(ConcurrentLinkedQueue<PduAtomic> packets,
-            Connection connection,
+    public PduCompositeTcp(Connection connection,
             Assembler assembler,
-            boolean inbound) {
-        super(packets, connection, assembler, inbound);
+            boolean inbound,
+            long timestampInNanos) {
+        super(connection, assembler, inbound, timestampInNanos);
     }
 }

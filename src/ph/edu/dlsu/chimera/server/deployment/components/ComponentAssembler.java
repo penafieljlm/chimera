@@ -15,7 +15,6 @@ import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerUdp;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
@@ -31,6 +30,7 @@ public final class ComponentAssembler extends ComponentActive {
     public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup;
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
+    private long processed;
 
     public ComponentAssembler(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
@@ -47,6 +47,7 @@ public final class ComponentAssembler extends ComponentActive {
         this.udpAssemblerTable = new ConcurrentHashMap<>();
         this.udpPortProtocolLookup = udpPortProtocolLookup;
         this.stateTable = stateTable;
+        this.processed = 0;
     }
 
     @Override
@@ -63,6 +64,7 @@ public final class ComponentAssembler extends ComponentActive {
                         }
                         //forward
                         if (this.outQueue != null) {
+                            this.processed++;
                             this.outQueue.add(pkt);
                         } else {
                             throw new Exception("Error: [Assembler] outQueue is null.");
@@ -131,6 +133,7 @@ public final class ComponentAssembler extends ComponentActive {
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
+        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }

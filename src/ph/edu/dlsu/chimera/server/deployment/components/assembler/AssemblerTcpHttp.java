@@ -20,7 +20,6 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     public static String TOKEN_ATTR_VALUE_KEEP_ALIVE = "connection: keep-alive";
     public static String TOKEN_DIV = "\r\n";
     public static String TOKEN_HEADER_END = AssemblerTcpHttp.TOKEN_DIV + AssemblerTcpHttp.TOKEN_DIV;
-    private ConcurrentLinkedQueue<PduAtomic> httpPackets;
     private StringBuilder headerBuilder;
     private StringBuilder bodyBuilder;
     private boolean headerOk;
@@ -38,7 +37,6 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
 
     @Override
     protected void appendTCP(Tcp tcp, PduAtomic pkt) {
-        this.httpPackets.add(pkt);
         String data = new String(tcp.getPayload());
         if (!this.headerOk) {
             //build header
@@ -69,7 +67,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
                         this.bodyBuilder.append(body);
                     }
                     if (this.bodyLength == 0) {
-                        this.finishHttp(pkt.inbound);
+                        this.finishHttp(pkt.inbound, pkt.timestampInNanos);
                     }
                 }
             } else {
@@ -82,12 +80,12 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
             if (this.keepAlive) {
                 //wait until body length reached
                 if (this.bodyBuilder.toString().length() >= this.bodyLength) {
-                    this.finishHttp(pkt.inbound);
+                    this.finishHttp(pkt.inbound, pkt.timestampInNanos);
                 }
             } else {
                 //wait until fin flag
                 if (tcp.flags_FIN()) {
-                    this.finishHttp(pkt.inbound);
+                    this.finishHttp(pkt.inbound, pkt.timestampInNanos);
                 }
             }
         }
@@ -102,7 +100,6 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     }
 
     private void resetHttp() {
-        this.httpPackets = new ConcurrentLinkedQueue<PduAtomic>();
         this.headerBuilder = new StringBuilder();
         this.bodyBuilder = new StringBuilder();
         this.headerOk = false;
@@ -110,14 +107,20 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
         this.bodyLength = -1;
     }
 
-    private void finishHttp(boolean inbound) {
-        PduCompositeTcpHttp http = new PduCompositeTcpHttp(this.httpPackets,
-                super.connection,
+    private void finishHttp(boolean inbound, long timestampInNanos) {
+        PduCompositeTcpHttp http = new PduCompositeTcpHttp(super.connection,
                 this,
                 this.headerBuilder.toString(),
                 this.bodyBuilder.toString(),
-                inbound);
+                inbound,
+                timestampInNanos);
         super.outputPDU(http);
         this.resetHttp();
+    }
+
+    @Override
+    public boolean isAttackDetected() {
+        //TODO : implement
+        return false;
     }
 }

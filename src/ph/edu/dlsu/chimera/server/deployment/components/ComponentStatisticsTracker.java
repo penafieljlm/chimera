@@ -23,19 +23,21 @@ public class ComponentStatisticsTracker extends ComponentActive {
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Criteria[] criterias;
-    public final ConcurrentHashMap<CriteriaInstance, Statistics> statisticsTable;
+    public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
+    private long processed;
 
     public ComponentStatisticsTracker(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
             Criteria[] criterias,
-            ConcurrentHashMap<CriteriaInstance, Statistics> statisticsTable) {
+            ConcurrentHashMap<CriteriaInstance, Statistics> statsTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
         this.criterias = criterias;
-        this.statisticsTable = statisticsTable;
+        this.statsTable = statsTable;
+        this.processed = 0;
     }
 
     @Override
@@ -43,38 +45,41 @@ public class ComponentStatisticsTracker extends ComponentActive {
         while (super.running) {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
-                    PduAtomic pkt = this.inQueue.poll();
-                    if (pkt.inbound) {
-                        //create / update criterias
-                        for (Criteria crt : this.criterias) {
-                            CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
-                            if (pktcrt != null) {
-                                if (this.statisticsTable != null) {
-                                    if (!this.statisticsTable.contains(pktcrt)) {
-                                        //create criteria
-                                        this.statisticsTable.put(pktcrt, new Statistics(pkt.timestampInNanos()));
+                    synchronized (this.statsTable) {
+                        PduAtomic pkt = this.inQueue.poll();
+                        if (pkt.inbound) {
+                            //create / update criterias
+                            for (Criteria crt : this.criterias) {
+                                CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
+                                if (pktcrt != null) {
+                                    if (this.statsTable != null) {
+                                        if (!this.statsTable.contains(pktcrt)) {
+                                            //create criteria
+                                            this.statsTable.put(pktcrt, new Statistics(pkt.timestampInNanos));
+                                        }
+                                        if (this.statsTable.contains(pktcrt)) {
+                                            //update criteria statsTable
+                                            this.statsTable.get(pktcrt).commitEncounter(pkt);
+                                        }
+                                        //associate criteria to packet
+                                        pkt.addStatistics(crt, this.statsTable.get(pktcrt));
+                                    } else {
+                                        throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
                                     }
-                                    if (this.statisticsTable.contains(pktcrt)) {
-                                        //update criteria statisticsTable
-                                        this.statisticsTable.get(pktcrt).commitEncounter(pkt);
-                                    }
-                                    //associate criteria to packet
-                                    pkt.addStatistics(crt, this.statisticsTable.get(pktcrt));
                                 } else {
-                                    throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
+                                    pkt.addStatistics(crt, null);
                                 }
-                            } else {
-                                pkt.addStatistics(crt, null);
                             }
-                        }
-                        //forward packet
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
+                            //forward packet
+                            if (this.outQueue != null) {
+                                this.processed++;
+                                this.outQueue.add(pkt);
+                            } else {
+                                throw new Exception("Error: [Statistics Tracker] outQueue is null.");
+                            }
                         } else {
-                            throw new Exception("Error: [Statistics Tracker] outQueue is null.");
+                            throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
                         }
-                    } else {
-                        throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
                     }
                 }
             } else {
@@ -86,6 +91,11 @@ public class ComponentStatisticsTracker extends ComponentActive {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
+        if (this.statsTable != null) {
+            diag.add(new Diagnostic("stats", "State Table Size", this.statsTable.size()));
+        } else {
+            diag.add(new Diagnostic("stats", "State Table Size", "N/A"));
+        }
         if (this.inQueue != null) {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
         } else {
@@ -96,6 +106,7 @@ public class ComponentStatisticsTracker extends ComponentActive {
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
+        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }

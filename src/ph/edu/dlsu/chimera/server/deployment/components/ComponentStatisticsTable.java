@@ -19,28 +19,30 @@ import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 public class ComponentStatisticsTable extends ComponentActive {
 
     public final Criteria[] criterias;
-    public final ConcurrentHashMap<CriteriaInstance, Statistics> statisticsTable;
+    public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
     public final long statsTimeoutMs;
 
     public ComponentStatisticsTable(Assembly assembly,
             Criteria[] criterias,
-            ConcurrentHashMap<CriteriaInstance, Statistics> statisticsTableAtomic,
+            ConcurrentHashMap<CriteriaInstance, Statistics> statsTable,
             long statsTimeoutMs) {
         super(assembly);
         this.setPriority(Thread.MIN_PRIORITY);
         this.criterias = criterias;
-        this.statisticsTable = statisticsTableAtomic;
+        this.statsTable = statsTable;
         this.statsTimeoutMs = statsTimeoutMs;
     }
 
     @Override
     protected void componentRun() throws Exception {
         while (super.running) {
-            if (this.statisticsTable != null) {
-                for (CriteriaInstance crt : this.statisticsTable.keySet()) {
-                    if (this.statisticsTable.get(crt).getTimeSinceLastEncounterMs() > this.statsTimeoutMs) {
-                        //stats timed out
-                        this.statisticsTable.remove(crt);
+            if (this.statsTable != null) {
+                synchronized (this.statsTable) {
+                    for (CriteriaInstance crt : this.statsTable.keySet()) {
+                        if (this.statsTable.get(crt).getTimeSinceLastEncounterMs() > this.statsTimeoutMs) {
+                            //stats timed out
+                            this.statsTable.remove(crt);
+                        }
                     }
                 }
             } else {
@@ -52,16 +54,20 @@ public class ComponentStatisticsTable extends ComponentActive {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        for (Criteria crt : this.criterias) {
-            ArrayList<Diagnostic> instances = new ArrayList<>();
-            int instCt = 0;
-            for (CriteriaInstance crtinst : this.statisticsTable.keySet()) {
-                if (crtinst.criteria.equals(crt)) {
-                    instCt++;
+        if (this.statsTable != null) {
+            synchronized (this.statsTable) {
+                ArrayList<Diagnostic> _criterias = new ArrayList<>();
+                for (Criteria crt : this.criterias) {
+                    ArrayList<Diagnostic> instances = new ArrayList<>();
+                    for (CriteriaInstance crtinst : this.statsTable.keySet()) {
+                        if (crtinst.criteria.equals(crt)) {
+                            instances.add(new Diagnostic(crtinst.getStringId(), crtinst.getStringId(), this.statsTable.get(crtinst).getDiagnostics()));
+                        }
+                    }
+                    _criterias.add(new Diagnostic(crt.expression, crt.expression, instances));
                 }
+                diag.add(new Diagnostic("stats", "Statistics Instances", _criterias));
             }
-            instances.add(new Diagnostic("count", "Instance Count", instCt));
-            diag.add(new Diagnostic(crt.expression, crt.expression, instances));
         }
         return diag;
     }

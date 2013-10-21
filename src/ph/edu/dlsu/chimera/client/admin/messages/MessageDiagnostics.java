@@ -40,14 +40,29 @@ public class MessageDiagnostics implements ClientShellMessage {
     }
 
     private void handleDiagsShell(PrintStream outStream, List diags, String prefix) {
+        int maxNameLen = 0;
+        for (Object o : diags) {
+            if (o instanceof Diagnostic) {
+                Diagnostic diag = (Diagnostic) o;
+                if (diag.getName().length() > maxNameLen) {
+                    maxNameLen = diag.getName().length();
+                }
+            }
+        }
+        maxNameLen += 2;
         for (Object o : diags) {
             if (o instanceof Diagnostic) {
                 Diagnostic diag = (Diagnostic) o;
                 if (diag.getValue() instanceof List) {
-                    outStream.println(prefix + diag.getName() + " : ");
+                    outStream.println(prefix + diag.getName());
                     this.handleDiagsShell(outStream, (List<Diagnostic>) diag.getValue(), prefix + "    ");
                 } else {
-                    outStream.println(prefix + diag.getName() + " : " + diag.getValue());
+                    int dotCount = maxNameLen - diag.getName().length();
+                    String dots = "";
+                    for (int i = 0; i < dotCount; i++) {
+                        dots += ".";
+                    }
+                    outStream.println(prefix + diag.getName() + dots + " " + diag.getValue());
                 }
             }
         }

@@ -18,13 +18,13 @@ public class PduCompositeTcpSmtp extends PduCompositeTcp {
     public final boolean isCommand;
     public final String smtp;
 
-    public PduCompositeTcpSmtp(ConcurrentLinkedQueue<PduAtomic> packets,
-            Connection connection,
+    public PduCompositeTcpSmtp(Connection connection,
             Assembler assembler,
             String smtp,
             boolean isCommand,
-            boolean inbound) {
-        super(packets, connection, assembler, inbound);
+            boolean inbound,
+            long timestampInNanos) {
+        super(connection, assembler, inbound, timestampInNanos);
         this.isCommand = isCommand;
         this.smtp = smtp;
     }

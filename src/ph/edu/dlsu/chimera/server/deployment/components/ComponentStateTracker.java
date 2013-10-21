@@ -25,6 +25,7 @@ public final class ComponentStateTracker extends ComponentActive {
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    private long processed;
 
     public ComponentStateTracker(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
@@ -37,6 +38,7 @@ public final class ComponentStateTracker extends ComponentActive {
         this.inQueue = inQueue;
         this.outQueue = outQueue;
         this.inbound = inbound;
+        this.processed = 0;
     }
 
     @Override
@@ -45,34 +47,37 @@ public final class ComponentStateTracker extends ComponentActive {
             if (this.inQueue != null) {
                 if (this.stateTable != null) {
                     while (!this.inQueue.isEmpty()) {
-                        //poll packet
-                        PduAtomic pkt = this.inQueue.poll();
-                        if (pkt.packet.hasHeader(new Tcp())) {
-                            //tcp packets
-                            SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
-                            Tcp tcp = pkt.packet.getHeader(new Tcp());
-                            //create state
-                            if (!this.stateTable.containsKey(socks)) {
-                                if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                    this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
+                        synchronized (this.stateTable) {
+                            //poll packet
+                            PduAtomic pkt = this.inQueue.poll();
+                            if (pkt.packet.hasHeader(new Tcp())) {
+                                //tcp packets
+                                SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
+                                Tcp tcp = pkt.packet.getHeader(new Tcp());
+                                //create state
+                                if (!this.stateTable.containsKey(socks)) {
+                                    if (tcp.flags_SYN() && !tcp.flags_ACK()) {
+                                        this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
+                                    }
+                                }
+                                if (this.stateTable.containsKey(socks)) {
+                                    Connection connection = this.stateTable.get(socks);
+                                    pkt.setConnection(connection);
+                                    //update state
+                                    connection.update(pkt);
+                                    //attempt to delete state
+                                    if (connection.isDone()) {
+                                        this.stateTable.remove(socks);
+                                    }
                                 }
                             }
-                            if (this.stateTable.containsKey(socks)) {
-                                Connection connection = this.stateTable.get(socks);
-                                pkt.setConnection(connection);
-                                //update state
-                                connection.update(pkt);
-                                //attempt to delete state
-                                if (connection.isDone()) {
-                                    this.stateTable.remove(socks);
-                                }
+                            //forward
+                            if (this.outQueue != null) {
+                                this.processed++;
+                                this.outQueue.add(pkt);
+                            } else {
+                                throw new Exception("Error: [State Tracker] outQueue is null.");
                             }
-                        }
-                        //forward
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
-                        } else {
-                            throw new Exception("Error: [State Tracker] outQueue is null.");
                         }
                     }
                 } else {
@@ -102,6 +107,7 @@ public final class ComponentStateTracker extends ComponentActive {
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
+        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }
