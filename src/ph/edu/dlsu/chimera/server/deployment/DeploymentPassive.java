@@ -21,21 +21,21 @@ public class DeploymentPassive extends Deployment {
 
     public DeploymentPassive(Assembly assembly) {
         super("Passive");
-        List<PcapIf> interfaces = assembly.getInterfaces();
-        for (int i = 0; i < interfaces.size(); i++) {
-            PcapIf srcIface = interfaces.get(i);
-            for (int o = 0; o < interfaces.size(); o++) {
-                PcapIf dstIface = interfaces.get(o);
-                if (srcIface != dstIface) {
-                    StringBuilder inErr = new StringBuilder();
-                    StringBuilder outErr = new StringBuilder();
-                    Pcap inPcap = Pcap.openLive(srcIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, inErr);
-                    Pcap outPcap = Pcap.openLive(dstIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, outErr);
-                    ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
-                    super.components.put("sniffer[" + i + "][" + o + "]", new ComponentSniffer(assembly, inPcap, snifferOut, true));
-                    super.components.put("injector[" + i + "][" + o + "]", new ComponentInjector(assembly, snifferOut, outPcap));
-                }
-            }
-        }
+//        List<PcapIf> interfaces = assembly.getInterfaces();
+//        for (int i = 0; i < interfaces.size(); i++) {
+//            PcapIf srcIface = interfaces.get(i);
+//            for (int o = 0; o < interfaces.size(); o++) {
+//                PcapIf dstIface = interfaces.get(o);
+//                if (srcIface != dstIface) {
+//                    StringBuilder inErr = new StringBuilder();
+//                    StringBuilder outErr = new StringBuilder();
+//                    Pcap inPcap = Pcap.openLive(srcIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, inErr);
+//                    Pcap outPcap = Pcap.openLive(dstIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, outErr);
+//                    ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
+//                    super.components.put("sniffer[" + i + "][" + o + "]", new ComponentSniffer(assembly, inPcap, snifferOut, true));
+//                    super.components.put("injector[" + i + "][" + o + "]", new ComponentInjector(assembly, snifferOut, outPcap));
+//                }
+//            }
+//        }
     }
 }

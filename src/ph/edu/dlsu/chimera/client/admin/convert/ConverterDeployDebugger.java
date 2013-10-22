@@ -25,7 +25,7 @@ public class ConverterDeployDebugger extends CommandConverter {
     @Override
     public Message toMessage(Command command) throws Exception {
         //length check
-        if (command.getKeys().size() != 1) {
+        if (command.getKeys().size() < 1) {
             throw new Exception("The command needs at least 1 parameter: 'ifExternal'.");
         }
         //external

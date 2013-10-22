@@ -27,7 +27,7 @@ public class ConverterDeployGathering extends CommandConverter {
 
     @Override
     public Message toMessage(Command command) throws Exception {
-        if (command.getKeys().size() != 3) {
+        if (command.getKeys().size() < 3) {
             throw new Exception("The command needs at least 3 parameters: 'ifExternal', 'ifInternal', and 'dumpFileName'.");
         }
         //external
@@ -60,13 +60,12 @@ public class ConverterDeployGathering extends CommandConverter {
         //gatherAttacks
         boolean gatherAttacks = false;
         String _gatherAttacks = command.getParameterValue("gatherAttacks");
-        if (_gatherAttacks == null) {
-            throw new Exception("The parameter: 'gatherAttacks' is missing.");
-        }
-        try {
-            gatherAttacks = Boolean.valueOf(_gatherAttacks);
-        } catch (NumberFormatException ex) {
-            throw new Exception("The parameter: 'gatherAttacks' must be a number.");
+        if (_gatherAttacks != null) {
+            try {
+                gatherAttacks = Boolean.valueOf(_gatherAttacks);
+            } catch (NumberFormatException ex) {
+                throw new Exception("The parameter: 'gatherAttacks' must be a boolean.");
+            }
         }
         //statsTimeout
         long statsTimeout = ConstDefaults.DEFAULT_TIMEOUT_STATS_MS;

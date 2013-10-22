@@ -47,7 +47,9 @@ public final class Assembly {
         this.users = new UserBase();
 
         //interfaces
-        int result = Pcap.findAllDevs(this.interfaces, null);
+        StringBuilder pcapStrBldr = new StringBuilder();
+        this.interfaces = new ArrayList<>();
+        int result = Pcap.findAllDevs(this.interfaces, pcapStrBldr);
         if (result != 0 || this.interfaces == null) {
             throw new Exception("Error detecting network interfaces.");
         }

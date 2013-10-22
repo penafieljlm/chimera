@@ -22,7 +22,7 @@ public class ConverterQueryError extends CommandConverter {
     }
 
     public Message toMessage(Command command) throws Exception {
-        if (command.getKeys().size() != 1) {
+        if (command.getKeys().size() < 1) {
             throw new Exception("The command needs at least 1 parameter: 'component'!");
         }
         String component = command.getParameterValue("component");
