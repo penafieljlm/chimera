@@ -34,15 +34,14 @@ public final class ComponentAssembler extends ComponentActive {
 
     public ComponentAssembler(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduComposite> outQueueComposite,
-            ConcurrentLinkedQueue<PduAtomic> outQueueAtomic,
+            ConcurrentLinkedQueue<PduAtomic> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
-        this.outQueue = outQueueAtomic;
+        this.outQueue = outQueue;
         this.tcpAssemblerTable = new ConcurrentHashMap<>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
         this.udpAssemblerTable = new ConcurrentHashMap<>();

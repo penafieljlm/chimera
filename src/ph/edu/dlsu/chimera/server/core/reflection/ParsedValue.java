@@ -21,9 +21,9 @@ public final class ParsedValue {
     //hex:<hex value>
     public ParsedValue(String value) throws Exception {
         String v = value.toLowerCase();
-        int boundaryIdx = v.indexOf("=");
+        int boundaryIdx = v.indexOf(":");
         if (boundaryIdx < 0) {
-            throw new Exception("Parse Error: Value type not found! Format is '<type><value>'!");
+            throw new Exception("Parse Error: Invalid value type string '" + value + "'");
         }
         String type = v.substring(0, boundaryIdx);
         String val = v.substring(boundaryIdx + 1);

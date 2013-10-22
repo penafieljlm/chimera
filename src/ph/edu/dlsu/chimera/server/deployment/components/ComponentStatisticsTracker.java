@@ -4,8 +4,10 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.core.Statistics;
@@ -79,5 +81,21 @@ public class ComponentStatisticsTracker extends ComponentActive {
                 throw new Exception("Error: [Statistics Tracker] inQueue is null.");
             }
         }
+    }
+
+    @Override
+    public synchronized ArrayList<Diagnostic> getDiagnostics() {
+        ArrayList<Diagnostic> diag = super.getDiagnostics();
+        if (this.inQueue != null) {
+            diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
+        } else {
+            diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
+        }
+        if (this.outQueue != null) {
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
+        } else {
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
+        }
+        return diag;
     }
 }

@@ -26,6 +26,10 @@ public final class PacketFilter {
     }
 
     public boolean matches(PcapPacket pkt) throws Exception {
-        return this.subject.getFieldValue(pkt).equals(this.value.value);
+        Object val = this.subject.getFieldValue(pkt);
+        if (val != null) {
+            return val.equals(this.value.value);
+        }
+        return false;
     }
 }

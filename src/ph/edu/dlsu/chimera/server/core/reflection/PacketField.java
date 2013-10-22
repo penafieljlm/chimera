@@ -21,7 +21,7 @@ public final class PacketField {
 
     //syntax: <header packages (optinal)>.<class name>.<field name>
     public PacketField(String expression) throws Exception {
-        String[] e = expression.split(".");
+        String[] e = expression.split("[.]");
         if (e.length < 2) {
             throw new Exception("Parse Error: Syntax structure error in expression '" + expression + "'");
         }
@@ -38,7 +38,7 @@ public final class PacketField {
             throw new Exception("Parse Error: header type '" + header + "', not found!");
         }
         if (c != null) {
-            if (c == JHeader.class) {
+            if (JHeader.class.isAssignableFrom(c)) {
                 Constructor constr = null;
                 try {
                     constr = c.getConstructor();

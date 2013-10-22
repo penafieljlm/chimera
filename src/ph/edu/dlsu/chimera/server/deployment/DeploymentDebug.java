@@ -41,8 +41,7 @@ public class DeploymentDebug extends Deployment {
         ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> statsAtomicOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduComposite> assemblerCompositeOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> assemblerAtomicOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> assemblerOut = new ConcurrentLinkedQueue<>();
 
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
         ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
@@ -50,13 +49,13 @@ public class DeploymentDebug extends Deployment {
         ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup = new ConcurrentHashMap<>();
         tcpPortProtocolLookup.put(80, new AssemblerTcpHttp());
 
-        super.components.put("statstbatomic", new ComponentStatisticsTable(assembly, criterias, statsTableAtomic, statsTimeoutMs));
+        super.components.put("statstable", new ComponentStatisticsTable(assembly, criterias, statsTableAtomic, statsTimeoutMs));
         super.components.put("statetable", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
         super.components.put("in-sniffer", new ComponentSniffer(assembly, inPcap, snifferOut, true));
-        super.components.put("in-statsatomic", new ComponentStatisticsTracker(assembly, stateOut, statsAtomicOut, criterias, statsTableAtomic));
+        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, snifferOut, statsAtomicOut, criterias, statsTableAtomic));
         super.components.put("in-statetracker", new ComponentStateTracker(assembly, statsAtomicOut, stateOut, stateTable, true));
-        super.components.put("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerCompositeOut, assemblerAtomicOut, tcpPortProtocolLookup, null, stateTable));
+        super.components.put("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerOut, tcpPortProtocolLookup, null, stateTable));
         //super.components.put("in-debugger", new ComponentDebugger<PduComposite>(assembly, assemblerCompositeOut, null));
     }
 }

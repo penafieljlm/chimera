@@ -54,6 +54,7 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
         }
     }
 
+    @Override
     public void nextPacket(PcapPacket pp, Pcap t) {
         this.received++;
         if (this.outQueue != null) {

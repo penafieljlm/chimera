@@ -19,7 +19,7 @@ public class CADMS {
         int adminPortNum;
         try {
             adminPortNum = Integer.parseInt(args[0]);
-        } catch (NumberFormatException ex) {
+        } catch (Exception ex) {
             System.out.print(CADMS.USAGE);
             return;
         }
@@ -27,7 +27,8 @@ public class CADMS {
         try {
             assembly = new Assembly(adminPortNum);
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            //System.out.println(ex.getMessage());
+            ex.printStackTrace();
             return;
         }
         //start admin service

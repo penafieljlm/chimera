@@ -20,7 +20,7 @@ import ph.edu.dlsu.chimera.server.admin.UserBase;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 
 /**
- * 
+ *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class Assembly {
@@ -62,6 +62,9 @@ public class Assembly {
         } catch (IOException ex) {
             throw new Exception("Config file 'chimera.config' is corrupted!");
         }
+        if (aConfigReader != null) {
+            aConfigReader.close();
+        }
 
         File cConfigFile = new File("criterias.config");
         ArrayList<String> cExpressions = new ArrayList<>();
@@ -72,23 +75,27 @@ public class Assembly {
 
             cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination)");
             cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
-            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+            cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
 
             cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.network.Ip4.destination)");
             cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
             cExpressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
 
             if (cConfigFile.createNewFile()) {
-                FileWriter cConfigFileWriter = new FileWriter(cConfigFile);
-                for (String exp : cExpressions) {
-                    cConfigFileWriter.append(exp + ";\r\n");
+                try (FileWriter cConfigFileWriter = new FileWriter(cConfigFile)) {
+                    for (String exp : cExpressions) {
+                        cConfigFileWriter.write(exp + ";\r\n");
+                    }
                 }
             }
         } else {
             Scanner cConfigFileScanner = new Scanner(cConfigFile);
             cConfigFileScanner = cConfigFileScanner.useDelimiter(";");
             while (cConfigFileScanner.hasNext()) {
-                cExpressions.add(cConfigFileScanner.next().trim());
+                String exp = cConfigFileScanner.next().trim();
+                if (exp.length() > 0) {
+                    cExpressions.add(exp);
+                }
             }
         }
         this.criterias = new Criteria[cExpressions.size()];
@@ -110,6 +117,7 @@ public class Assembly {
 
     /**
      * Aborts the current deployment and starts a new one.
+     *
      * @param deployment
      */
     public void setDeployment(Deployment deployment) {

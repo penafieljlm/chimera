@@ -71,11 +71,11 @@ public class Statistics implements IDiagnosable {
         return (this.lastLastEncounterNanos < 0) ? -1 : this.lastEncounterNanos - this.lastLastEncounterNanos;
     }
 
+    @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
-        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
+        ArrayList<Diagnostic> diag = new ArrayList<>();
         Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.timeCreatedNanos));
         Date update = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.lastEncounterNanos));
-        Date lastenc = (this.getLastEncounterTimeNs() < 0) ? null : new java.sql.Date(ToolsTime.nsToMs(this.getLastEncounterTimeNs()));
         diag.add(new Diagnostic("createtime", "Time Created", (create == null) ? "N/A" : create.toLocaleString()));
         diag.add(new Diagnostic("encounters", "Packets Encountered", this.totalEncounters));
         diag.add(new Diagnostic("totalsize", "Traffic Total Size", this.totalSize));
@@ -83,7 +83,6 @@ public class Statistics implements IDiagnosable {
         diag.add(new Diagnostic("timexisted", "Time Existed", this.getTimeExistedMs() + "ms"));
         diag.add(new Diagnostic("trafficrate", "Traffic Rate", this.getTrafficRatePerSec() + "pkts/sec"));
         diag.add(new Diagnostic("averagesize", "Traffic Average Size", this.getAverageSize()));
-        diag.add(new Diagnostic("lastencounter", "Last Encounter", (lastenc == null) ? "N/A" : lastenc.toLocaleString()));
         diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTimeNs() < 0) ? "N/A" : this.getTimeSinceLastEncounterMs() + "ms"));
         return diag;
     }

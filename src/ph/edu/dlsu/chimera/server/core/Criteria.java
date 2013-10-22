@@ -16,8 +16,8 @@ import ph.edu.dlsu.chimera.server.core.reflection.PacketField;
  */
 public final class Criteria {
 
-    public static final String EXP_SUBJECT = "subject[(](((.+)([,]))*([^,]+))[)]";
-    public static final String EXP_FILTER = "filter[(](((.+)([,]))*([^,]+))[)]";
+    public static final String EXP_SUBJECT = "subject[(]((([^,()]+)([,]))*([^,()]+))[)]";
+    public static final String EXP_FILTER = "filter[(]((([^,()]+)([,]))*([^,()]+))[)]";
     public static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
     public final String expression;
     public final PacketField[] subjects;
@@ -30,8 +30,10 @@ public final class Criteria {
             Matcher subjmatcher = subjpattern.matcher(expression);
             if (subjmatcher.find()) {
                 String subjectexp = subjmatcher.group();
-                subjectexp = subjectexp.replaceFirst("subject", "").substring(1, subjectexp.length() - 1).trim();
-                String[] sexps = subjectexp.split(",");
+                subjectexp = subjectexp.replaceFirst("subject", "");
+                subjectexp = subjectexp.substring(1, subjectexp.length() - 1);
+                subjectexp = subjectexp.trim();
+                String[] sexps = subjectexp.split("[,]");
                 PacketField[] _subjects = new PacketField[sexps.length];
                 for (int i = 0; i < sexps.length; i++) {
                     _subjects[i] = new PacketField(sexps[i].trim());
@@ -43,8 +45,10 @@ public final class Criteria {
             Pattern filtpattern = Pattern.compile(Criteria.EXP_FILTER);
             Matcher filtmatcher = filtpattern.matcher(expression);
             if (filtmatcher.find()) {
-                String filterexp = subjmatcher.group();
-                filterexp = filterexp.replaceFirst("filter", "").substring(1, filterexp.length() - 1).trim();
+                String filterexp = filtmatcher.group();
+                filterexp = filterexp.replaceFirst("filter", "");
+                filterexp = filterexp.substring(1, filterexp.length() - 1);
+                filterexp = filterexp.trim();
                 String[] fexps = filterexp.split(",");
                 PacketFilter[] _filters = new PacketFilter[fexps.length];
                 for (int i = 0; i < fexps.length; i++) {
