@@ -22,19 +22,16 @@ import ph.edu.dlsu.chimera.server.core.Criteria;
 public class ComponentInstanceDumper extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final File trainingFile;
     private long processed;
 
     public ComponentInstanceDumper(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
             Criteria[] criterias,
             File trainingFile) {
         super(assembly);
         this.inQueue = inQueue;
-        this.outQueue = outQueue;
         this.criterias = criterias;
         this.trainingFile = trainingFile;
         this.processed = 0;
@@ -51,12 +48,7 @@ public class ComponentInstanceDumper extends ComponentActive {
                             PduAtomic pkt = this.inQueue.poll();
                             if (pkt.inbound) {
                                 writer.writeNext(pkt.getInstanceData());
-                                if (this.outQueue != null) {
-                                    this.processed++;
-                                    this.outQueue.add(pkt);
-                                } else {
-                                    throw new Exception("Error: [Instance Dumper] outQueue is null.");
-                                }
+                                this.processed++;
                             } else {
                                 throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
                             }
@@ -81,11 +73,6 @@ public class ComponentInstanceDumper extends ComponentActive {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", this.inQueue.size()));
         } else {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
-        }
-        if (this.outQueue != null) {
-            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
-        } else {
-            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
         diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;

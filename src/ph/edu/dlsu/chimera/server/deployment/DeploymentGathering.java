@@ -14,6 +14,7 @@ import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentFork;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInjector;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInstanceDumper;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInstancePreprocessor;
@@ -67,13 +68,16 @@ public class DeploymentGathering extends Deployment {
 
         //inbound queues
         ConcurrentLinkedQueue<PduAtomic> inSniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> inForkOutInject = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> inForkOutGather = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> inStatsOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> inStateOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> inPrePrcOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inDumpOut = new ConcurrentLinkedQueue<>();
 
         //outbound queues
         ConcurrentLinkedQueue<PduAtomic> outSniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> outForkOutInject = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> outForkOutGather = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> outStateOut = new ConcurrentLinkedQueue<>();
 
         //shared resources
@@ -85,16 +89,20 @@ public class DeploymentGathering extends Deployment {
         super.components.put("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
         //inbound path
+        //path 1 = sniffer  ->  injector
+        //path 2 = sniffer  ->  stats   ->  states  ->  preprc  ->  dumper
         super.components.put("in-sniff", new ComponentSniffer(assembly, externalPcap, inSniffOut, true));
-        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, inSniffOut, inStatsOut, assembly.getCriterias(), statsTableAtomic));
+        super.components.put("in-fork", new ComponentFork(assembly, inSniffOut, inForkOutInject, inForkOutGather));
+        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, inForkOutGather, inStatsOut, assembly.getCriterias(), statsTableAtomic));
         super.components.put("in-states", new ComponentStateTracker(assembly, inStatsOut, inStateOut, stateTable));
         super.components.put("in-preprc", new ComponentInstancePreprocessor(assembly, inStateOut, inPrePrcOut, assembly.getCriterias(), gatherAttacks));
-        super.components.put("in-dumper", new ComponentInstanceDumper(assembly, inPrePrcOut, inDumpOut, assembly.getCriterias(), trainingDumpFile));
-        super.components.put("in-inject", new ComponentInjector(assembly, inDumpOut, internalPcap));
+        super.components.put("in-dumper", new ComponentInstanceDumper(assembly, inPrePrcOut, assembly.getCriterias(), trainingDumpFile));
+        super.components.put("in-inject", new ComponentInjector(assembly, inForkOutInject, internalPcap));
 
         //outbound path
         super.components.put("out-sniff", new ComponentSniffer(assembly, internalPcap, outSniffOut, false));
-        super.components.put("out-states", new ComponentStateTracker(assembly, outSniffOut, outStateOut, stateTable));
-        super.components.put("out-inject", new ComponentInjector(assembly, outStateOut, externalPcap));
+        super.components.put("out-fork", new ComponentFork(assembly, outSniffOut, outForkOutInject, outForkOutGather));
+        super.components.put("out-states", new ComponentStateTracker(assembly, outForkOutGather, outStateOut, stateTable));
+        super.components.put("out-inject", new ComponentInjector(assembly, outForkOutInject, externalPcap));
     }
 }
