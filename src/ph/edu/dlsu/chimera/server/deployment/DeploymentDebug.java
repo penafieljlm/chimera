@@ -7,6 +7,7 @@ package ph.edu.dlsu.chimera.server.deployment;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentAssembler;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentSniffer;
@@ -19,10 +20,8 @@ import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcpHttp;
-import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.core.Statistics;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 
 /**
  *
@@ -31,15 +30,20 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 public class DeploymentDebug extends Deployment {
 
     public DeploymentDebug(Assembly assembly,
-            String ifInbound,
-            Criteria[] criterias,
+            int ifExternal,
             long statsTimeoutMs,
-            long stateTimeoutMs) {
+            long stateTimeoutMs) throws Exception {
         super("Debug");
         StringBuilder err = new StringBuilder();
-        Pcap inPcap = Pcap.openLive(ifInbound, Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
-        ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> statsAtomicOut = new ConcurrentLinkedQueue<>();
+        PcapIf inPcapIf = null;
+        try {
+            inPcapIf = assembly.getInterfaces().get(ifExternal);
+        } catch (IndexOutOfBoundsException ex) {
+            throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
+        }
+        Pcap inPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
+        ConcurrentLinkedQueue<PduAtomic> sniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> statsOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> assemblerOut = new ConcurrentLinkedQueue<>();
 
@@ -49,12 +53,12 @@ public class DeploymentDebug extends Deployment {
         ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup = new ConcurrentHashMap<>();
         tcpPortProtocolLookup.put(80, new AssemblerTcpHttp());
 
-        super.components.put("statstable", new ComponentStatisticsTable(assembly, criterias, statsTableAtomic, statsTimeoutMs));
-        super.components.put("statetable", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
+        super.components.put("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
+        super.components.put("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
-        super.components.put("in-sniffer", new ComponentSniffer(assembly, inPcap, snifferOut, true));
-        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, snifferOut, statsAtomicOut, criterias, statsTableAtomic));
-        super.components.put("in-statetracker", new ComponentStateTracker(assembly, statsAtomicOut, stateOut, stateTable, true));
+        super.components.put("in-sniff", new ComponentSniffer(assembly, inPcap, sniffOut, true));
+        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, sniffOut, statsOut, assembly.getCriterias(), statsTableAtomic));
+        super.components.put("in-states", new ComponentStateTracker(assembly, statsOut, stateOut, stateTable));
         super.components.put("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerOut, tcpPortProtocolLookup, null, stateTable));
         //super.components.put("in-debugger", new ComponentDebugger<PduComposite>(assembly, assemblerCompositeOut, null));
     }

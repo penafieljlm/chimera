@@ -13,7 +13,7 @@ import ph.edu.dlsu.chimera.server.Assembly;
  */
 public class DeploymentProduction extends Deployment {
 
-    public DeploymentProduction(Assembly assembly, String ifInbound) {
+    public DeploymentProduction(Assembly assembly, String ifExternal) {
         super("Production");
     }
 

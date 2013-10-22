@@ -14,16 +14,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapIf;
+import ph.edu.dlsu.chimera.core.NicData;
 import ph.edu.dlsu.chimera.server.deployment.Deployment;
 import ph.edu.dlsu.chimera.server.admin.AdministrativeModule;
 import ph.edu.dlsu.chimera.server.admin.UserBase;
 import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.server.deployment.DeploymentPassive;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class Assembly {
+public final class Assembly {
 
     public final AdministrativeModule admin;
     public final UserBase users;
@@ -35,11 +39,18 @@ public class Assembly {
      * The criteriasAtomic that the system uses for measuring statistics.
      */
     private Criteria[] criterias;
-    public Config config;
+    private Config config;
+    private ArrayList<PcapIf> interfaces;
 
     public Assembly(int port) throws Exception {
         this.admin = new AdministrativeModule(this, port);
         this.users = new UserBase();
+
+        //interfaces
+        int result = Pcap.findAllDevs(this.interfaces, null);
+        if (result != 0 || this.interfaces == null) {
+            throw new Exception("Error detecting network interfaces.");
+        }
 
         //config file
         this.config = null;
@@ -102,6 +113,8 @@ public class Assembly {
         for (int i = 0; i < this.criterias.length; i++) {
             this.criterias[i] = new Criteria(cExpressions.get(i));
         }
+
+        this.setDeployment(new DeploymentPassive(this));
     }
 
     public Config getConfig() {
@@ -139,5 +152,9 @@ public class Assembly {
 
     public void startAdmin() {
         this.admin.start();
+    }
+
+    public ArrayList<PcapIf> getInterfaces() {
+        return this.interfaces;
     }
 }

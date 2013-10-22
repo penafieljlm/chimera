@@ -17,12 +17,12 @@ import ph.edu.dlsu.chimera.server.deployment.DeploymentDebug;
  */
 public class MessageDeployDebugger extends MessageDeploy {
 
-    public final String interfaceInbound;
+    public final int ifExternal;
     public final long statsTimeout;
     public final long stateTimeout;
 
-    public MessageDeployDebugger(String ifInbound, long statsTimeout, long stateTimeout) {
-        this.interfaceInbound = ifInbound;
+    public MessageDeployDebugger(int ifExternal, long statsTimeout, long stateTimeout) {
+        this.ifExternal = ifExternal;
         this.statsTimeout = statsTimeout;
         this.stateTimeout = stateTimeout;
     }
@@ -30,8 +30,12 @@ public class MessageDeployDebugger extends MessageDeploy {
     @Override
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         StringBuilder report = new StringBuilder(((MessageText)(super.handleMessage(session, assembly))).text);
-        assembly.setDeployment(new DeploymentDebug(assembly, this.interfaceInbound, assembly.getCriterias(), this.statsTimeout, this.stateTimeout));
+        assembly.setDeployment(new DeploymentDebug(assembly, this.ifExternal, this.statsTimeout, this.stateTimeout));
         report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
+        report = report.append("\nComponents: ");
+        for(String c : assembly.getDeployment().getComponentNames()) {
+            report = report.append("\n    - ").append(c);
+        }
         return new MessageText(report.toString());
     }
 

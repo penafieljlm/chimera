@@ -38,7 +38,7 @@ public final class NicData implements Serializable {
             Logger.getLogger(NicData.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.hardwareAddress = sb.toString();
-        this.addresses = new ArrayList<NicDataAddress>();
+        this.addresses = new ArrayList<>();
         for (int i = 0; i < pcapif.getAddresses().size(); i++) {
             this.addresses.add(new NicDataAddress(pcapif.getAddresses().get(i)));
         }

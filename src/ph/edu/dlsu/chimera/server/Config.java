@@ -8,9 +8,5 @@ package ph.edu.dlsu.chimera.server;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Config {
-
-    private String ifInboundDefault;
-    private String ifOutboundDefault;
-    
+public final class Config {    
 }

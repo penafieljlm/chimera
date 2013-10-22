@@ -15,15 +15,6 @@ public class DeploymentTraining extends Deployment {
 
     public DeploymentTraining(Assembly assembly, String inFile) {
         super("Training");
-//        ConcurrentHashMap<Connection, TCPStateData> stateTable = new ConcurrentHashMap<Connection, TCPStateData>();
-//        //inbound assembly
-//        ConcurrentLinkedQueue<Packet> outSnifferQueue = new ConcurrentLinkedQueue<Packet>();
-//        super.components.put("in.sniffer", new SnifferDump(assembly, outSnifferQueue, inFile));
-//        ConcurrentLinkedQueue<PacketGeneric> outSorterQueue = new ConcurrentLinkedQueue<PacketGeneric>();
-//        super.components.put("in.sorter", new Sorter(assembly, outSnifferQueue, outSorterQueue));
-//        ConcurrentLinkedQueue<PacketGeneric> outStateTrackerQueue = new ConcurrentLinkedQueue<PacketGeneric>();
-//        super.components.put("in.statetracker", new StateTrackerInbound(assembly, outSorterQueue, outStateTrackerQueue, stateTable));
-//        //outbound assembly
     }
 
 }

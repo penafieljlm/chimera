@@ -4,10 +4,8 @@
  */
 package ph.edu.dlsu.chimera.server.deployment;
 
-import ph.edu.dlsu.chimera.core.Diagnostic;
-import java.util.ArrayList;
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.server.IDiagnosable;
+import java.util.Set;
 import ph.edu.dlsu.chimera.server.deployment.components.Component;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 
@@ -23,8 +21,12 @@ public abstract class Deployment {
 
     public Deployment(String name) {
         this.name = name;
-        this.components = new HashMap<String, Component>();
+        this.components = new HashMap<>();
         this.isRunning = false;
+    }
+
+    public Set<String> getComponentNames() {
+        return this.components.keySet();
     }
 
     public Component getComponent(String componentName) throws Exception {

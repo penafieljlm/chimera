@@ -72,7 +72,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         set = ToolsArray.append(set, ToolsPacket.getPacketProtocolName(pkt.packet));
 
         //field - destination ip
-        set = ToolsArray.append(set, ToolsPacket.getIpAddress(pkt.packet, false).getHostAddress());
+        //set = ToolsArray.append(set, ToolsPacket.getIpAddress(pkt.packet, false).getHostAddress());
 
         //field - destination tcp port
         set = ToolsArray.append(set, "" + ToolsPacket.getTcpPort(pkt.packet, false));
@@ -98,6 +98,18 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         //field - connection outbound total size
         set = ToolsArray.append(set, "" + conn.outboundTotalSize());
 
+        //field - connection inbound average size
+        set = ToolsArray.append(set, "" + conn.inboundAverageSize());
+
+        //field - connection outbound average size
+        set = ToolsArray.append(set, "" + conn.outboundAverageSize());
+
+        //field - connection inbound average packet rate
+        set = ToolsArray.append(set, "" + conn.inboundRatePerSec());
+
+        //field - connection outbound average packet rate
+        set = ToolsArray.append(set, "" + conn.outboundRatePerSec());
+
         //field - criterias
         for(Criteria crt : this.criterias) {
             Statistics crtstats = pkt.getStatistics(crt);
@@ -110,7 +122,16 @@ public class ComponentInstancePreprocessor extends ComponentActive {
 
             //subfield - total size
             set = ToolsArray.append(set, "" + crtstats.getTotalSize());
+
+            //subfield - average size
+            set = ToolsArray.append(set, "" + crtstats.getAverageSize());
+
+            //subfield - average rate
+            set = ToolsArray.append(set, "" + crtstats.getTrafficRatePerSec());
         }
+
+        //verdict
+        set = ToolsArray.append(set, "" + this.tagTrafficAsAttacks);
 
         return set;
     }

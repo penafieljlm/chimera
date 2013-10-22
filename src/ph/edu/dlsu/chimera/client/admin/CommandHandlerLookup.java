@@ -26,10 +26,10 @@ public class CommandHandlerLookup {
     private HashMap<String, CommandConverter> lookup;
 
     public CommandHandlerLookup() {
-        this.lookup = new HashMap<String, CommandConverter>();
+        this.lookup = new HashMap<>();
         this.lookup.put("abort", new ConverterDeploy());
-        this.lookup.put("deploy-gathering", new ConverterDeployGathering());
-        this.lookup.put("deploy-debugger", new ConverterDeployDebugger());
+        this.lookup.put("gather", new ConverterDeployGathering());
+        this.lookup.put("debugger", new ConverterDeployDebugger());
         this.lookup.put("diag", new ConverterQueryDiagnostics());
         this.lookup.put("error", new ConverterQueryError());
         this.lookup.put("help", new ConverterHelp(this));

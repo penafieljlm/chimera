@@ -33,7 +33,7 @@ public class MessageInterfaces implements ClientShellMessage {
         outStream.println("CHIMERA Network Interfaces:");
         int intctr = 0;
         for(NicData nic : this.interfaces) {
-            outStream.println("\nInterface................ " + ++intctr);
+            outStream.println("\nInterface................ " + intctr++);
             outStream.println("    Name................. " + nic.name);
             outStream.println("    Description.......... " + nic.description);
             outStream.println("    Hardware Address..... " + nic.hardwareAddress);

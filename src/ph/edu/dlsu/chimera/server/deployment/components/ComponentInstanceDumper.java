@@ -23,14 +23,14 @@ public class ComponentInstanceDumper extends ComponentActive {
 
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
-    public final List<Criteria> criterias;
+    public final Criteria[] criterias;
     public final File trainingFile;
     private long processed;
 
     public ComponentInstanceDumper(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
-            List<Criteria> criterias,
+            Criteria[] criterias,
             File trainingFile) {
         super(assembly);
         this.inQueue = inQueue;
@@ -42,28 +42,36 @@ public class ComponentInstanceDumper extends ComponentActive {
 
     @Override
     protected void componentRun() throws Exception {
-        CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
-        while (super.running) {
-            if (this.inQueue != null) {
-                while (!this.inQueue.isEmpty()) {
-                    PduAtomic pkt = this.inQueue.poll();
-                    if (pkt.inbound) {
-                        writer.writeNext(pkt.getInstanceData());
-                        if (this.outQueue != null) {
-                            this.processed++;
-                            this.outQueue.add(pkt);
-                        } else {
-                            throw new Exception("Error: [Instance Dumper] outQueue is null.");
+        if (this.trainingFile != null) {
+            try {
+                CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
+                while (super.running) {
+                    if (this.inQueue != null) {
+                        while (!this.inQueue.isEmpty()) {
+                            PduAtomic pkt = this.inQueue.poll();
+                            if (pkt.inbound) {
+                                writer.writeNext(pkt.getInstanceData());
+                                if (this.outQueue != null) {
+                                    this.processed++;
+                                    this.outQueue.add(pkt);
+                                } else {
+                                    throw new Exception("Error: [Instance Dumper] outQueue is null.");
+                                }
+                            } else {
+                                throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
+                            }
                         }
                     } else {
-                        throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
+                        throw new Exception("Error: [Instance Dumper] inQueue is null.");
                     }
                 }
-            } else {
-                throw new Exception("Error: [Instance Dumper] inQueue is null.");
+                writer.close();
+            } catch (Exception ex) {
+                throw new Exception("Error: [Instance Dumper] cannot access file '" + this.trainingFile.getName() + "'.");
             }
+        } else {
+            throw new Exception("Error: [Instance Dumper] trainingFile is null.");
         }
-        writer.close();
     }
 
     @Override

@@ -21,7 +21,6 @@ import ph.edu.dlsu.chimera.server.core.Connection;
  */
 public final class ComponentStateTracker extends ComponentActive {
 
-    public final boolean inbound;
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
     public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
@@ -30,14 +29,12 @@ public final class ComponentStateTracker extends ComponentActive {
     public ComponentStateTracker(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
             ConcurrentLinkedQueue<PduAtomic> outQueue,
-            ConcurrentHashMap<SocketPair, Connection> stateTable,
-            boolean inbound) {
+            ConcurrentHashMap<SocketPair, Connection> stateTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.stateTable = stateTable;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
-        this.inbound = inbound;
         this.processed = 0;
     }
 
@@ -57,7 +54,7 @@ public final class ComponentStateTracker extends ComponentActive {
                                 //create state
                                 if (!this.stateTable.containsKey(socks)) {
                                     if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                        this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), this.inbound));
+                                        this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), pkt.inbound));
                                     }
                                 }
                                 if (this.stateTable.containsKey(socks)) {

@@ -39,7 +39,7 @@ public final class ComponentInjector extends ComponentActive {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
                     if (this.outPcap != null) {
-                        this.outPcap.sendPacket(pkt.packet.getHeader(new Ethernet()));
+                        this.outPcap.sendPacket(pkt.packet);
                     } else {
                         throw new Exception("Error: [Injector] Unable to access sending device.");
                     }

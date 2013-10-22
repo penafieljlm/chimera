@@ -5,8 +5,6 @@
 package ph.edu.dlsu.chimera.server.admin.messages;
 
 import java.util.ArrayList;
-import java.util.List;
-import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageInterfaces;
@@ -21,16 +19,10 @@ import ph.edu.dlsu.chimera.server.admin.Session;
 public class MessageQueryInterfaces implements ServerMessage {
 
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
-        List<PcapIf> ifaces = new ArrayList<PcapIf>();
-        StringBuilder errbuff = new StringBuilder();
-        int result = Pcap.findAllDevs(ifaces, errbuff);
-        if (result == 0) {
-            ArrayList<NicData> interfaces = new ArrayList<NicData>();
-            for (PcapIf device : ifaces) {
-                interfaces.add(new NicData(device));
-            }
-            return new MessageInterfaces(interfaces);
+        ArrayList<NicData> interfaces = new ArrayList<>();
+        for (PcapIf device : assembly.getInterfaces()) {
+            interfaces.add(new NicData(device));
         }
-        throw new Exception("Unable to find devices!");
+        return new MessageInterfaces(interfaces);
     }
 }

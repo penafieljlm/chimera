@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.admin.messages;
 
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
@@ -17,18 +16,36 @@ import ph.edu.dlsu.chimera.server.deployment.DeploymentGathering;
  */
 public class MessageDeployGathering extends MessageDeploy {
 
-    public final String interfaceInbound;
+    public final int ifExternal;
+    public final int ifInternal;
+    public final long statsTimeoutMs;
+    public final long stateTimeoutMs;
+    public final String dumpFileName;
+    public final boolean gatherAttacks;
 
-    public MessageDeployGathering(String ifInbound) {
-        this.interfaceInbound = ifInbound;
+    public MessageDeployGathering(int ifExternal,
+            int ifInternal,
+            String dumpFileName,
+            boolean gatherAttacks,
+            long statsTimeoutMs,
+            long stateTimeoutMs) {
+        this.ifExternal = ifExternal;
+        this.ifInternal = ifInternal;
+        this.statsTimeoutMs = statsTimeoutMs;
+        this.stateTimeoutMs = stateTimeoutMs;
+        this.dumpFileName = dumpFileName;
+        this.gatherAttacks = gatherAttacks;
     }
 
     @Override
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
-        StringBuilder report = new StringBuilder(((MessageText)(super.handleMessage(session, assembly))).text);
-        assembly.setDeployment(new DeploymentGathering(assembly, this.interfaceInbound));
+        StringBuilder report = new StringBuilder(((MessageText) (super.handleMessage(session, assembly))).text);
+        assembly.setDeployment(new DeploymentGathering(assembly, this.ifExternal, this.ifInternal, this.dumpFileName, this.gatherAttacks, this.statsTimeoutMs, this.stateTimeoutMs));
         report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
+        report = report.append("\nComponents: ");
+        for (String c : assembly.getDeployment().getComponentNames()) {
+            report = report.append("\n    - ").append(c);
+        }
         return new MessageText(report.toString());
     }
-
 }
