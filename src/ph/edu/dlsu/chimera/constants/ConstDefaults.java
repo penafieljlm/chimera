@@ -13,5 +13,6 @@ public interface ConstDefaults {
 
     public static final long DEFAULT_TIMEOUT_STATS_MS = 300000;
     public static final long DEFAULT_TIMEOUT_STATE_MS = 300000;
+    public static final String DEFAULT_CLASSIFIER_OPTIONS = "-C 0.25 -M 2";
 
 }

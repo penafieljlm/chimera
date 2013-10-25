@@ -23,14 +23,15 @@ import weka.core.converters.ConverterUtils.DataSource;
  */
 public class ComponentInstanceTraining extends ComponentActive {
 
-    public static String CLASSIFIER_OPTIONS = "-C 0.25 -M 2";
+    public static String classifierOptions;
     public final File trainingFile;
     public final File modelFile;
 
-    public ComponentInstanceTraining(Assembly assembly, File trainingFile, File modelFile) {
+    public ComponentInstanceTraining(Assembly assembly, File trainingFile, File modelFile, String classifierOptions) {
         super(assembly);
         this.trainingFile = trainingFile;
         this.modelFile = modelFile;
+        this.classifierOptions = classifierOptions;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class ComponentInstanceTraining extends ComponentActive {
         }
         String[] options;
         try {
-            options = weka.core.Utils.splitOptions(ComponentInstanceTraining.CLASSIFIER_OPTIONS);
+            options = weka.core.Utils.splitOptions(ComponentInstanceTraining.classifierOptions);
         } catch (Exception ex) {
             throw new Exception("Error: [Instance Training] Classifier options corrupted.");
         }
