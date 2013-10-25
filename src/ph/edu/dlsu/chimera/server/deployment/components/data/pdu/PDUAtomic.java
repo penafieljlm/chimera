@@ -20,6 +20,7 @@ public class PduAtomic extends Pdu {
     private Pcap injector;
     private long lastSentTimeNano;
     private Connection connection;
+    private String[] instanceHeaders;
     private String[] instanceData;
 
     public PduAtomic(Pcap sourceInjector,
@@ -34,8 +35,13 @@ public class PduAtomic extends Pdu {
         this.connection = null;
     }
 
-    public void setInstanceData(String[] instanceData) {
-        this.instanceData = instanceData;
+    public void setInstance(String[] headers, String[] data) {
+        this.instanceHeaders = headers;
+        this.instanceData = data;
+    }
+    
+    public String[] getInstanceHeaders() {
+        return this.instanceHeaders;
     }
 
     public String[] getInstanceData() {

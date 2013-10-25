@@ -100,7 +100,7 @@ public final class ComponentStateTracker extends ComponentActive {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
         if (this.outQueue != null) {
-            diag.add(new Diagnostic("outquque", "Outbound Queued Packets", this.outQueue.size()));
+            diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }

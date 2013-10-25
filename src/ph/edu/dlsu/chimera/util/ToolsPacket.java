@@ -6,15 +6,14 @@ package ph.edu.dlsu.chimera.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.JHeaderPool;
+import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
-import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 
 /**
@@ -26,8 +25,19 @@ public abstract class ToolsPacket {
     private static final JHeaderPool headerPool = new JHeaderPool();
 
     public static String getPacketProtocolName(PcapPacket pkt) {
-        int id = pkt.getHeaderIdByIndex(pkt.getHeaderCount() - 1);
-        return ToolsPacket.headerPool.getHeader(id).getName();
+        int off = 1;
+        int id = pkt.getHeaderIdByIndex(pkt.getHeaderCount() - off);
+        JHeader jh = ToolsPacket.headerPool.getHeader(id);
+        if (jh != null) {
+            while (jh instanceof Payload) {
+                off++;
+                id = pkt.getHeaderIdByIndex(pkt.getHeaderCount() - off);
+                jh = ToolsPacket.headerPool.getHeader(id);
+            }
+            return jh.getName();
+        } else {
+            return null;
+        }
     }
 
     public static SocketPair getSocketPair(PcapPacket pkt) {
@@ -118,6 +128,4 @@ public abstract class ToolsPacket {
         arg.destination(src);
         return arg;
     }
-
-    
 }

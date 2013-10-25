@@ -12,7 +12,6 @@ import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.ToolsArray;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
@@ -25,6 +24,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
     public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final boolean tagTrafficAsAttacks;
+    public final String[] instanceHeaders;
     private long processed;
 
     public ComponentInstancePreprocessor(Assembly assembly,
@@ -37,6 +37,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         this.outQueue = outQueue;
         this.criterias = criterias;
         this.tagTrafficAsAttacks = tagTrafficAsAttacks;
+        this.instanceHeaders = this.getInstanceHeaders();
         this.processed = 0;
     }
 
@@ -47,9 +48,9 @@ public class ComponentInstancePreprocessor extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
                     if (pkt.inbound) {
-                        pkt.setInstanceData(this.getInstance(pkt));
+                        pkt.setInstance(this.instanceHeaders, this.getInstance(pkt));
                         if (this.outQueue != null) {
-                            this.processed = 0;
+                            this.processed++;
                             this.outQueue.add(pkt);
                         } else {
                             throw new Exception("Error: [Instance Preprocessor] outQueue is null.");
@@ -63,77 +64,105 @@ public class ComponentInstancePreprocessor extends ComponentActive {
             }
         }
     }
+    
+    private String[] getInstanceHeaders() {
+        ArrayList<String> header = new ArrayList<>();
+        header.add("protocol");
+        header.add("pdu_size");
+        header.add("dest_tcp");
+        header.add("dest_udp");
+        header.add("conn_in_enc_timed");
+        header.add("conn_ou_enc_timed");
+        header.add("conn_in_enc_count");
+        header.add("conn_ou_enc_count");
+        header.add("conn_in_tsize");
+        header.add("conn_ou_tsize");
+        header.add("conn_in_asize");
+        header.add("conn_ou_asize");
+        header.add("conn_in_rateps");
+        header.add("conn_ou_rateps");
+        for (Criteria crt : this.criterias) {
+            String exp = crt.expression.replaceAll(" ", "");
+            header.add(exp + "_enc_timed");
+            header.add(exp + "_enc_count");
+            header.add(exp + "_enc_tsize");
+            header.add(exp + "_enc_asize");
+            header.add(exp + "_enc_rateps");
+        }
+        header.add("attack");
+        return header.toArray(new String[0]);
+    }
 
     private String[] getInstance(PduAtomic pkt) {
-        String[] set = new String[0];
+        ArrayList<String> set = new ArrayList<>();
         Connection conn = pkt.getConnection();
 
         //field - protocol
-        set = ToolsArray.append(set, ToolsPacket.getPacketProtocolName(pkt.packet));
+        set.add("" + ToolsPacket.getPacketProtocolName(pkt.packet));
 
-        //field - destination ip
-        //set = ToolsArray.append(set, ToolsPacket.getIpAddress(pkt.packet, false).getHostAddress());
+        //field - size
+        set.add("" + pkt.packet.size());
 
         //field - destination tcp port
-        set = ToolsArray.append(set, "" + ToolsPacket.getTcpPort(pkt.packet, false));
+        set.add("" + ToolsPacket.getTcpPort(pkt.packet, false));
 
         //field - destination udp port
-        set = ToolsArray.append(set, "" + ToolsPacket.getUdpPort(pkt.packet, false));
+        set.add("" + ToolsPacket.getUdpPort(pkt.packet, false));
 
         //field - connection inbound encounter interval
-        set = ToolsArray.append(set, "" + conn.inboundLastEncounterDeltaNs());
+        set.add("" + ((conn == null) ? null : conn.inboundLastEncounterDeltaNs()));
 
         //field - connection outbound encounter interval
-        set = ToolsArray.append(set, "" + conn.outboundLastEncounterDeltaNs());
+        set.add("" + ((conn == null) ? null : conn.outboundLastEncounterDeltaNs()));
 
         //field - connection inbound encounters
-        set = ToolsArray.append(set, "" + conn.inboundEncounters());
+        set.add("" + ((conn == null) ? null : conn.inboundEncounters()));
 
         //field - connection outbound encounters
-        set = ToolsArray.append(set, "" + conn.outboundEncounters());
+        set.add("" + ((conn == null) ? null : conn.outboundEncounters()));
 
         //field - connection inbound total size
-        set = ToolsArray.append(set, "" + conn.inboundTotalSize());
+        set.add("" + ((conn == null) ? null : conn.inboundTotalSize()));
 
         //field - connection outbound total size
-        set = ToolsArray.append(set, "" + conn.outboundTotalSize());
+        set.add("" + ((conn == null) ? null : conn.outboundTotalSize()));
 
         //field - connection inbound average size
-        set = ToolsArray.append(set, "" + conn.inboundAverageSize());
+        set.add("" + ((conn == null) ? null : conn.inboundAverageSize()));
 
         //field - connection outbound average size
-        set = ToolsArray.append(set, "" + conn.outboundAverageSize());
+        set.add("" + ((conn == null) ? null : conn.outboundAverageSize()));
 
         //field - connection inbound average packet rate
-        set = ToolsArray.append(set, "" + conn.inboundRatePerSec());
+        set.add("" + ((conn == null) ? null : conn.inboundRatePerSec()));
 
         //field - connection outbound average packet rate
-        set = ToolsArray.append(set, "" + conn.outboundRatePerSec());
+        set.add("" + ((conn == null) ? null : conn.outboundRatePerSec()));
 
         //field - criterias
-        for(Criteria crt : this.criterias) {
+        for (Criteria crt : this.criterias) {
             Statistics crtstats = pkt.getStatistics(crt);
 
             //subfield - encounter interval
-            set = ToolsArray.append(set, "" + crtstats.getLastEncounterDeltaNs());
+            set.add("" + ((crtstats == null) ? null : crtstats.getLastEncounterDeltaNs()));
 
             //subfield - total encounters
-            set = ToolsArray.append(set, "" + crtstats.getTotalEncounters());
+            set.add("" + ((crtstats == null) ? null : crtstats.getTotalEncounters()));
 
             //subfield - total size
-            set = ToolsArray.append(set, "" + crtstats.getTotalSize());
+            set.add("" + ((crtstats == null) ? null : crtstats.getTotalSize()));
 
             //subfield - average size
-            set = ToolsArray.append(set, "" + crtstats.getAverageSize());
+            set.add("" + ((crtstats == null) ? null : crtstats.getAverageSize()));
 
             //subfield - average rate
-            set = ToolsArray.append(set, "" + crtstats.getTrafficRatePerSec());
+            set.add("" + ((crtstats == null) ? null : crtstats.getTrafficRatePerSec()));
         }
 
         //verdict
-        set = ToolsArray.append(set, "" + this.tagTrafficAsAttacks);
+        set.add("" + this.tagTrafficAsAttacks);
 
-        return set;
+        return set.toArray(new String[0]);
     }
 
     @Override

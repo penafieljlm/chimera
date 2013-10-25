@@ -8,7 +8,6 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
@@ -25,6 +24,7 @@ public class ComponentInstanceDumper extends ComponentActive {
     public final Criteria[] criterias;
     public final File trainingFile;
     private long processed;
+    private boolean headerOk;
 
     public ComponentInstanceDumper(Assembly assembly,
             ConcurrentLinkedQueue<PduAtomic> inQueue,
@@ -35,6 +35,7 @@ public class ComponentInstanceDumper extends ComponentActive {
         this.criterias = criterias;
         this.trainingFile = trainingFile;
         this.processed = 0;
+        this.headerOk = false;
     }
 
     @Override
@@ -47,7 +48,15 @@ public class ComponentInstanceDumper extends ComponentActive {
                         while (!this.inQueue.isEmpty()) {
                             PduAtomic pkt = this.inQueue.poll();
                             if (pkt.inbound) {
+                                if (pkt.getInstanceHeaders().length != pkt.getInstanceData().length) {
+                                    throw new Exception("Error: [Instance Dumper] Headers do not match data.");
+                                }
+                                if (!this.headerOk) {
+                                    this.headerOk = true;
+                                    writer.writeNext(pkt.getInstanceHeaders());
+                                }
                                 writer.writeNext(pkt.getInstanceData());
+                                writer.flush();
                                 this.processed++;
                             } else {
                                 throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
