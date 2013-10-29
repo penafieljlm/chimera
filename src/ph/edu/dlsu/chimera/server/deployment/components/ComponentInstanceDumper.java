@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 
 /**
@@ -20,14 +20,14 @@ import ph.edu.dlsu.chimera.server.core.Criteria;
  */
 public class ComponentInstanceDumper extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final Criteria[] criterias;
     public final File trainingFile;
     private long processed;
     private boolean headerOk;
 
     public ComponentInstanceDumper(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
             Criteria[] criterias,
             File trainingFile) {
         super(assembly);
@@ -46,7 +46,7 @@ public class ComponentInstanceDumper extends ComponentActive {
                 while (super.running) {
                     if (this.inQueue != null) {
                         while (!this.inQueue.isEmpty()) {
-                            PDUAtomic pkt = this.inQueue.poll();
+                            PduAtomic pkt = this.inQueue.poll();
                             if (pkt.inbound) {
                                 if (pkt.getInstanceHeaders().length != pkt.getInstanceData().length) {
                                     throw new Exception("Error: [Instance Dumper] Headers do not match data.");

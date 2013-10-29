@@ -17,7 +17,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTable
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTracker;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcpHttp;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
@@ -42,10 +42,10 @@ public class DeploymentDebug extends Deployment {
             throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
         }
         Pcap inPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
-        ConcurrentLinkedQueue<PDUAtomic> sniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PDUAtomic> statsOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PDUAtomic> stateOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PDUAtomic> assemblerOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> sniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> statsOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> assemblerOut = new ConcurrentLinkedQueue<>();
 
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
         ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();

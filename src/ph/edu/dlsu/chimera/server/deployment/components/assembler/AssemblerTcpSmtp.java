@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.core.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpSmtp;
 
 /**
@@ -32,7 +32,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     }
 
     @Override
-    protected void appendTCP(Tcp tcp, PDUAtomic pkt) {
+    protected void appendTCP(Tcp tcp, PduAtomic pkt) {
         String data = new String(tcp.getPayload());
         if (!this.dataOpen && !this.expectingCmd) {
             this.messageBuilder.append(data);
@@ -62,7 +62,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
     }
 
     @Override
-    protected AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PDUAtomic firstPacket) {
+    protected AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket) {
         if (firstPacket.getConnection() != null) {
             return new AssemblerTcpSmtp(firstPacket.packet.getCaptureHeader().timestampInNanos(), firstPacket.getConnection());
         }

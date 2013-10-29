@@ -11,7 +11,7 @@ import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.Statistics;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
@@ -20,16 +20,16 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  */
 public class ComponentInstancePreprocessor extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final boolean tagTrafficAsAttacks;
     public final String[] instanceHeaders;
     private long processed;
 
     public ComponentInstancePreprocessor(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
-            ConcurrentLinkedQueue<PDUAtomic> outQueue,
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            ConcurrentLinkedQueue<PduAtomic> outQueue,
             Criteria[] criterias,
             boolean tagTrafficAsAttacks) {
         super(assembly);
@@ -46,7 +46,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         while (super.running) {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
-                    PDUAtomic pkt = this.inQueue.poll();
+                    PduAtomic pkt = this.inQueue.poll();
                     if (pkt.inbound) {
                         pkt.setInstance(this.instanceHeaders, this.getInstance(pkt));
                         if (this.outQueue != null) {
@@ -93,7 +93,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         return header.toArray(new String[0]);
     }
 
-    private String[] getInstance(PDUAtomic pkt) {
+    private String[] getInstance(PduAtomic pkt) {
         ArrayList<String> set = new ArrayList<>();
         Connection conn = pkt.getConnection();
 
