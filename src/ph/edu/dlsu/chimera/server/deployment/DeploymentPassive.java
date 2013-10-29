@@ -11,7 +11,7 @@ import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInjector;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentSniffer;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 
 /**
  *
@@ -31,7 +31,7 @@ public class DeploymentPassive extends Deployment {
 //                    StringBuilder outErr = new StringBuilder();
 //                    Pcap inPcap = Pcap.openLive(srcIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, inErr);
 //                    Pcap outPcap = Pcap.openLive(dstIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, outErr);
-//                    ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
+//                    ConcurrentLinkedQueue<PDUAtomic> snifferOut = new ConcurrentLinkedQueue<>();
 //                    super.components.put("sniffer[" + i + "][" + o + "]", new ComponentSniffer(assembly, inPcap, snifferOut, true));
 //                    super.components.put("injector[" + i + "][" + o + "]", new ComponentInjector(assembly, snifferOut, outPcap));
 //                }

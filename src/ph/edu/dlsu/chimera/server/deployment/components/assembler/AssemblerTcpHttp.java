@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.core.Connection;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpHttp;
 
 /**
@@ -36,7 +36,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     }
 
     @Override
-    protected void appendTCP(Tcp tcp, PduAtomic pkt) {
+    protected void appendTCP(Tcp tcp, PDUAtomic pkt) {
         String data = new String(tcp.getPayload());
         if (!this.headerOk) {
             //build header
@@ -92,7 +92,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     }
 
     @Override
-    protected AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket) {
+    protected AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PDUAtomic firstPacket) {
         if (firstPacket.getConnection() != null) {
             return new AssemblerTcpHttp(firstPacket.packet.getCaptureHeader().timestampInNanos(), firstPacket.getConnection());
         }

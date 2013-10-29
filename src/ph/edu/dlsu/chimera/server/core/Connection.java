@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**
@@ -129,7 +129,7 @@ public final class Connection extends Statistics {
      * Updates the connection data based on the received packet.
      * @param pkt - the received packet.
      */
-    public synchronized void update(PduAtomic pkt) {
+    public synchronized void update(PDUAtomic pkt) {
         if (!this.done) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
             super.commitEncounter(pkt);

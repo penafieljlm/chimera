@@ -11,7 +11,7 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 
 /**
  * 
@@ -20,13 +20,13 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 public final class ComponentSniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
 
     public final boolean inbound;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
     public final Pcap inPcap;
     private long received;
 
     public ComponentSniffer(Assembly assembly,
             Pcap inPcap,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            ConcurrentLinkedQueue<PDUAtomic> outQueue,
             boolean inbound) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
@@ -58,7 +58,7 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public void nextPacket(PcapPacket pp, Pcap t) {
         this.received++;
         if (this.outQueue != null) {
-            this.outQueue.add(new PduAtomic(t, pp, this.inbound, pp.getCaptureHeader().timestampInNanos()));
+            this.outQueue.add(new PDUAtomic(t, pp, this.inbound, pp.getCaptureHeader().timestampInNanos()));
         }
     }
 
