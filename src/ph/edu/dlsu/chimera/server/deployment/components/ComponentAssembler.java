@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Connection;
@@ -23,8 +23,8 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  */
 public final class ComponentAssembler extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
     public final ConcurrentHashMap<SocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
     public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
@@ -33,8 +33,8 @@ public final class ComponentAssembler extends ComponentActive {
     private long processed;
 
     public ComponentAssembler(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            ConcurrentLinkedQueue<PDUAtomic> inQueue,
+            ConcurrentLinkedQueue<PDUAtomic> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
@@ -56,7 +56,7 @@ public final class ComponentAssembler extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
-                    PduAtomic pkt = this.inQueue.poll();
+                    PDUAtomic pkt = this.inQueue.poll();
                     if (pkt.inbound) {
                         //tcp forward
                         if (pkt.packet.hasHeader(new Tcp())) {
@@ -79,7 +79,7 @@ public final class ComponentAssembler extends ComponentActive {
         }
     }
 
-    private void handleTcp(PduAtomic pkt) throws Exception {
+    private void handleTcp(PDUAtomic pkt) throws Exception {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
                 SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);

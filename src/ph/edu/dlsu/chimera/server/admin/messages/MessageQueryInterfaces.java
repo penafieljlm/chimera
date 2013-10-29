@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageInterfaces;
-import ph.edu.dlsu.chimera.core.NicData;
+import ph.edu.dlsu.chimera.core.NICData;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
 
@@ -19,9 +19,9 @@ import ph.edu.dlsu.chimera.server.admin.Session;
 public class MessageQueryInterfaces implements ServerMessage {
 
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
-        ArrayList<NicData> interfaces = new ArrayList<>();
+        ArrayList<NICData> interfaces = new ArrayList<>();
         for (PcapIf device : assembly.getInterfaces()) {
-            interfaces.add(new NicData(device));
+            interfaces.add(new NICData(device));
         }
         return new MessageInterfaces(interfaces);
     }

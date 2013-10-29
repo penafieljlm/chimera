@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.client.admin.messages;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import ph.edu.dlsu.chimera.core.NicData;
+import ph.edu.dlsu.chimera.core.NICData;
 import ph.edu.dlsu.chimera.core.NicDataAddress;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
 import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
@@ -18,9 +18,9 @@ import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
  */
 public class MessageInterfaces implements ClientShellMessage {
 
-    public final ArrayList<NicData> interfaces;
+    public final ArrayList<NICData> interfaces;
 
-    public MessageInterfaces(ArrayList<NicData> interfaces) {
+    public MessageInterfaces(ArrayList<NICData> interfaces) {
         this.interfaces = interfaces;
     }
 
@@ -32,7 +32,7 @@ public class MessageInterfaces implements ClientShellMessage {
     public ServerMessage handleShellMessage(PrintStream outStream) {
         outStream.println("CHIMERA Network Interfaces:");
         int intctr = 0;
-        for(NicData nic : this.interfaces) {
+        for(NICData nic : this.interfaces) {
             outStream.println("\nInterface................ " + intctr++);
             outStream.println("    Name................. " + nic.name);
             outStream.println("    Description.......... " + nic.description);

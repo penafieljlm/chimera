@@ -24,7 +24,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTracker;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
 
 /**
  *
@@ -68,18 +68,18 @@ public class DeploymentGathering extends Deployment {
         Pcap internalPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Defaults.DEFAULT_TIMEOUT_PCAP_MS, outErr);
 
         //inbound queues
-        ConcurrentLinkedQueue<PduAtomic> exSniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exForkOutInject = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exForkOutGather = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exStatsOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exStateOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exPrePrcOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> exSniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> exForkOutInject = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> exForkOutGather = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> exStatsOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> exStateOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> exPrePrcOut = new ConcurrentLinkedQueue<>();
 
         //outbound queues
-        ConcurrentLinkedQueue<PduAtomic> inSniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inForkOutInject = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inForkOutGather = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inStateOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> inSniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> inForkOutInject = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> inForkOutGather = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PDUAtomic> inStateOut = new ConcurrentLinkedQueue<>();
 
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
