@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera.core;
 
-import ph.edu.dlsu.chimera.core.admin.messages.NicDataAddress;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;

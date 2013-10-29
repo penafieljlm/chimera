@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.util.Pdu;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
 
 /**
  *

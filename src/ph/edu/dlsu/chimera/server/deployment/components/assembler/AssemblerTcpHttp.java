@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.PduCompositeTcpHttp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduCompositeTcpHttp;
 
 /**
  *
