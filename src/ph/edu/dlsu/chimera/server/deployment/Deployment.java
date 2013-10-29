@@ -16,28 +16,43 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 public abstract class Deployment {
 
     public final String name;
-
     protected final HashMap<String, Component> components;
     protected boolean isRunning;
 
     public Deployment(String name) {
         this.name = name;
-        this.components = new HashMap<String, Component>();
+        this.components = new HashMap<>();
+        this.isRunning = false;
     }
 
     public Set<String> getComponentNames() {
         return this.components.keySet();
     }
 
-    public synchronized void killDeployment() {
-        for(String k : this.components.keySet()) {
-            this.components.get(k).kill();
-        }
+    public Component getComponent(String componentName) throws Exception {
+        Component component = this.components.get(componentName);
+        if(component == null)
+            throw new Exception("No such component: " + componentName + "!");
+        return component;
     }
 
-    protected void startDeployment() {
-        for(String k : this.components.keySet()) {
-            this.components.get(k).start();
+    public synchronized void killDeployment() {
+        for (String k : this.components.keySet()) {
+            if (this.components.get(k) instanceof ComponentActive) {
+                ComponentActive ca = (ComponentActive) this.components.get(k);
+                ca.kill();
+            }
+        }
+        this.isRunning = false;
+    }
+
+    public void startDeployment() {
+        this.isRunning = true;
+        for (String k : this.components.keySet()) {
+            if (this.components.get(k) instanceof ComponentActive) {
+                ComponentActive ca = (ComponentActive) this.components.get(k);
+                ca.start();
+            }
         }
     }
 

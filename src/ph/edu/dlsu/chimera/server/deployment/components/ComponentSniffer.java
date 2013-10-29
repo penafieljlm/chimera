@@ -71,12 +71,12 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        if(this.outQueue != null)
+        if (this.outQueue != null) {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", this.outQueue.size()));
-        else
+        } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
-        diag.add(new Diagnostic("received", "Packets Received", this.pcap.getStatistics().getReceivedCount()));
-        diag.add(new Diagnostic("dropped", "Packets Dropped", this.pcap.getStatistics().getDroppedCount()));
+        }
+        diag.add(new Diagnostic("received", "Packets Received", this.received));
         return diag;
     }
 }

@@ -39,9 +39,13 @@ public class MessageDeployGathering extends MessageDeploy {
 
     @Override
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
-        StringBuilder report = new StringBuilder(((MessageText)(super.handleMessage(session, assembly))).text);
-        assembly.setDeployment(new Gathering(assembly, this.interfaceInbound));
+        StringBuilder report = new StringBuilder(((MessageText) (super.handleMessage(session, assembly))).text);
+        assembly.setDeployment(new DeploymentGathering(assembly, this.ifExternal, this.ifInternal, this.dumpFileName, this.gatherAttacks, this.statsTimeoutMs, this.stateTimeoutMs));
         report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
+        report = report.append("\nComponents: ");
+        for (String c : assembly.getDeployment().getComponentNames()) {
+            report = report.append("\n    - ").append(c);
+        }
         return new MessageText(report.toString());
     }
 }
