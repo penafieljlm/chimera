@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
-import ph.edu.dlsu.chimera.util.Pdu;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.core.Connection;

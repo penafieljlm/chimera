@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package ph.edu.dlsu.chimera.util;
+package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.server.core.Statistics;
