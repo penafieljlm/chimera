@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduComposite;
 import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.util.ToolsTime;
@@ -44,11 +44,11 @@ public abstract class Assembler extends Statistics {
         return this.queue.size();
     }
 
-    public void append(PDUAtomic segment) {
+    public void append(PduAtomic segment) {
         super.commitEncounter(segment);
     }
 
-    public abstract Assembler createAssemblerInstance(PDUAtomic firstPacket);
+    public abstract Assembler createAssemblerInstance(PduAtomic firstPacket);
 
     protected void outputPDU(PduComposite pdu) {
         this.queue.add(pdu);

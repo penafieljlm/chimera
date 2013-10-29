@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
@@ -16,13 +16,13 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
  */
 public class ComponentFork extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PDUAtomic>[] outQueues;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic>[] outQueues;
     private long processed;
 
     public ComponentFork(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
-            ConcurrentLinkedQueue<PDUAtomic>... outQueues) {
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            ConcurrentLinkedQueue<PduAtomic>... outQueues) {
         super(assembly);
         this.inQueue = inQueue;
         this.outQueues = outQueues;
@@ -34,10 +34,10 @@ public class ComponentFork extends ComponentActive {
         while (super.running) {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
-                    PDUAtomic pkt = this.inQueue.poll();
+                    PduAtomic pkt = this.inQueue.poll();
                     if (this.outQueues != null) {
                         this.processed++;
-                        for (ConcurrentLinkedQueue<PDUAtomic> outQueue : this.outQueues) {
+                        for (ConcurrentLinkedQueue<PduAtomic> outQueue : this.outQueues) {
                             if (outQueue != null) {
                                 outQueue.add(pkt);
                             } else {

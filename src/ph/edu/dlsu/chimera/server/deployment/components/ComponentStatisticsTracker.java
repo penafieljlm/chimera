@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
@@ -20,15 +20,15 @@ import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
  */
 public class ComponentStatisticsTracker extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
     private long processed;
 
     public ComponentStatisticsTracker(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
-            ConcurrentLinkedQueue<PDUAtomic> outQueue,
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            ConcurrentLinkedQueue<PduAtomic> outQueue,
             Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable) {
         super(assembly);
@@ -46,7 +46,7 @@ public class ComponentStatisticsTracker extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     synchronized (this.statsTable) {
-                        PDUAtomic pkt = this.inQueue.poll();
+                        PduAtomic pkt = this.inQueue.poll();
                         if (pkt.inbound) {
                             //create / update criterias
                             for (Criteria crt : this.criterias) {

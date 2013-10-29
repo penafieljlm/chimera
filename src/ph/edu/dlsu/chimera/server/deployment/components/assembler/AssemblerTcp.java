@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.server.deployment.components.assembler;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.TcpQueue;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
@@ -29,11 +29,11 @@ public abstract class AssemblerTcp extends Assembler {
     }
 
     @Override
-    public void append(PDUAtomic segment) {
+    public void append(PduAtomic segment) {
         //will receive tcp packets in order
         if (segment.packet.hasHeader(new Tcp())) {
             this.queue.add(segment);
-            PDUAtomic p = this.queue.poll();
+            PduAtomic p = this.queue.poll();
             while (p != null) {
                 Tcp tcp = p.packet.getHeader(new Tcp());
                 this.appendTCP(tcp, p);
@@ -43,7 +43,7 @@ public abstract class AssemblerTcp extends Assembler {
     }
 
     @Override
-    public Assembler createAssemblerInstance(PDUAtomic firstPacket) {
+    public Assembler createAssemblerInstance(PduAtomic firstPacket) {
         if (firstPacket.packet.hasHeader(new Tcp())) {
             Tcp tcp = firstPacket.packet.getHeader(new Tcp());
             if(tcp.flags_SYN() && !tcp.flags_ACK()) {
@@ -53,12 +53,12 @@ public abstract class AssemblerTcp extends Assembler {
         return null;
     }
 
-    protected abstract AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PDUAtomic firstPacket);
+    protected abstract AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket);
 
     /**
      * Invoked when tcp packet received. Tcp packets are send to this method in order.
      * @param tcp
      * @param pkt
      */
-    protected abstract void appendTCP(Tcp tcp, PDUAtomic pkt);
+    protected abstract void appendTCP(Tcp tcp, PduAtomic pkt);
 }

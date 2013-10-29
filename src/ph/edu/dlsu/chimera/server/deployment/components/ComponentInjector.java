@@ -11,7 +11,7 @@ import org.jnetpcap.PcapDumper;
 import org.jnetpcap.protocol.lan.Ethernet;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
  *
@@ -19,11 +19,11 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
  */
 public final class ComponentInjector extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
     public final Pcap outPcap;
     private long sent;
 
-    public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PDUAtomic> inQueue, Pcap outPcap) {
+    public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PduAtomic> inQueue, Pcap outPcap) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
@@ -37,7 +37,7 @@ public final class ComponentInjector extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
-                    PDUAtomic pkt = this.inQueue.poll();
+                    PduAtomic pkt = this.inQueue.poll();
                     if (this.outPcap != null) {
                         this.sent++;
                         this.outPcap.sendPacket(pkt.packet);

@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PDUAtomic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.Assembly;
@@ -22,13 +22,13 @@ import ph.edu.dlsu.chimera.server.core.Connection;
 public final class ComponentStateTracker extends ComponentActive {
 
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
-    public final ConcurrentLinkedQueue<PDUAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PDUAtomic> outQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
     private long processed;
 
     public ComponentStateTracker(Assembly assembly,
-            ConcurrentLinkedQueue<PDUAtomic> inQueue,
-            ConcurrentLinkedQueue<PDUAtomic> outQueue,
+            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            ConcurrentLinkedQueue<PduAtomic> outQueue,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
@@ -46,7 +46,7 @@ public final class ComponentStateTracker extends ComponentActive {
                     while (!this.inQueue.isEmpty()) {
                         synchronized (this.stateTable) {
                             //poll packet
-                            PDUAtomic pkt = this.inQueue.poll();
+                            PduAtomic pkt = this.inQueue.poll();
                             if (pkt.packet.hasHeader(new Tcp())) {
                                 //tcp packets
                                 SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
