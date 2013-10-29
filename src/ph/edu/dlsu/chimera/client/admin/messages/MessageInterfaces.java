@@ -8,7 +8,7 @@ package ph.edu.dlsu.chimera.client.admin.messages;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.NicData;
-import ph.edu.dlsu.chimera.core.NicDataAddress;
+import ph.edu.dlsu.chimera.core.admin.messages.NicDataAddress;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
 import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
 
