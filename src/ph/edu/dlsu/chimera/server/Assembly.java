@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
-import ph.edu.dlsu.chimera.core.NicData;
 import ph.edu.dlsu.chimera.server.deployment.Deployment;
 import ph.edu.dlsu.chimera.server.admin.AdministrativeModule;
 import ph.edu.dlsu.chimera.server.admin.UserBase;
@@ -136,11 +135,13 @@ public final class Assembly {
      * @param deployment
      */
     public void setDeployment(Deployment deployment) {
-        if(this.deployment != null)
+        if (this.deployment != null) {
             this.deployment.killDeployment();
+        }
         this.deployment = deployment;
-        if(this.deployment != null)
+        if (this.deployment != null) {
             this.deployment.startDeployment();
+        }
     }
 
     /**

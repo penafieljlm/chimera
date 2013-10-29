@@ -4,8 +4,6 @@
  */
 package ph.edu.dlsu.chimera.util;
 
-import java.util.Date;
-
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
@@ -13,13 +11,11 @@ import java.util.Date;
 public abstract class ToolsTime {
 
     public static long nowNs() {
-        Date now = new Date();
-        return ToolsTime.msToNs(now.getTime());
+        return ToolsTime.msToNs(System.currentTimeMillis());
     }
 
     public static long nowMs() {
-        Date now = new Date();
-        return now.getTime();
+        return System.currentTimeMillis();
     }
 
     public static long msToNs(long ms) {
