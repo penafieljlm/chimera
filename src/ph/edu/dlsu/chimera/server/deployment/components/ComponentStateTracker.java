@@ -6,7 +6,6 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
@@ -59,7 +58,7 @@ public final class ComponentStateTracker extends ComponentActive {
                     while (!this.inQueue.isEmpty()) {
                         synchronized (this.stateTable) {
                             //poll packet
-                            PduAtomic pkt = this.inQueue.poll();
+                            PduAtomic pkt = this.inQueue.poll();                            
                             if (pkt.packet.hasHeader(new Tcp())) {
                                 //tcp packets
                                 SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);

@@ -64,11 +64,11 @@ public class ComponentStatisticsTracker extends ComponentActive {
                                 CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
                                 if (pktcrt != null) {
                                     if (this.statsTable != null) {
-                                        if (!this.statsTable.contains(pktcrt)) {
+                                        if (!this.statsTable.containsKey(pktcrt)) {
                                             //create criteria
                                             this.statsTable.put(pktcrt, new Statistics(pkt.timestampInNanos));
                                         }
-                                        if (this.statsTable.contains(pktcrt)) {
+                                        if (this.statsTable.containsKey(pktcrt)) {
                                             //update criteria statsTable
                                             this.statsTable.get(pktcrt).commitEncounter(pkt);
                                         }

@@ -16,7 +16,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 public abstract class Deployment {
 
     public final String name;
-    protected final HashMap<String, Component> components;
+    private final HashMap<String, Component> components;
     protected boolean isRunning;
 
     public Deployment(String name) {
@@ -58,5 +58,13 @@ public abstract class Deployment {
 
     public boolean isRunning() {
         return this.isRunning;
+    }
+    
+    protected Component addComponent(String name, Component component) {
+        if(component instanceof ComponentActive) {
+            ComponentActive ca = (ComponentActive) component;
+            ca.setName(name);
+        }
+        return this.components.put(name, component);
     }
 }

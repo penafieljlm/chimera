@@ -56,7 +56,7 @@ public final class SocketPair {
 
     @Override
     public synchronized int hashCode() {
-        return ((source.hashCode() ^ sourcePort)
-                ^ ((destination.hashCode() ^ destinationPort)));
+        return ((this.source.hashCode() ^ this.sourcePort)
+                ^ ((this.destination.hashCode() ^ this.destinationPort)));
     }
 }

@@ -5,7 +5,6 @@
 package ph.edu.dlsu.chimera.server.deployment;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Assembly;
@@ -54,13 +53,13 @@ public class DeploymentDebug extends Deployment {
         ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup = new ConcurrentHashMap<>();
         tcpPortProtocolLookup.put(80, new AssemblerTcpHttp());
 
-        super.components.put("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
-        super.components.put("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
+        super.addComponent("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
+        super.addComponent("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
-        super.components.put("in-sniff", new ComponentSniffer(assembly, inPcap, sniffOut, true));
-        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, sniffOut, statsOut, assembly.getCriterias(), statsTableAtomic));
-        super.components.put("in-states", new ComponentStateTracker(assembly, statsOut, stateOut, stateTable));
-        super.components.put("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerOut, tcpPortProtocolLookup, null, stateTable));
+        super.addComponent("in-sniff", new ComponentSniffer(assembly, inPcap, sniffOut, true));
+        super.addComponent("in-stats", new ComponentStatisticsTracker(assembly, sniffOut, statsOut, assembly.getCriterias(), statsTableAtomic));
+        super.addComponent("in-states", new ComponentStateTracker(assembly, statsOut, stateOut, stateTable));
+        super.addComponent("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerOut, tcpPortProtocolLookup, null, stateTable));
         //super.components.put("in-debugger", new ComponentDebugger<PduComposite>(assembly, assemblerCompositeOut, null));
     }
 }
