@@ -22,24 +22,6 @@ import ph.edu.dlsu.chimera.server.core.SocketPair;
  */
 public abstract class ToolsPacket {
 
-    private static final JHeaderPool headerPool = new JHeaderPool();
-
-    public static String getPacketProtocolName(PcapPacket pkt) {
-        int off = 1;
-        int id = pkt.getHeaderIdByIndex(pkt.getHeaderCount() - off);
-        JHeader jh = ToolsPacket.headerPool.getHeader(id);
-        if (jh != null) {
-            while (jh instanceof Payload) {
-                off++;
-                id = pkt.getHeaderIdByIndex(pkt.getHeaderCount() - off);
-                jh = ToolsPacket.headerPool.getHeader(id);
-            }
-            return jh.getName();
-        } else {
-            return null;
-        }
-    }
-
     public static SocketPair getSocketPair(PcapPacket pkt) {
         if (pkt.hasHeader(new Ip4())) {
             try {

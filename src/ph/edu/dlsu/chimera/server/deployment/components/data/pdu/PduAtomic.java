@@ -5,8 +5,13 @@
 package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import org.jnetpcap.Pcap;
+import org.jnetpcap.packet.JHeader;
+import org.jnetpcap.packet.JHeaderPool;
+import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.UnregisteredHeaderException;
 import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.util.ToolsPacket;
 import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**
@@ -33,6 +38,31 @@ public class PduAtomic extends Pdu {
         this.injector = null;
         this.lastSentTimeNano = -1;
         this.connection = null;
+    }
+
+    public String getProtocolName() {
+        if (this.packet.getHeaderCount() > 0) {
+            int off = 0;
+            JHeader curjh = null;
+            do {
+                off++;
+                int id = this.packet.getHeaderIdByIndex(this.packet.getHeaderCount() - off);
+                try {
+                    JHeader nextjh = JHeaderPool.getDefault().getHeader(id);
+                    if (nextjh == null) {
+                        break;
+                    } else {
+                        curjh = nextjh;
+                    }
+                } catch (UnregisteredHeaderException ex) {
+                    break;
+                }
+            } while (curjh instanceof Payload);
+            if (curjh != null) {
+                return curjh.getName();
+            }
+        }
+        return "Unknown";
     }
 
     public void setInstance(String[] headers, String[] data) {

@@ -13,6 +13,7 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 
 /**
  *
@@ -20,18 +21,21 @@ import ph.edu.dlsu.chimera.server.core.Criteria;
  */
 public class ComponentInstanceDumper extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
     public final Criteria[] criterias;
     public final File trainingFile;
     private long processed;
     private boolean headerOk;
 
     public ComponentInstanceDumper(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic> inQueue,
             Criteria[] criterias,
             File trainingFile) {
         super(assembly);
         this.inQueue = inQueue;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
         this.criterias = criterias;
         this.trainingFile = trainingFile;
         this.processed = 0;
@@ -45,6 +49,11 @@ public class ComponentInstanceDumper extends ComponentActive {
                 CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
                 while (super.running) {
                     if (this.inQueue != null) {
+                        if (this.inQueue.isEmpty()) {
+                            synchronized (this) {
+                                this.wait();
+                            }
+                        }
                         while (!this.inQueue.isEmpty()) {
                             PduAtomic pkt = this.inQueue.poll();
                             if (pkt.inbound) {

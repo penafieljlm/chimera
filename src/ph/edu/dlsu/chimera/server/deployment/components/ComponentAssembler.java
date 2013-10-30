@@ -6,7 +6,6 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
@@ -15,6 +14,7 @@ import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerUdp;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
 /**
@@ -23,8 +23,8 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  */
 public final class ComponentAssembler extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic> outQueue;
     public final ConcurrentHashMap<SocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
     public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
@@ -33,8 +33,8 @@ public final class ComponentAssembler extends ComponentActive {
     private long processed;
 
     public ComponentAssembler(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            IntermodulePipe<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
@@ -42,6 +42,12 @@ public final class ComponentAssembler extends ComponentActive {
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
+        if (this.outQueue != null) {
+            this.outQueue.setWriter(this);
+        }
         this.tcpAssemblerTable = new ConcurrentHashMap<>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
         this.udpAssemblerTable = new ConcurrentHashMap<>();
@@ -54,6 +60,11 @@ public final class ComponentAssembler extends ComponentActive {
     protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
+                if (this.inQueue.isEmpty()) {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
@@ -62,12 +73,10 @@ public final class ComponentAssembler extends ComponentActive {
                         if (pkt.packet.hasHeader(new Tcp())) {
                             this.handleTcp(pkt);
                         }
+                        this.processed++;
                         //forward
                         if (this.outQueue != null) {
-                            this.processed++;
                             this.outQueue.add(pkt);
-                        } else {
-                            throw new Exception("Error: [Assembler] outQueue is null.");
                         }
                     } else {
                         throw new Exception("Error: [Assembler] Encountered outbound packet.");

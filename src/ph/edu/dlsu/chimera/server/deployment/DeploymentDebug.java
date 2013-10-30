@@ -22,6 +22,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.server.deployment.components.assembler.AssemblerTcpHttp;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 
 /**
  *
@@ -42,10 +43,10 @@ public class DeploymentDebug extends Deployment {
             throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
         }
         Pcap inPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
-        ConcurrentLinkedQueue<PduAtomic> sniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> statsOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> stateOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> assemblerOut = new ConcurrentLinkedQueue<>();
+        IntermodulePipe<PduAtomic> sniffOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> statsOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> stateOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> assemblerOut = new IntermodulePipe<>();
 
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
         ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
