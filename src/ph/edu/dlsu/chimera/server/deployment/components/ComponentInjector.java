@@ -18,20 +18,15 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 public final class ComponentInjector extends ComponentActive {
 
     public final IntermodulePipe<PduAtomic> inQueue;
-    public final IntermodulePipe<PduAtomic> outQueue;
     public final PcapPort outPcapPort;
     private long sent;
 
-    public ComponentInjector(Assembly assembly, IntermodulePipe<PduAtomic> inQueue, IntermodulePipe<PduAtomic> outQueue, PcapPort outPcapPort) {
+    public ComponentInjector(Assembly assembly, IntermodulePipe<PduAtomic> inQueue, PcapPort outPcapPort) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
-        this.outQueue = outQueue;
         if (this.inQueue != null) {
             this.inQueue.setReader(this);
-        }
-        if (this.outQueue != null) {
-            this.outQueue.setWriter(this);
         }
         this.outPcapPort = outPcapPort;
         this.sent = 0;
@@ -54,9 +49,6 @@ public final class ComponentInjector extends ComponentActive {
                         this.outPcapPort.send(pkt.packet);
                     } else {
                         throw new Exception("Error: [Injector] Unable to access sending device.");
-                    }
-                    if (this.outQueue != null) {
-                        this.outQueue.add(new PduAtomic(pkt.packet, pkt.inbound));
                     }
                 }
             } else {
