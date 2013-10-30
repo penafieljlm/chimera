@@ -14,27 +14,35 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 
 /**
  * Tracks states and ensures TCP delivery.
+ *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class ComponentStateTracker extends ComponentActive {
 
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic> outQueue;
     private long processed;
 
     public ComponentStateTracker(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            IntermodulePipe<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.stateTable = stateTable;
         this.inQueue = inQueue;
         this.outQueue = outQueue;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
+        if (this.outQueue != null) {
+            this.outQueue.setWriter(this);
+        }
         this.processed = 0;
     }
 
@@ -42,6 +50,11 @@ public final class ComponentStateTracker extends ComponentActive {
     protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
+                if (this.inQueue.isEmpty()) {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
                 if (this.stateTable != null) {
                     while (!this.inQueue.isEmpty()) {
                         synchronized (this.stateTable) {
@@ -68,12 +81,10 @@ public final class ComponentStateTracker extends ComponentActive {
                                     }
                                 }
                             }
+                            this.processed++;
                             //forward
                             if (this.outQueue != null) {
-                                this.processed++;
                                 this.outQueue.add(pkt);
-                            } else {
-                                throw new Exception("Error: [State Tracker] outQueue is null.");
                             }
                         }
                     }

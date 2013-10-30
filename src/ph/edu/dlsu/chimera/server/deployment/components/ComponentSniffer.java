@@ -11,6 +11,7 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
@@ -20,18 +21,21 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 public final class ComponentSniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
 
     public final boolean inbound;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final IntermodulePipe<PduAtomic> outQueue;
     public final Pcap inPcap;
     private long received;
 
     public ComponentSniffer(Assembly assembly,
             Pcap inPcap,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            IntermodulePipe<PduAtomic> outQueue,
             boolean inbound) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inbound = inbound;
         this.outQueue = outQueue;
+        if (this.outQueue != null) {
+            this.outQueue.setWriter(this);
+        }
         this.received = 0;
         this.inPcap = inPcap;
     }

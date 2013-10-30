@@ -24,6 +24,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentStatisticsTracker;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
@@ -68,18 +69,18 @@ public class DeploymentGathering extends Deployment {
         Pcap internalPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Defaults.DEFAULT_TIMEOUT_PCAP_MS, outErr);
 
         //inbound queues
-        ConcurrentLinkedQueue<PduAtomic> exSniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exForkOutInject = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exForkOutGather = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exStatsOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exStateOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> exPrePrcOut = new ConcurrentLinkedQueue<>();
+        IntermodulePipe<PduAtomic> exSniffOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> exForkOutInject = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> exForkOutGather = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> exStatsOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> exStateOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> exPrePrcOut = new IntermodulePipe<>();
 
         //outbound queues
-        ConcurrentLinkedQueue<PduAtomic> inSniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inForkOutInject = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inForkOutGather = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inStateOut = new ConcurrentLinkedQueue<>();
+        IntermodulePipe<PduAtomic> inSniffOut = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> inForkOutInject = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> inForkOutGather = new IntermodulePipe<>();
+        IntermodulePipe<PduAtomic> inStateOut = new IntermodulePipe<>();
 
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
@@ -103,7 +104,7 @@ public class DeploymentGathering extends Deployment {
         //outbound path
         super.components.put("in-sniff", new ComponentSniffer(assembly, internalPcap, inSniffOut, false));
         super.components.put("in-fork", new ComponentFork(assembly, inSniffOut, inForkOutInject, inForkOutGather));
-        super.components.put("in-states", new ComponentStateTracker(assembly, inForkOutGather, inStateOut, stateTable));
+        super.components.put("in-states", new ComponentStateTracker(assembly, inForkOutGather, null, stateTable));
         super.components.put("in-inject", new ComponentInjector(assembly, inForkOutInject, externalPcap));
     }
 }

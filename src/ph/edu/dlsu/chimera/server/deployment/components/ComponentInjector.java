@@ -7,10 +7,9 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapDumper;
-import org.jnetpcap.protocol.lan.Ethernet;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
@@ -19,15 +18,18 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
  */
 public final class ComponentInjector extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
     public final Pcap outPcap;
     private long sent;
 
-    public ComponentInjector(Assembly assembly, ConcurrentLinkedQueue<PduAtomic> inQueue, Pcap outPcap) {
+    public ComponentInjector(Assembly assembly, IntermodulePipe<PduAtomic> inQueue, Pcap outPcap) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
         this.outPcap = outPcap;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
         this.sent = 0;
     }
 
@@ -35,6 +37,11 @@ public final class ComponentInjector extends ComponentActive {
     protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
+                if (this.inQueue.isEmpty()) {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();

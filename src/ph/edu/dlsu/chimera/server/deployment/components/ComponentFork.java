@@ -5,9 +5,9 @@
 package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
@@ -16,16 +16,24 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
  */
 public class ComponentFork extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic>[] outQueues;
+    public final IntermodulePipe<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic>[] outQueues;
     private long processed;
 
     public ComponentFork(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic>... outQueues) {
+            IntermodulePipe<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic>... outQueues) {
         super(assembly);
         this.inQueue = inQueue;
         this.outQueues = outQueues;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
+        for (IntermodulePipe<PduAtomic> outQueue : this.outQueues) {
+            if (outQueue != null) {
+                outQueue.setWriter(this);
+            }
+        }
         this.processed = 0;
     }
 
@@ -33,15 +41,18 @@ public class ComponentFork extends ComponentActive {
     protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
+                if (this.inQueue.isEmpty()) {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
                     if (this.outQueues != null) {
                         this.processed++;
-                        for (ConcurrentLinkedQueue<PduAtomic> outQueue : this.outQueues) {
+                        for (IntermodulePipe<PduAtomic> outQueue : this.outQueues) {
                             if (outQueue != null) {
                                 outQueue.add(pkt);
-                            } else {
-                                throw new Exception("Error: [Fork] outQueue is null.");
                             }
                         }
                     } else {

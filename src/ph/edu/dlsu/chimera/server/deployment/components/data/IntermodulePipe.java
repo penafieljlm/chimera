@@ -4,9 +4,6 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components.data;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 
@@ -14,7 +11,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class IntermodulePipe<TData> {
+public class IntermodulePipe<TData> {
 
     private final ConcurrentLinkedQueue<TData> queue;
     private ComponentActive writer;

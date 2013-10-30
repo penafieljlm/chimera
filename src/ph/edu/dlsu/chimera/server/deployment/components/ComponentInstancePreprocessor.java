@@ -5,12 +5,12 @@
 package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
 
@@ -20,21 +20,27 @@ import ph.edu.dlsu.chimera.util.ToolsPacket;
  */
 public class ComponentInstancePreprocessor extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final boolean tagTrafficAsAttacks;
     public final String[] instanceHeaders;
     private long processed;
 
     public ComponentInstancePreprocessor(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            IntermodulePipe<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
             boolean tagTrafficAsAttacks) {
         super(assembly);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
+        if (this.outQueue != null) {
+            this.outQueue.setWriter(this);
+        }
         this.criterias = criterias;
         this.tagTrafficAsAttacks = tagTrafficAsAttacks;
         this.instanceHeaders = this.getInstanceHeaders();
@@ -45,15 +51,18 @@ public class ComponentInstancePreprocessor extends ComponentActive {
     protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
+                if (this.inQueue.isEmpty()) {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
                     if (pkt.inbound) {
                         pkt.setInstance(this.instanceHeaders, this.getInstance(pkt));
+                        this.processed++;
                         if (this.outQueue != null) {
-                            this.processed++;
                             this.outQueue.add(pkt);
-                        } else {
-                            throw new Exception("Error: [Instance Preprocessor] outQueue is null.");
                         }
                     } else {
                         throw new Exception("Error: [Instance Preprocessor] Encountered outbound packet.");
@@ -64,7 +73,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
             }
         }
     }
-    
+
     private String[] getInstanceHeaders() {
         ArrayList<String> header = new ArrayList<>();
         header.add("protocol");
@@ -98,7 +107,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         Connection conn = pkt.getConnection();
 
         //field - protocol
-        set.add("" + ToolsPacket.getPacketProtocolName(pkt.packet));
+        set.add("" + pkt.getProtocolName());
 
         //field - size
         set.add("" + pkt.packet.size());

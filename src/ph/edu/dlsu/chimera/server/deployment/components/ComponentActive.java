@@ -4,8 +4,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import ph.edu.dlsu.chimera.server.Assembly;
 
 /**

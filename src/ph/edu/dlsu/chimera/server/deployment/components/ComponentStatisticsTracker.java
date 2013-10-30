@@ -6,13 +6,13 @@ package ph.edu.dlsu.chimera.server.deployment.components;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 
 /**
  *
@@ -20,21 +20,27 @@ import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
  */
 public class ComponentStatisticsTracker extends ComponentActive {
 
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
+    public final IntermodulePipe<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
     private long processed;
 
     public ComponentStatisticsTracker(Assembly assembly,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
+            IntermodulePipe<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable) {
         super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
+        if (this.inQueue != null) {
+            this.inQueue.setReader(this);
+        }
+        if (this.outQueue != null) {
+            this.outQueue.setWriter(this);
+        }
         this.criterias = criterias;
         this.statsTable = statsTable;
         this.processed = 0;
@@ -44,6 +50,11 @@ public class ComponentStatisticsTracker extends ComponentActive {
     protected void componentRun() throws Exception {
         while (super.running) {
             if (this.inQueue != null) {
+                if (this.inQueue.isEmpty()) {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                }
                 while (!this.inQueue.isEmpty()) {
                     synchronized (this.statsTable) {
                         PduAtomic pkt = this.inQueue.poll();
@@ -70,12 +81,10 @@ public class ComponentStatisticsTracker extends ComponentActive {
                                     pkt.addStatistics(crt, null);
                                 }
                             }
+                            this.processed++;
                             //forward packet
                             if (this.outQueue != null) {
-                                this.processed++;
                                 this.outQueue.add(pkt);
-                            } else {
-                                throw new Exception("Error: [Statistics Tracker] outQueue is null.");
                             }
                         } else {
                             throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
