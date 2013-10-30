@@ -19,7 +19,7 @@ public abstract class CommandConverter {
     public final String description;
 
     public CommandConverter(String description) {
-        this.params = new HashMap<String, String>();
+        this.params = new HashMap<>();
         this.description = description;
     }
 

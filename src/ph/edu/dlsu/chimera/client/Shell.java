@@ -2,6 +2,7 @@ package ph.edu.dlsu.chimera.client;
 
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import org.jnetpcap.Pcap;
 import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.client.admin.Command;
 
@@ -72,14 +73,14 @@ public class Shell extends Client {
     }
 
     @Override
-    public void eventReady() {
-        super.outStream.println("CHIMERA is Ready...");
-        super.outStream.println("Hint: Type 'help' to show all commands and their descriptions.");
+    public void eventLoggedOut() {
+        super.outStream.println("Successfuly logged out!");
     }
 
     @Override
-    public void eventLoggedOut() {
-        super.outStream.println("Successfuly logged out!");
+    public void eventReady() {
+        super.outStream.println("CHIMERA is Ready...");
+        super.outStream.println("Hint: Type 'help' to show all commands and their descriptions.");
     }
 
     @Override

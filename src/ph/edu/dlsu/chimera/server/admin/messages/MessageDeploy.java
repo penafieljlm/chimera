@@ -2,13 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.admin.messages;
 
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageText;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
+import ph.edu.dlsu.chimera.server.deployment.Deployment;
+import ph.edu.dlsu.chimera.server.deployment.DeploymentPassive;
 
 /**
  *
@@ -21,11 +22,16 @@ public class MessageDeploy implements ServerMessage {
 
     public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
         StringBuilder report = new StringBuilder();
-        if(assembly.getDeployment() != null)
-            report = report.append("Deployment: '").append(assembly.getDeployment().getName()).append("', has been aborted!");
-        else
+        if (assembly.getDeployment() != null) {
+            if (assembly.getDeployment() instanceof DeploymentPassive) {
+                report = report.append("No deployment to abort!");
+            } else {
+                report = report.append("Deployment: '").append(assembly.getDeployment().name).append("', has been aborted!");
+                assembly.setDeployment(new DeploymentPassive(assembly));
+            }
+        } else {
             report = report.append("No deployment to abort!");
+        }
         return new MessageText(report.toString());
     }
-
 }
