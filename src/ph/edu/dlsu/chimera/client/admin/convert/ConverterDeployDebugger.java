@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.client.admin.convert;
 
 import ph.edu.dlsu.chimera.server.admin.messages.MessageDeployDebugger;
 import ph.edu.dlsu.chimera.client.admin.Command;
-import ph.edu.dlsu.chimera.constants.ConstDefaults;
+import ph.edu.dlsu.chimera.constants.Defaults;
 import ph.edu.dlsu.chimera.core.admin.messages.Message;
 
 /**
@@ -18,8 +18,8 @@ public class ConverterDeployDebugger extends CommandConverter {
     public ConverterDeployDebugger() {
         super("Starts the Debug deployment.");
         super.params.put("ifExternal", "Index of interface facing the external network (refer to the 'ifconfig' command).");
-        super.params.put("statsTimeout", "[OPTIONAL] Expiration time of idle statistics instances in milliseconds (default:" + ConstDefaults.DEFAULT_TIMEOUT_STATS_MS + "ms).");
-        super.params.put("stateTimeout", "[OPTIONAL] Expiration time of idle tcp states instances in milliseconds (default:" + ConstDefaults.DEFAULT_TIMEOUT_STATE_MS + "ms).");
+        super.params.put("statsTimeout", "[OPTIONAL] Expiration time of idle statistics instances in milliseconds (default:" + Defaults.DEFAULT_TIMEOUT_STATS_MS + "ms).");
+        super.params.put("stateTimeout", "[OPTIONAL] Expiration time of idle tcp states instances in milliseconds (default:" + Defaults.DEFAULT_TIMEOUT_STATE_MS + "ms).");
     }
 
     @Override
@@ -40,7 +40,7 @@ public class ConverterDeployDebugger extends CommandConverter {
             throw new Exception("The parameter: 'ifExternal' must be a number.");
         }
         //statsTimeout
-        long statsTimeout = ConstDefaults.DEFAULT_TIMEOUT_STATS_MS;
+        long statsTimeout = Defaults.DEFAULT_TIMEOUT_STATS_MS;
         String _statsTimeout = command.getParameterValue("statsTimeout");
         if (_statsTimeout != null) {
             try {
@@ -50,7 +50,7 @@ public class ConverterDeployDebugger extends CommandConverter {
             }
         }
         //stateTimeout
-        long stateTimeout = ConstDefaults.DEFAULT_TIMEOUT_STATE_MS;
+        long stateTimeout = Defaults.DEFAULT_TIMEOUT_STATE_MS;
         String _stateTimeout = command.getParameterValue("stateTimeout");
         if (_stateTimeout != null) {
             try {

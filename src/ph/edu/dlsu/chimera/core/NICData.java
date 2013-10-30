@@ -27,13 +27,17 @@ public final class NicData implements Serializable {
         this.description = pcapif.getDescription();
         StringBuilder sb = new StringBuilder();
         try {
-            for (byte b : pcapif.getHardwareAddress()) {
-                if (sb.length() > 0) {
-                    sb.append(':');
+            if (pcapif.getHardwareAddress() != null) {
+                for (byte b : pcapif.getHardwareAddress()) {
+                    if (sb.length() > 0) {
+                        sb.append(':');
+                    }
+                    sb.append(String.format("%02x", b));
                 }
-                sb.append(String.format("%02x", b));
+            } else {
+                sb = new StringBuilder("N/A");
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             sb = new StringBuilder("N/A");
             Logger.getLogger(NicData.class.getName()).log(Level.SEVERE, null, ex);
         }

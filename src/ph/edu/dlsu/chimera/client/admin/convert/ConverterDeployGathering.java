@@ -5,7 +5,7 @@
 package ph.edu.dlsu.chimera.client.admin.convert;
 
 import ph.edu.dlsu.chimera.client.admin.Command;
-import ph.edu.dlsu.chimera.constants.ConstDefaults;
+import ph.edu.dlsu.chimera.constants.Defaults;
 import ph.edu.dlsu.chimera.core.admin.messages.Message;
 import ph.edu.dlsu.chimera.server.admin.messages.MessageDeployGathering;
 
@@ -21,8 +21,8 @@ public class ConverterDeployGathering extends CommandConverter {
         super.params.put("ifInternal", "Index of interface facing the internal network (refer to the 'ifconfig' command).");
         super.params.put("dumpFileName", "File name of the CSV file which will contain the training set.");
         super.params.put("gatherAttacks", "[OPTIONAL] Marks the captured training set as an attack set (default: false).");
-        super.params.put("statsTimeout", "[OPTIONAL] Expiration time of idle statistics instances in milliseconds (default:" + ConstDefaults.DEFAULT_TIMEOUT_STATS_MS + "ms).");
-        super.params.put("stateTimeout", "[OPTIONAL] Expiration time of idle tcp states instances in milliseconds (default:" + ConstDefaults.DEFAULT_TIMEOUT_STATE_MS + "ms).");
+        super.params.put("statsTimeout", "[OPTIONAL] Expiration time of idle statistics instances in milliseconds (default:" + Defaults.DEFAULT_TIMEOUT_STATS_MS + "ms).");
+        super.params.put("stateTimeout", "[OPTIONAL] Expiration time of idle tcp states instances in milliseconds (default:" + Defaults.DEFAULT_TIMEOUT_STATE_MS + "ms).");
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ConverterDeployGathering extends CommandConverter {
             }
         }
         //statsTimeout
-        long statsTimeout = ConstDefaults.DEFAULT_TIMEOUT_STATS_MS;
+        long statsTimeout = Defaults.DEFAULT_TIMEOUT_STATS_MS;
         String _statsTimeout = command.getParameterValue("statsTimeout");
         if (_statsTimeout != null) {
             try {
@@ -78,7 +78,7 @@ public class ConverterDeployGathering extends CommandConverter {
             }
         }
         //stateTimeout
-        long stateTimeout = ConstDefaults.DEFAULT_TIMEOUT_STATE_MS;
+        long stateTimeout = Defaults.DEFAULT_TIMEOUT_STATE_MS;
         String _stateTimeout = command.getParameterValue("stateTimeout");
         if (_stateTimeout != null) {
             try {

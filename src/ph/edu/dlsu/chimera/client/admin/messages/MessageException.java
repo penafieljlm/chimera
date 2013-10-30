@@ -29,6 +29,7 @@ public class MessageException implements ClientShellMessage {
      * @return the appropriate response ServerMessage object.
      */
     public ServerMessage handleShellMessage(PrintStream outStream) {
+        this.exceptions.printStackTrace();
         outStream.println(this.exceptions.getMessage());
         return new MessageFinished();
     }

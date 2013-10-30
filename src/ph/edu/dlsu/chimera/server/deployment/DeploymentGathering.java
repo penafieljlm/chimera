@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
+import ph.edu.dlsu.chimera.constants.Defaults;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
@@ -42,17 +43,17 @@ public class DeploymentGathering extends Deployment {
         super("Data Gathering");
 
         //get external pcap interface
-        PcapIf externalPcapIf = null;
+        PcapIf exPcapIf = null;
         try {
-            externalPcapIf = assembly.getInterfaces().get(ifExternal);
+            exPcapIf = assembly.getInterfaces().get(ifExternal);
         } catch (IndexOutOfBoundsException ex) {
             throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
         }
 
         //get internal pcap interface
-        PcapIf internalPcapIf = null;
+        PcapIf inPcapIf = null;
         try {
-            internalPcapIf = assembly.getInterfaces().get(ifInternal);
+            inPcapIf = assembly.getInterfaces().get(ifInternal);
         } catch (IndexOutOfBoundsException ex) {
             throw new Exception("Interface Index '" + ifInternal + "' does not exist.");
         }
@@ -63,22 +64,22 @@ public class DeploymentGathering extends Deployment {
         StringBuilder outErr = new StringBuilder();
 
         //packet capture objects
-        Pcap externalPcap = Pcap.openLive(externalPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, inErr);
-        Pcap internalPcap = Pcap.openLive(internalPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, outErr);
+        Pcap externalPcap = Pcap.openLive(exPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Defaults.DEFAULT_TIMEOUT_PCAP_MS, inErr);
+        Pcap internalPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Defaults.DEFAULT_TIMEOUT_PCAP_MS, outErr);
 
         //inbound queues
+        ConcurrentLinkedQueue<PduAtomic> exSniffOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> exForkOutInject = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> exForkOutGather = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> exStatsOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> exStateOut = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<PduAtomic> exPrePrcOut = new ConcurrentLinkedQueue<>();
+
+        //outbound queues
         ConcurrentLinkedQueue<PduAtomic> inSniffOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> inForkOutInject = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> inForkOutGather = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inStatsOut = new ConcurrentLinkedQueue<>();
         ConcurrentLinkedQueue<PduAtomic> inStateOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> inPrePrcOut = new ConcurrentLinkedQueue<>();
-
-        //outbound queues
-        ConcurrentLinkedQueue<PduAtomic> outSniffOut = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> outForkOutInject = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> outForkOutGather = new ConcurrentLinkedQueue<>();
-        ConcurrentLinkedQueue<PduAtomic> outStateOut = new ConcurrentLinkedQueue<>();
 
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
@@ -91,18 +92,18 @@ public class DeploymentGathering extends Deployment {
         //inbound path
         //path 1 = sniffer  ->  injector
         //path 2 = sniffer  ->  stats   ->  states  ->  preprc  ->  dumper
-        super.components.put("in-sniff", new ComponentSniffer(assembly, externalPcap, inSniffOut, true));
-        super.components.put("in-fork", new ComponentFork(assembly, inSniffOut, inForkOutInject, inForkOutGather));
-        super.components.put("in-stats", new ComponentStatisticsTracker(assembly, inForkOutGather, inStatsOut, assembly.getCriterias(), statsTableAtomic));
-        super.components.put("in-states", new ComponentStateTracker(assembly, inStatsOut, inStateOut, stateTable));
-        super.components.put("in-preprc", new ComponentInstancePreprocessor(assembly, inStateOut, inPrePrcOut, assembly.getCriterias(), gatherAttacks));
-        super.components.put("in-dumper", new ComponentInstanceDumper(assembly, inPrePrcOut, assembly.getCriterias(), trainingDumpFile));
-        super.components.put("in-inject", new ComponentInjector(assembly, inForkOutInject, internalPcap));
+        super.components.put("ex-sniff", new ComponentSniffer(assembly, externalPcap, exSniffOut, true));
+        super.components.put("ex-fork", new ComponentFork(assembly, exSniffOut, exForkOutInject, exForkOutGather));
+        super.components.put("ex-stats", new ComponentStatisticsTracker(assembly, exForkOutGather, exStatsOut, assembly.getCriterias(), statsTableAtomic));
+        super.components.put("ex-states", new ComponentStateTracker(assembly, exStatsOut, exStateOut, stateTable));
+        super.components.put("ex-preprc", new ComponentInstancePreprocessor(assembly, exStateOut, exPrePrcOut, assembly.getCriterias(), gatherAttacks));
+        super.components.put("ex-dumper", new ComponentInstanceDumper(assembly, exPrePrcOut, assembly.getCriterias(), trainingDumpFile));
+        super.components.put("ex-inject", new ComponentInjector(assembly, exForkOutInject, internalPcap));
 
         //outbound path
-        super.components.put("out-sniff", new ComponentSniffer(assembly, internalPcap, outSniffOut, false));
-        super.components.put("out-fork", new ComponentFork(assembly, outSniffOut, outForkOutInject, outForkOutGather));
-        super.components.put("out-states", new ComponentStateTracker(assembly, outForkOutGather, outStateOut, stateTable));
-        super.components.put("out-inject", new ComponentInjector(assembly, outForkOutInject, externalPcap));
+        super.components.put("in-sniff", new ComponentSniffer(assembly, internalPcap, inSniffOut, false));
+        super.components.put("in-fork", new ComponentFork(assembly, inSniffOut, inForkOutInject, inForkOutGather));
+        super.components.put("in-states", new ComponentStateTracker(assembly, inForkOutGather, inStateOut, stateTable));
+        super.components.put("in-inject", new ComponentInjector(assembly, inForkOutInject, externalPcap));
     }
 }
