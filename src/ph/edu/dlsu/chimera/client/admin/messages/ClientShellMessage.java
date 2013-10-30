@@ -1,8 +1,6 @@
 package ph.edu.dlsu.chimera.client.admin.messages;
 
 import java.io.PrintStream;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.client.admin.Client;
 import ph.edu.dlsu.chimera.core.admin.messages.Message;
 import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
 

@@ -2,14 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.admin.messages;
 
 import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
 import ph.edu.dlsu.chimera.client.admin.messages.MessageText;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
-import ph.edu.dlsu.chimera.server.deployment.Gathering;
+import ph.edu.dlsu.chimera.server.deployment.DeploymentGathering;
 
 /**
  *
@@ -17,10 +16,25 @@ import ph.edu.dlsu.chimera.server.deployment.Gathering;
  */
 public class MessageDeployGathering extends MessageDeploy {
 
-    public final String interfaceInbound;
+    public final int ifExternal;
+    public final int ifInternal;
+    public final long statsTimeoutMs;
+    public final long stateTimeoutMs;
+    public final String dumpFileName;
+    public final boolean gatherAttacks;
 
-    public MessageDeployGathering(String ifInbound) {
-        this.interfaceInbound = ifInbound;
+    public MessageDeployGathering(int ifExternal,
+            int ifInternal,
+            String dumpFileName,
+            boolean gatherAttacks,
+            long statsTimeoutMs,
+            long stateTimeoutMs) {
+        this.ifExternal = ifExternal;
+        this.ifInternal = ifInternal;
+        this.statsTimeoutMs = statsTimeoutMs;
+        this.stateTimeoutMs = stateTimeoutMs;
+        this.dumpFileName = dumpFileName;
+        this.gatherAttacks = gatherAttacks;
     }
 
     @Override
@@ -30,5 +44,4 @@ public class MessageDeployGathering extends MessageDeploy {
         report = report.append("\nDeployment: '").append(assembly.getDeployment().name).append("', is starting!");
         return new MessageText(report.toString());
     }
-
 }
