@@ -4,72 +4,55 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components;
 
+import com.gremwell.jnetbridge.IngressPacket;
+import com.gremwell.jnetbridge.PcapPort;
+import com.gremwell.jnetbridge.QueueingPortListener;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import org.jnetpcap.Pcap;
-import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 
 /**
- * 
+ *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentSniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
+public final class ComponentSniffer extends ComponentActive {
 
     public final boolean inbound;
+    public final QueueingPortListener inQueue;
     public final IntermodulePipe<PduAtomic> outQueue;
-    public final Pcap inPcap;
     private long received;
 
     public ComponentSniffer(Assembly assembly,
-            Pcap inPcap,
+            PcapPort inPcapPort,
             IntermodulePipe<PduAtomic> outQueue,
             boolean inbound) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inbound = inbound;
+        this.inQueue = new QueueingPortListener();
+        inPcapPort.setListener(this.inQueue);
         this.outQueue = outQueue;
         if (this.outQueue != null) {
             this.outQueue.setWriter(this);
         }
         this.received = 0;
-        this.inPcap = inPcap;
     }
 
     @Override
     public void componentRun() throws Exception {
-        if (this.inPcap != null) {
-            int opresult = this.inPcap.loop(-1, this, this.inPcap);
-            this.inPcap.close();
-            switch (opresult) {
-                case 0:
-                    throw new Exception("Event: [Sniffer] Count exhausted.");
-                case -1:
-                    throw new Exception("Error: [Sniffer] Pcap loop error.");
-                case -2:
-                    throw new Exception("Event: [Sniffer] Break loop called.");
+        while (super.running) {
+            if (this.inQueue != null) {
+                IngressPacket pkt = this.inQueue.receive();
+                this.received++;
+                if (this.outQueue != null) {
+                    this.outQueue.add(new PduAtomic(pkt.packet, this.inbound));
+                }
+            } else {
+                throw new Exception("Error: [Sniffer] Unable to access capture device.");
             }
-        } else {
-            throw new Exception("Error: [Sniffer] Unable to access capture device.");
         }
-    }
-
-    @Override
-    public void nextPacket(PcapPacket pp, Pcap t) {
-        this.received++;
-        if (this.outQueue != null) {
-            this.outQueue.add(new PduAtomic(t, pp, this.inbound, pp.getCaptureHeader().timestampInNanos()));
-        }
-    }
-
-    @Override
-    public synchronized void kill() {
-        super.kill();
-        this.inPcap.breakloop();
     }
 
     @Override

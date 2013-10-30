@@ -70,8 +70,12 @@ public final class ComponentAssembler extends ComponentActive {
                     PduAtomic pkt = this.inQueue.poll();
                     if (pkt.inbound) {
                         //tcp forward
-                        if (pkt.packet.hasHeader(new Tcp())) {
-                            this.handleTcp(pkt);
+                        try {
+                            if (pkt.packet.hasHeader(new Tcp())) {
+                                this.handleTcp(pkt);
+                            }
+                        } catch (Exception ex) {
+
                         }
                         this.processed++;
                         //forward

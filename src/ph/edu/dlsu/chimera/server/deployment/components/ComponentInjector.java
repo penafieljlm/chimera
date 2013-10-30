@@ -4,9 +4,8 @@
  */
 package ph.edu.dlsu.chimera.server.deployment.components;
 
+import com.gremwell.jnetbridge.PcapPort;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import org.jnetpcap.Pcap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
@@ -19,17 +18,22 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 public final class ComponentInjector extends ComponentActive {
 
     public final IntermodulePipe<PduAtomic> inQueue;
-    public final Pcap outPcap;
+    public final IntermodulePipe<PduAtomic> outQueue;
+    public final PcapPort outPcapPort;
     private long sent;
 
-    public ComponentInjector(Assembly assembly, IntermodulePipe<PduAtomic> inQueue, Pcap outPcap) {
+    public ComponentInjector(Assembly assembly, IntermodulePipe<PduAtomic> inQueue, IntermodulePipe<PduAtomic> outQueue, PcapPort outPcapPort) {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
-        this.outPcap = outPcap;
+        this.outQueue = outQueue;
         if (this.inQueue != null) {
             this.inQueue.setReader(this);
         }
+        if (this.outQueue != null) {
+            this.outQueue.setWriter(this);
+        }
+        this.outPcapPort = outPcapPort;
         this.sent = 0;
     }
 
@@ -45,11 +49,14 @@ public final class ComponentInjector extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    if (this.outPcap != null) {
-                        this.sent++;
-                        this.outPcap.sendPacket(pkt.packet);
+                    this.sent++;
+                    if (this.outPcapPort != null) {
+                        this.outPcapPort.send(pkt.packet);
                     } else {
                         throw new Exception("Error: [Injector] Unable to access sending device.");
+                    }
+                    if (this.outQueue != null) {
+                        this.outQueue.add(new PduAtomic(pkt.packet, pkt.inbound));
                     }
                 }
             } else {

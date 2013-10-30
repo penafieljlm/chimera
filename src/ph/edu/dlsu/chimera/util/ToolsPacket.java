@@ -6,9 +6,7 @@ package ph.edu.dlsu.chimera.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.jnetpcap.packet.JHeader;
-import org.jnetpcap.packet.JHeaderPool;
-import org.jnetpcap.packet.Payload;
+import org.jnetpcap.packet.JPacket;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
@@ -23,58 +21,74 @@ import ph.edu.dlsu.chimera.server.core.SocketPair;
 public abstract class ToolsPacket {
 
     public static SocketPair getSocketPair(PcapPacket pkt) {
-        if (pkt.hasHeader(new Ip4())) {
-            try {
-                Ip4 ip = pkt.getHeader(new Ip4());
-                if (pkt.hasHeader(new Tcp())) {
-                    Tcp tcp = pkt.getHeader(new Tcp());
-                    return new SocketPair(ip, tcp);
+        try {
+            if (pkt.hasHeader(new Ip4())) {
+                try {
+                    Ip4 ip = pkt.getHeader(new Ip4());
+                    if (pkt.hasHeader(new Tcp())) {
+                        Tcp tcp = pkt.getHeader(new Tcp());
+                        return new SocketPair(ip, tcp);
+                    }
+                    if (pkt.hasHeader(new Udp())) {
+                        Udp udp = pkt.getHeader(new Udp());
+                        return new SocketPair(ip, udp);
+                    }
+                } catch (UnknownHostException ex) {
                 }
-                if (pkt.hasHeader(new Udp())) {
-                    Udp udp = pkt.getHeader(new Udp());
-                    return new SocketPair(ip, udp);
-                }
-            } catch (UnknownHostException ex) {
             }
+        } catch (Exception ex) {
+
         }
         return null;
     }
 
     public static InetAddress getIpAddress(PcapPacket pkt, boolean source) {
-        if (pkt.hasHeader(new Ip4())) {
-            try {
-                Ip4 ip = pkt.getHeader(new Ip4());
-                if (source) {
-                    return InetAddress.getByAddress(ip.source());
-                } else {
-                    return InetAddress.getByAddress(ip.destination());
+        try {
+            if (pkt.hasHeader(new Ip4())) {
+                try {
+                    Ip4 ip = pkt.getHeader(new Ip4());
+                    if (source) {
+                        return InetAddress.getByAddress(ip.source());
+                    } else {
+                        return InetAddress.getByAddress(ip.destination());
+                    }
+                } catch (UnknownHostException ex) {
                 }
-            } catch (UnknownHostException ex) {
             }
+        } catch (Exception ex) {
+
         }
         return null;
     }
 
     public static int getTcpPort(PcapPacket pkt, boolean source) {
-        if (pkt.hasHeader(new Tcp())) {
-            Tcp tcp = pkt.getHeader(new Tcp());
-            if (source) {
-                return tcp.source();
-            } else {
-                return tcp.destination();
+        try {
+            if (pkt.hasHeader(new Tcp())) {
+                Tcp tcp = pkt.getHeader(new Tcp());
+                if (source) {
+                    return tcp.source();
+                } else {
+                    return tcp.destination();
+                }
             }
+        } catch (Exception ex) {
+
         }
         return -1;
     }
 
     public static int getUdpPort(PcapPacket pkt, boolean source) {
-        if (pkt.hasHeader(new Udp())) {
-            Udp udp = pkt.getHeader(new Udp());
-            if (source) {
-                return udp.source();
-            } else {
-                return udp.destination();
+        try {
+            if (pkt.hasHeader(new Udp())) {
+                Udp udp = pkt.getHeader(new Udp());
+                if (source) {
+                    return udp.source();
+                } else {
+                    return udp.destination();
+                }
             }
+        } catch (Exception ex) {
+
         }
         return -1;
     }

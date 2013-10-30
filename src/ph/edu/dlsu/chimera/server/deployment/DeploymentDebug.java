@@ -4,8 +4,8 @@
  */
 package ph.edu.dlsu.chimera.server.deployment;
 
+import com.gremwell.jnetbridge.PcapPort;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentAssembler;
@@ -29,6 +29,8 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
  */
 public class DeploymentDebug extends Deployment {
 
+    public final PcapPort inPcapPort;
+
     public DeploymentDebug(Assembly assembly,
             int ifExternal,
             long statsTimeoutMs,
@@ -41,7 +43,7 @@ public class DeploymentDebug extends Deployment {
         } catch (IndexOutOfBoundsException ex) {
             throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
         }
-        Pcap inPcap = Pcap.openLive(inPcapIf.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, err);
+        this.inPcapPort = new PcapPort(inPcapIf.getName());
         IntermodulePipe<PduAtomic> sniffOut = new IntermodulePipe<>();
         IntermodulePipe<PduAtomic> statsOut = new IntermodulePipe<>();
         IntermodulePipe<PduAtomic> stateOut = new IntermodulePipe<>();
@@ -56,10 +58,23 @@ public class DeploymentDebug extends Deployment {
         super.addComponent("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
         super.addComponent("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
-        super.addComponent("in-sniff", new ComponentSniffer(assembly, inPcap, sniffOut, true));
+        super.addComponent("in-sniff", new ComponentSniffer(assembly, this.inPcapPort, sniffOut, true));
         super.addComponent("in-stats", new ComponentStatisticsTracker(assembly, sniffOut, statsOut, assembly.getCriterias(), statsTableAtomic));
         super.addComponent("in-states", new ComponentStateTracker(assembly, statsOut, stateOut, stateTable));
         super.addComponent("in-assembler", new ComponentAssembler(assembly, stateOut, assemblerOut, tcpPortProtocolLookup, null, stateTable));
         //super.components.put("in-debugger", new ComponentDebugger<PduComposite>(assembly, assemblerCompositeOut, null));
     }
+
+    @Override
+    public void startDeployment() {
+        super.startDeployment();
+        this.inPcapPort.start();
+    }
+
+    @Override
+    public synchronized void killDeployment() {
+        super.killDeployment();
+        this.inPcapPort.stop();
+    }
+
 }
