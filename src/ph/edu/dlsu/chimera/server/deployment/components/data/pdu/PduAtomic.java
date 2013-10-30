@@ -6,10 +6,8 @@ package ph.edu.dlsu.chimera.server.deployment.components.data.pdu;
 
 import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.JHeaderPool;
-import org.jnetpcap.packet.JPacket;
 import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.packet.UnregisteredHeaderException;
 import ph.edu.dlsu.chimera.server.core.Connection;
 
 /**
@@ -23,10 +21,10 @@ public class PduAtomic extends Pdu {
     private String[] instanceHeaders;
     private String[] instanceData;
 
-    public PduAtomic(JPacket packet,
+    public PduAtomic(PcapPacket packet,
             boolean inbound) {
         super(inbound, packet.getCaptureHeader().timestampInNanos());
-        this.packet = new PcapPacket(packet);
+        this.packet = packet;
         this.connection = null;
     }
 

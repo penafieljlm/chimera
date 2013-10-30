@@ -8,6 +8,7 @@ import com.gremwell.jnetbridge.IngressPacket;
 import com.gremwell.jnetbridge.PcapPort;
 import com.gremwell.jnetbridge.QueueingPortListener;
 import java.util.ArrayList;
+import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
@@ -47,7 +48,7 @@ public final class ComponentSniffer extends ComponentActive {
                 IngressPacket pkt = this.inQueue.receive();
                 this.received++;
                 if (this.outQueue != null) {
-                    this.outQueue.add(new PduAtomic(pkt.packet, this.inbound));
+                    this.outQueue.add(new PduAtomic(new PcapPacket(pkt.packet), this.inbound));
                 }
             } else {
                 throw new Exception("Error: [Sniffer] Unable to access capture device.");
