@@ -31,24 +31,32 @@ public abstract class AssemblerTcp extends Assembler {
     @Override
     public void append(PduAtomic segment) {
         //will receive tcp packets in order
-        if (segment.packet.hasHeader(new Tcp())) {
-            this.queue.add(segment);
-            PduAtomic p = this.queue.poll();
-            while (p != null) {
-                Tcp tcp = p.packet.getHeader(new Tcp());
-                this.appendTCP(tcp, p);
+        try {
+            if (segment.packet.hasHeader(new Tcp())) {
+                this.queue.add(segment);
+                PduAtomic p = this.queue.poll();
+                while (p != null) {
+                    Tcp tcp = p.packet.getHeader(new Tcp());
+                    this.appendTCP(tcp, p);
+                }
             }
+        } catch (Exception ex) {
+
         }
         super.append(segment);
     }
 
     @Override
     public Assembler createAssemblerInstance(PduAtomic firstPacket) {
-        if (firstPacket.packet.hasHeader(new Tcp())) {
-            Tcp tcp = firstPacket.packet.getHeader(new Tcp());
-            if(tcp.flags_SYN() && !tcp.flags_ACK()) {
-                return this.createTcpAssemblerInstance(tcp, firstPacket);
+        try {
+            if (firstPacket.packet.hasHeader(new Tcp())) {
+                Tcp tcp = firstPacket.packet.getHeader(new Tcp());
+                if (tcp.flags_SYN() && !tcp.flags_ACK()) {
+                    return this.createTcpAssemblerInstance(tcp, firstPacket);
+                }
             }
+        } catch (Exception ex) {
+
         }
         return null;
     }
@@ -56,7 +64,9 @@ public abstract class AssemblerTcp extends Assembler {
     protected abstract AssemblerTcp createTcpAssemblerInstance(Tcp tcp, PduAtomic firstPacket);
 
     /**
-     * Invoked when tcp packet received. Tcp packets are send to this method in order.
+     * Invoked when tcp packet received. Tcp packets are send to this method in
+     * order.
+     *
      * @param tcp
      * @param pkt
      */

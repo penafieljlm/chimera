@@ -7,9 +7,11 @@
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/core/SocketPair.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/DeploymentGathering.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentAssemblerTable.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/Deployment.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/util/ToolsPacket.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentAssembler.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/data/pdu/PduAtomic.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/core/TcpQueue.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentInjector.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentInstancePreprocessor.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/DeploymentProduction.java</file>
@@ -18,6 +20,7 @@
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentStatisticsTracker.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/core/reflection/PacketFilter.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/client/Shell.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/assembler/AssemblerTcp.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/DeploymentDebug.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentActive.java</file>
             <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/server/deployment/components/ComponentSniffer.java</file>

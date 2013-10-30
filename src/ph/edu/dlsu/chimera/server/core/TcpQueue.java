@@ -24,15 +24,19 @@ public final class TcpQueue {
     }
 
     public boolean add(PduAtomic packet) {
-        if (packet.packet.hasHeader(new Tcp())) {
-            Tcp tcp = packet.packet.getHeader(new Tcp());
-            if (packet.inbound) {
-                if (tcp.getPayloadLength() > 0 && this.inNextSequenceNo <= tcp.seq()) {
-                    if (!this.contains(tcp)) {
-                        return this.inQueue.add(packet);
+        try {
+            if (packet.packet.hasHeader(new Tcp())) {
+                Tcp tcp = packet.packet.getHeader(new Tcp());
+                if (packet.inbound) {
+                    if (tcp.getPayloadLength() > 0 && this.inNextSequenceNo <= tcp.seq()) {
+                        if (!this.contains(tcp)) {
+                            return this.inQueue.add(packet);
+                        }
                     }
                 }
             }
+        } catch (Exception ex) {
+
         }
         return false;
     }

@@ -84,14 +84,18 @@ public final class PacketField {
     public Object getFieldValue(PcapPacket pkt) {
         try {
             JHeader type = (JHeader) this.headerConstructor.newInstance();
-            if (pkt.hasHeader(type)) {
-                JHeader inst = (JHeader) this.headerConstructor.newInstance();
-                JHeader jh = pkt.getHeader(inst);
-                for (JField f : jh.getFields()) {
-                    if (f.getName().equals(this.fieldName)) {
-                        return f.getValue(jh);
+            try {
+                if (pkt.hasHeader(type)) {
+                    JHeader inst = (JHeader) this.headerConstructor.newInstance();
+                    JHeader jh = pkt.getHeader(inst);
+                    for (JField f : jh.getFields()) {
+                        if (f.getName().equals(this.fieldName)) {
+                            return f.getValue(jh);
+                        }
                     }
                 }
+            } catch (Exception ex) {
+
             }
         } catch (Exception ex) {
         }
