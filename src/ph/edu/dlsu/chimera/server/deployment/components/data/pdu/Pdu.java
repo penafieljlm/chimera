@@ -30,11 +30,6 @@ public abstract class Pdu {
     }
 
     public void addStatistics(Criteria criteria, Statistics statistics) {
-        for (Criteria crt : this.statistics.keySet()) {
-            if (criteria.getClass() == crt.getClass()) {
-                return;
-            }
-        }
         this.statistics.put(criteria, statistics);
     }
 
