@@ -51,7 +51,7 @@ public final class ComponentSniffer extends ComponentActive {
                     this.outQueue.add(new PduAtomic(new PcapPacket(pkt.packet), this.inbound));
                 }
             } else {
-                throw new Exception("Error: [Sniffer] Unable to access capture device.");
+                throw new Exception("Error: [Sniffer] inQueue is null.");
             }
         }
     }

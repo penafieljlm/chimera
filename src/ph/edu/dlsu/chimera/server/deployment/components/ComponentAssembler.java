@@ -75,7 +75,7 @@ public final class ComponentAssembler extends ComponentActive {
                                 this.handleTcp(pkt);
                             }
                         } catch (Exception ex) {
-
+                            ex.printStackTrace();
                         }
                         this.processed++;
                         //forward

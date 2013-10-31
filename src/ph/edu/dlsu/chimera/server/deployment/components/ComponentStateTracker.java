@@ -82,7 +82,7 @@ public final class ComponentStateTracker extends ComponentActive {
                                     }
                                 }
                             } catch (Exception ex) {
-
+                                ex.printStackTrace();
                             }
                             this.processed++;
                             //forward
