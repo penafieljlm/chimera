@@ -13,7 +13,7 @@ import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Statistics;
-import ph.edu.dlsu.chimera.server.deployment.components.ComponentInjector;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentBridge;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInstanceDumper;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInstancePreprocessor;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentSniffer;
@@ -77,68 +77,52 @@ public class DeploymentGathering extends Deployment {
         IntermodulePipe<PduAtomic> exGatherStatsOut = new IntermodulePipe<>();
         IntermodulePipe<PduAtomic> exGatherPrePrcOut = new IntermodulePipe<>();
         IntermodulePipe<PduAtomic> exGatherStateOut = new IntermodulePipe<>();
-        
-        IntermodulePipe<PduAtomic> exBridgeSniffOut = new IntermodulePipe<>();
 
         //outbound queues
         IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
-        
-        IntermodulePipe<PduAtomic> inBridgeSniffOut = new IntermodulePipe<>();
 
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
         ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
 
         //daemons
-        super.addComponent("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
-        super.addComponent("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
+//        super.addComponent("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
+//        super.addComponent("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
 
         //inbound path
         //path 1 = sniffer  ->  injector
         //path 2 = sniffer  ->  stats   ->  states  ->  preprc  ->  dumper
-//        super.addComponent("ex-sniff", new ComponentSniffer(assembly, this.externalPcapPort, exSniffOut, true));
-//        super.addComponent("ex-inject", new ComponentInjector(assembly, exSniffOut, this.internalPcapPort));
-//        super.addComponent("ex-sniff", new ComponentSniffer(assembly, this.externalPcapPort, exSniffOut, true));
-//        super.addComponent("ex-fork", new ComponentFork(assembly, exSniffOut, exForkOutInject));
-//        super.addComponent("ex-inject", new ComponentInjector(assembly, exForkOutInject, this.internalPcapPort));
-        super.addComponent("ex-gather-sniff", new ComponentSniffer(assembly, this.externalGatherPcapPort, exGatherSniffOut, true));
-        super.addComponent("ex-gather-stats", new ComponentStatisticsTracker(assembly, exGatherSniffOut, exGatherStatsOut, assembly.getCriterias(), statsTableAtomic));
-        super.addComponent("ex-gather-states", new ComponentStateTracker(assembly, exGatherStatsOut, exGatherStateOut, stateTable));
-        super.addComponent("ex-gather-preprc", new ComponentInstancePreprocessor(assembly, exGatherStateOut, exGatherPrePrcOut, assembly.getCriterias(), gatherAttacks));
-        super.addComponent("ex-gather-dumper", new ComponentInstanceDumper(assembly, exGatherPrePrcOut, assembly.getCriterias(), trainingDumpFile));
+//        super.addComponent("ex.gather.sniff", new ComponentSniffer(assembly, this.externalGatherPcapPort, exGatherSniffOut, true));
+//        super.addComponent("ex.gather.stats", new ComponentStatisticsTracker(assembly, exGatherSniffOut, exGatherStatsOut, assembly.getCriterias(), statsTableAtomic));
+//        super.addComponent("ex.gather.states", new ComponentStateTracker(assembly, exGatherStatsOut, exGatherStateOut, stateTable));
+//        super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(assembly, exGatherStateOut, exGatherPrePrcOut, assembly.getCriterias(), gatherAttacks));
+//        super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(assembly, exGatherPrePrcOut, assembly.getCriterias(), trainingDumpFile));
         
-        super.addComponent("ex-bridge-sniff", new ComponentSniffer(assembly, this.externalBridgePcapPort, exBridgeSniffOut, true));
-        super.addComponent("ex-bridge-inject", new ComponentInjector(assembly, exBridgeSniffOut, this.internalBridgePcapPort));
+        super.addComponent("ex.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
 
         //outbound path
-//        super.addComponent("in-sniff", new ComponentSniffer(assembly, this.internalPcapPort, inSniffOut, false));
-//        super.addComponent("in-inject", new ComponentInjector(assembly, inSniffOut, this.externalPcapPort));
-//        super.addComponent("in-sniff", new ComponentSniffer(assembly, this.internalPcapPort, inSniffOut, false));
-//        super.addComponent("in-fork", new ComponentFork(assembly, inSniffOut, inForkOutInject));
-//        super.addComponent("in-inject", new ComponentInjector(assembly, inForkOutInject, this.externalPcapPort));
-        super.addComponent("in-gather-sniff", new ComponentSniffer(assembly, this.internalGatherPcapPort, inGatherSniffOut, false));
-        super.addComponent("in-gather-states", new ComponentStateTracker(assembly, inGatherSniffOut, null, stateTable));
+//        super.addComponent("in.gather.sniff", new ComponentSniffer(assembly, this.internalGatherPcapPort, inGatherSniffOut, false));
+//        super.addComponent("in.gather.states", new ComponentStateTracker(assembly, inGatherSniffOut, null, stateTable));
         
-        super.addComponent("in-bridge-sniff", new ComponentSniffer(assembly, this.internalBridgePcapPort, inBridgeSniffOut, false));
-        super.addComponent("in-bridge-inject", new ComponentInjector(assembly, inBridgeSniffOut, this.externalBridgePcapPort));
+        super.addComponent("in.bridge", new ComponentBridge(assembly, this.internalBridgePcapPort, this.externalBridgePcapPort));
     }
 
     @Override
     public void startDeployment() {
+        super.startDeployment();
         this.externalGatherPcapPort.start();
         this.externalBridgePcapPort.start();
         this.internalGatherPcapPort.start();
         this.internalBridgePcapPort.start();
-        super.startDeployment();
     }
 
     @Override
     public synchronized void killDeployment() {
+        super.killDeployment();
         this.externalGatherPcapPort.stop();
         this.externalBridgePcapPort.stop();
         this.internalGatherPcapPort.stop();
         this.internalBridgePcapPort.stop();
-        super.killDeployment();
 
     }
 
