@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.server.deployment;
 import com.gremwell.jnetbridge.PcapPort;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
@@ -46,19 +45,23 @@ public class DeploymentGathering extends Deployment {
         super("Data Gathering");
 
         //get external pcap interface
-        PcapIf exPcapIf = null;
-        try {
-            exPcapIf = assembly.getInterfaces().get(ifExternal);
-        } catch (IndexOutOfBoundsException ex) {
-            throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
+        String ifExternalName = assembly.getConfig().ifExternal;
+        if (ifExternal >= 0) {
+            try {
+                ifExternalName = assembly.getInterfaces().get(ifExternal).getName();
+            } catch (IndexOutOfBoundsException ex) {
+                throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
+            }
         }
 
         //get internal pcap interface
-        PcapIf inPcapIf = null;
-        try {
-            inPcapIf = assembly.getInterfaces().get(ifInternal);
-        } catch (IndexOutOfBoundsException ex) {
-            throw new Exception("Interface Index '" + ifInternal + "' does not exist.");
+        String ifInternalName = assembly.getConfig().ifInternal;
+        if (ifInternal >= 0) {
+            try {
+                ifInternalName = assembly.getInterfaces().get(ifInternal).getName();
+            } catch (IndexOutOfBoundsException ex) {
+                throw new Exception("Interface Index '" + ifInternal + "' does not exist.");
+            }
         }
 
         //generic resources
@@ -66,11 +69,18 @@ public class DeploymentGathering extends Deployment {
         StringBuilder inErr = new StringBuilder();
         StringBuilder outErr = new StringBuilder();
 
-        //packet capture objects
-        this.externalGatherPcapPort = new PcapPort(exPcapIf.getName());
-        this.externalBridgePcapPort = new PcapPort(exPcapIf.getName());
-        this.internalGatherPcapPort = new PcapPort(inPcapIf.getName());
-        this.internalBridgePcapPort = new PcapPort(inPcapIf.getName());
+        try {
+            this.externalGatherPcapPort = new PcapPort(ifExternalName);
+            this.externalBridgePcapPort = new PcapPort(ifExternalName);
+        } catch (Exception ex) {
+            throw new Exception("External interface cannot be opened.");
+        }
+        try {
+            this.internalGatherPcapPort = new PcapPort(ifInternalName);
+            this.internalBridgePcapPort = new PcapPort(ifInternalName);
+        } catch (Exception ex) {
+            throw new Exception("Internal interface cannot be opened.");
+        }
 
         //inbound queues
         IntermodulePipe<PduAtomic> exGatherSniffOut = new IntermodulePipe<>();
@@ -97,13 +107,13 @@ public class DeploymentGathering extends Deployment {
         super.addComponent("ex.gather.states", new ComponentStateTracker(assembly, exGatherStatsOut, exGatherStateOut, stateTable));
         super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(assembly, exGatherStateOut, exGatherPrePrcOut, assembly.getCriterias(), gatherAttacks));
         super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(assembly, exGatherPrePrcOut, assembly.getCriterias(), trainingDumpFile));
-        
+
         super.addComponent("ex.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
 
         //outbound path
         super.addComponent("in.gather.sniff", new ComponentSniffer(assembly, this.internalGatherPcapPort, inGatherSniffOut, false));
         super.addComponent("in.gather.states", new ComponentStateTracker(assembly, inGatherSniffOut, null, stateTable));
-        
+
         super.addComponent("in.bridge", new ComponentBridge(assembly, this.internalBridgePcapPort, this.externalBridgePcapPort));
     }
 
@@ -123,7 +133,5 @@ public class DeploymentGathering extends Deployment {
         this.externalBridgePcapPort.stop();
         this.internalGatherPcapPort.stop();
         this.internalBridgePcapPort.stop();
-
     }
-
 }

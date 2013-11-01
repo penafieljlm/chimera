@@ -1,5 +1,7 @@
 package ph.edu.dlsu.chimera.server;
 
+import java.text.ParseException;
+
 /**
  * 
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
@@ -9,23 +11,56 @@ public class CADMS {
     public static String PASSWORD_HASH_ALGO = "MD5";
     public static String USAGE = ""
             + "\nCHIMERA APP-DOS MITIGATION SYSTEM USAGE"
-            + "\nCommand Line Format: cadms <port>"
+            + "\nCommand Line Format: cadms [-port <integer>] [-external <integer>] [-internal <integer>]"
             + "\nParameters:"
-            + "\n    port - the port NUMBER where the chimera administrative module will run on";
+            + "\n    -port"
+            + "\n        The port NUMBER where the chimera administrative module will run on."
+            + "\n    -external"
+            + "\n        The index of the interface facing the external network."
+            + "\n        Note: If provided, ifInternal must be provided as well."
+            + "\n    -internal"
+            + "\n        The index of the interface facing the internal network."
+            + "\n        Note: If provided, ifExternal must be provided as well.";
 
     public static void main(String[] args) {
-        //create default port protocol map
-        //create assembly
-        int adminPortNum;
+        //parse values
+        int port = -1;
+        int external = -1;
+        int internal = -1;
         try {
-            adminPortNum = Integer.parseInt(args[0]);
+            for (int i = 0; i < args.length; i++) {
+                switch (args[i]) {
+                    case "-port":
+                        if (port < 0) {
+                            port = Integer.parseInt(args[i + 1]);
+                        } else {
+                            throw new IllegalStateException();
+                        }
+                        break;
+                    case "-external":
+                        if (external < 0) {
+                            external = Integer.parseInt(args[i + 1]);
+                        } else {
+                            throw new IllegalStateException();
+                        }
+                        break;
+                    case "-internal":
+                        if (internal < 0) {
+                            internal = Integer.parseInt(args[i + 1]);
+                        } else {
+                            throw new IllegalStateException();
+                        }
+                        break;
+                }
+            }
         } catch (Exception ex) {
             System.out.print(CADMS.USAGE);
             return;
         }
+
         Assembly assembly = null;
         try {
-            assembly = new Assembly(adminPortNum);
+            assembly = new Assembly(port, external, internal);
         } catch (Exception ex) {
             //System.out.println(ex.getMessage());
             ex.printStackTrace();

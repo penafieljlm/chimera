@@ -4,11 +4,11 @@
  */
 package ph.edu.dlsu.chimera.core;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 
 /**
@@ -16,7 +16,7 @@ import org.jnetpcap.PcapIf;
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class NicData implements Serializable {
-
+    
     public final String name;
     public final String description;
     public final String hardwareAddress;

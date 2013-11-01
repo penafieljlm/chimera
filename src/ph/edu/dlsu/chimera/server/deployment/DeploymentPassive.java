@@ -4,11 +4,13 @@
  */
 package ph.edu.dlsu.chimera.server.deployment;
 
+import com.gremwell.jnetbridge.PcapPort;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentBridge;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInjector;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentSniffer;
 import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
@@ -19,23 +21,40 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
  */
 public class DeploymentPassive extends Deployment {
 
-    public DeploymentPassive(Assembly assembly) {
+    private final PcapPort externalBridgePcapPort;
+    private final PcapPort internalBridgePcapPort;
+
+    public DeploymentPassive(Assembly assembly) throws Exception {
         super("Passive");
-//        List<PcapIf> interfaces = assembly.getInterfaces();
-//        for (int i = 0; i < interfaces.size(); i++) {
-//            PcapIf srcIface = interfaces.get(i);
-//            for (int o = 0; o < interfaces.size(); o++) {
-//                PcapIf dstIface = interfaces.get(o);
-//                if (srcIface != dstIface) {
-//                    StringBuilder inErr = new StringBuilder();
-//                    StringBuilder outErr = new StringBuilder();
-//                    Pcap inPcap = Pcap.openLive(srcIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, inErr);
-//                    Pcap outPcap = Pcap.openLive(dstIface.getName(), Pcap.DEFAULT_SNAPLEN, Pcap.MODE_PROMISCUOUS, Pcap.DEFAULT_TIMEOUT, outErr);
-//                    ConcurrentLinkedQueue<PduAtomic> snifferOut = new ConcurrentLinkedQueue<>();
-//                    super.components.put("sniffer[" + i + "][" + o + "]", new ComponentSniffer(assembly, inPcap, snifferOut, true));
-//                    super.components.put("injector[" + i + "][" + o + "]", new ComponentInjector(assembly, snifferOut, outPcap));
-//                }
-//            }
-//        }
+
+        //packet capture objects
+        try {
+            this.externalBridgePcapPort = new PcapPort(assembly.getConfig().ifExternal);
+        } catch (Exception ex) {
+            throw new Exception("External interface cannot be opened.");
+        }
+        try {
+            this.internalBridgePcapPort = new PcapPort(assembly.getConfig().ifInternal);
+        } catch (Exception ex) {
+            throw new Exception("Internal interface cannot be opened.");
+        }
+
+        //components
+        super.addComponent("ex.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
+        super.addComponent("in.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
+    }
+
+    @Override
+    public void startDeployment() {
+        super.startDeployment();
+        this.externalBridgePcapPort.start();
+        this.internalBridgePcapPort.start();
+    }
+
+    @Override
+    public synchronized void killDeployment() {
+        super.killDeployment();
+        this.externalBridgePcapPort.stop();
+        this.internalBridgePcapPort.stop();
     }
 }
