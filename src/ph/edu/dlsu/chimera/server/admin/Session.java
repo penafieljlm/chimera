@@ -22,7 +22,6 @@ public class Session extends Thread {
      * The Transceiver which handles sending and receiving from the Socket given in the constructor.
      */
     private final Transceiver transceiver;
-
     /**
      * The assembly which the parent AdministrativeModule is a member of.
      */
@@ -46,10 +45,11 @@ public class Session extends Thread {
         try {
             MessageLogin login = (MessageLogin) this.receive();
             ClientShellMessage reply = login.handleMessage(this, this.assembly);
-            if(login == null)
+            if (login == null) {
                 this.reply(new MessageException(new Exception("You must login first before sending any other command!")));
-            else
+            } else {
                 this.reply(reply);
+            }
         } catch (Exception ex) {
             Logger.getLogger(Session.class.getName()).log(Level.WARNING, null, ex);
             this.reply(new MessageException(ex));
@@ -57,7 +57,6 @@ public class Session extends Thread {
         }
         //authenticated
         while (this.reply(this.handle(this.receive()))) {
-            
         }
     }
 
@@ -85,8 +84,9 @@ public class Session extends Thread {
      * @return the reply of the handling process.
      */
     private ClientShellMessage handle(ServerMessage received) {
-        if(received == null)
+        if (received == null) {
             return null;
+        }
         try {
             return received.handleMessage(this, this.assembly);
         } catch (Exception ex) {
@@ -100,10 +100,12 @@ public class Session extends Thread {
      * @return true to continue to listen to message, false to terminate session
      */
     private boolean reply(ClientShellMessage reply) {
-        if(reply == null)
+        if (reply == null) {
             return false;
-        if(reply instanceof MessageBlank)
+        }
+        if (reply instanceof MessageBlank) {
             return true;
+        }
         try {
             this.transceiver.send(reply);
         } catch (IOException ex) {
@@ -111,5 +113,4 @@ public class Session extends Thread {
         }
         return true;
     }
-    
 }

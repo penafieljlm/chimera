@@ -33,18 +33,12 @@ public class AdministrativeModule extends ComponentActive {
      * Listens for incoming connections.
      */
     @Override
-    public void componentRun() {
-        try {
-//            SSLServerSocket server = (SSLServerSocket) SSLServerSocketFactory.getDefault().createServerSocket(this.port);
-            ServerSocket server = new ServerSocket(this.port);
-            while(super.running) {
-                Socket client = server.accept();
-                Session session = new Session(client, this.assembly);
-                session.start();
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(AdministrativeModule.class.getName()).log(Level.SEVERE, null, ex);
+    public void componentRun() throws Exception {
+        ServerSocket server = new ServerSocket(this.port);
+        while (super.running) {
+            Socket client = server.accept();
+            Session session = new Session(client, this.assembly);
+            session.start();
         }
     }
-
 }
