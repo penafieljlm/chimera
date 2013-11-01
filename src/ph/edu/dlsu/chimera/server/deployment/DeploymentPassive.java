@@ -19,7 +19,7 @@ public class DeploymentPassive extends Deployment {
 
     public DeploymentPassive(Assembly assembly) throws Exception {
         super("Passive");
-
+        
         //packet capture objects
         try {
             this.externalBridgePcapPort = new PcapPort(assembly.getConfig().ifExternal);

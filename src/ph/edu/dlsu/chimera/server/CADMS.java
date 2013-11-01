@@ -11,16 +11,16 @@ public class CADMS {
     public static String PASSWORD_HASH_ALGO = "MD5";
     public static String USAGE = ""
             + "\nCHIMERA APP-DOS MITIGATION SYSTEM USAGE"
-            + "\nCommand Line Format: cadms [-port <integer>] [-external <integer>] [-internal <integer>]"
+            + "\nCommand Line Format:"
+            + "\n    cadms [-port <integer>] [-external <integer>] [-internal <integer>]"
             + "\nParameters:"
             + "\n    -port"
             + "\n        The port NUMBER where the chimera administrative module will run on."
             + "\n    -external"
             + "\n        The index of the interface facing the external network."
-            + "\n        Note: If provided, ifInternal must be provided as well."
             + "\n    -internal"
             + "\n        The index of the interface facing the internal network."
-            + "\n        Note: If provided, ifExternal must be provided as well.";
+            + "\n";
 
     public static void main(String[] args) {
         //parse values
@@ -62,8 +62,9 @@ public class CADMS {
         try {
             assembly = new Assembly(port, external, internal);
         } catch (Exception ex) {
-            //System.out.println(ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Error: " + ex.getMessage());
+            System.out.print(CADMS.USAGE);
+            //ex.printStackTrace();
             return;
         }
         //start admin service

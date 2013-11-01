@@ -97,7 +97,7 @@ public final class Assembly {
             } catch (Exception ex1) {
                 String msg = null;
                 if (external < 0) {
-                    msg = "Config file 'chimera.config' not found, please provide default external index interface. Refer to the list below.";
+                    msg = "Config file 'chimera.config' not found, please provide default external interface index. Refer to the list below.";
                 } else {
                     msg = "Invalid interface index: " + external + ". Refer to the list below.";
                 }
@@ -111,7 +111,7 @@ public final class Assembly {
             } catch (Exception ex1) {
                 String msg = null;
                 if (internal < 0) {
-                    msg = "Config file 'chimera.config' not found, please provide default external index interface. Refer to the list below.";
+                    msg = "Config file 'chimera.config' not found, please provide default internal interface index. Refer to the list below.";
                 } else {
                     msg = "Invalid interface index: " + internal + ". Refer to the list below.";
                 }
