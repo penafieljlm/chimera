@@ -17,29 +17,32 @@ import ph.edu.dlsu.chimera.server.Assembly;
  */
 public class ComponentBridge extends ComponentActive {
 
-    public final QueueingPortListener inQueue;
+    public final PcapPort inPcapPort;
     public final PcapPort outPcapPort;
     private long forwarded;
 
     public ComponentBridge(Assembly assembly, PcapPort inPcapPort, PcapPort outPcapPort) {
         super(assembly);
-        this.inQueue = new QueueingPortListener();
-        inPcapPort.setListener(this.inQueue);
+        this.inPcapPort = inPcapPort;
         this.outPcapPort = outPcapPort;
         this.forwarded = 0;
     }
 
     @Override
     public void componentRun() throws Exception {
+        if (this.inPcapPort == null) {
+            throw new Exception("Error: [Bridge] Unable to access capture device.");
+        }
+        if (this.outPcapPort == null) {
+            throw new Exception("Error: [Bridge] Unable to access sending device.");
+        }
+        QueueingPortListener inQueue = new QueueingPortListener();
+        this.inPcapPort.setListener(inQueue);
+        this.inPcapPort.start();
+        this.outPcapPort.start();
         while (super.running) {
-            if (this.inQueue != null) {
-                if (this.outPcapPort != null) {
-                    this.outPcapPort.send(this.inQueue.receive().packet);
-                    this.forwarded++;
-                }
-            } else {
-                throw new Exception("Error: [Bridge] inQueue is null.");
-            }
+            this.outPcapPort.send(inQueue.receive().packet);
+            this.forwarded++;
         }
     }
 

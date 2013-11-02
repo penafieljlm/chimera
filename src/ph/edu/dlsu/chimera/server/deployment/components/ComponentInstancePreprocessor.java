@@ -58,14 +58,16 @@ public class ComponentInstancePreprocessor extends ComponentActive {
                 }
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt.inbound) {
-                        pkt.setInstance(this.instanceHeaders, this.getInstance(pkt));
-                        this.processed++;
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
+                    synchronized (pkt) {
+                        if (pkt.inbound) {
+                            pkt.setInstance(this.instanceHeaders, this.getInstance(pkt));
+                            this.processed++;
+                            if (this.outQueue != null) {
+                                this.outQueue.add(pkt);
+                            }
+                        } else {
+                            throw new Exception("Error: [Instance Preprocessor] Encountered outbound packet.");
                         }
-                    } else {
-                        throw new Exception("Error: [Instance Preprocessor] Encountered outbound packet.");
                     }
                 }
             } else {

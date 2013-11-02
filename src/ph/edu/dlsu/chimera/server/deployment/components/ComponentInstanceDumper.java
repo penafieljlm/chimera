@@ -56,19 +56,21 @@ public class ComponentInstanceDumper extends ComponentActive {
                         }
                         while (!this.inQueue.isEmpty()) {
                             PduAtomic pkt = this.inQueue.poll();
-                            if (pkt.inbound) {
-                                if (pkt.getInstanceHeaders().length != pkt.getInstanceData().length) {
-                                    throw new Exception("Error: [Instance Dumper] Headers do not match data.");
+                            synchronized (pkt) {
+                                if (pkt.inbound) {
+                                    if (pkt.getInstanceHeaders().length != pkt.getInstanceData().length) {
+                                        throw new Exception("Error: [Instance Dumper] Headers do not match data.");
+                                    }
+                                    if (!this.headerOk) {
+                                        this.headerOk = true;
+                                        writer.writeNext(pkt.getInstanceHeaders());
+                                    }
+                                    writer.writeNext(pkt.getInstanceData());
+                                    writer.flush();
+                                    this.processed++;
+                                } else {
+                                    throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
                                 }
-                                if (!this.headerOk) {
-                                    this.headerOk = true;
-                                    writer.writeNext(pkt.getInstanceHeaders());
-                                }
-                                writer.writeNext(pkt.getInstanceData());
-                                writer.flush();
-                                this.processed++;
-                            } else {
-                                throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
                             }
                         }
                     } else {

@@ -43,9 +43,11 @@ public class ComponentDebugger<TPdu extends Pdu> extends ComponentActive {
                 }
                 while (!this.inQueue.isEmpty()) {
                     TPdu pkt = this.inQueue.poll();
-                    System.out.println(pkt.printDebug());
-                    if (this.outQueue != null) {
-                        this.outQueue.add(pkt);
+                    synchronized (pkt) {
+                        System.out.println(pkt.printDebug());
+                        if (this.outQueue != null) {
+                            this.outQueue.add(pkt);
+                        }
                     }
                 }
             } else {

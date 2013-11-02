@@ -175,6 +175,7 @@ public final class Assembly {
             this.criterias[i] = new Criteria(cExpressions.get(i));
         }
 
+        
         this.setDeployment(new DeploymentPassive(this));
     }
 

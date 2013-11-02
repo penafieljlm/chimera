@@ -7,6 +7,9 @@ package ph.edu.dlsu.chimera.server.deployment;
 import com.gremwell.jnetbridge.PcapPort;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentBridge;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentInjector;
+import ph.edu.dlsu.chimera.server.deployment.components.ComponentSniffer;
+import ph.edu.dlsu.chimera.server.deployment.components.data.IntermodulePipe;
 
 /**
  *
@@ -14,40 +17,31 @@ import ph.edu.dlsu.chimera.server.deployment.components.ComponentBridge;
  */
 public class DeploymentPassive extends Deployment {
 
-    private final PcapPort externalBridgePcapPort;
-    private final PcapPort internalBridgePcapPort;
-
     public DeploymentPassive(Assembly assembly) throws Exception {
         super("Passive");
         
         //packet capture objects
+        PcapPort externalBridgePcapPort = null;
+        PcapPort internalBridgePcapPort = null;
         try {
-            this.externalBridgePcapPort = new PcapPort(assembly.getConfig().ifExternal);
+            externalBridgePcapPort = new PcapPort(assembly.getConfig().ifExternal);
         } catch (Exception ex) {
             throw new Exception("External interface cannot be opened.");
         }
         try {
-            this.internalBridgePcapPort = new PcapPort(assembly.getConfig().ifInternal);
+            internalBridgePcapPort = new PcapPort(assembly.getConfig().ifInternal);
         } catch (Exception ex) {
             throw new Exception("Internal interface cannot be opened.");
         }
 
+        IntermodulePipe exPipe = new IntermodulePipe();
+        IntermodulePipe inPipe = new IntermodulePipe();
+        super.addComponent("ex.sniff", new ComponentSniffer(assembly, externalBridgePcapPort, exPipe, true));
+        super.addComponent("ex.inject", new ComponentInjector(assembly, exPipe, internalBridgePcapPort));
+        super.addComponent("in.sniff", new ComponentSniffer(assembly, internalBridgePcapPort, inPipe, true));
+        super.addComponent("in.inject", new ComponentInjector(assembly, inPipe, externalBridgePcapPort));
         //components
-        super.addComponent("ex.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
-        super.addComponent("in.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
-    }
-
-    @Override
-    public void startDeployment() {
-        super.startDeployment();
-        this.externalBridgePcapPort.start();
-        this.internalBridgePcapPort.start();
-    }
-
-    @Override
-    public synchronized void killDeployment() {
-        super.killDeployment();
-        this.externalBridgePcapPort.stop();
-        this.internalBridgePcapPort.stop();
+//        super.addComponent("ex.bridge", new ComponentBridge(assembly, externalBridgePcapPort, internalBridgePcapPort));
+//        super.addComponent("in.bridge", new ComponentBridge(assembly, internalBridgePcapPort, externalBridgePcapPort));
     }
 }
