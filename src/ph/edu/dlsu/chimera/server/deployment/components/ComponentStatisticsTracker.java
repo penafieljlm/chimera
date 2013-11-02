@@ -58,36 +58,38 @@ public class ComponentStatisticsTracker extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     synchronized (this.statsTable) {
                         PduAtomic pkt = this.inQueue.poll();
-                        if (pkt.inbound) {
-                            //create / update criterias
-                            for (Criteria crt : this.criterias) {
-                                CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
-                                if (pktcrt != null) {
-                                    if (this.statsTable != null) {
-                                        if (!this.statsTable.containsKey(pktcrt)) {
-                                            //create criteria
-                                            this.statsTable.put(pktcrt, new Statistics(pkt.timestampInNanos));
+                        synchronized (pkt) {
+                            if (pkt.inbound) {
+                                //create / update criterias
+                                for (Criteria crt : this.criterias) {
+                                    CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
+                                    if (pktcrt != null) {
+                                        if (this.statsTable != null) {
+                                            if (!this.statsTable.containsKey(pktcrt)) {
+                                                //create criteria
+                                                this.statsTable.put(pktcrt, new Statistics(pkt.timestampInNanos));
+                                            }
+                                            if (this.statsTable.containsKey(pktcrt)) {
+                                                //update criteria statsTable
+                                                this.statsTable.get(pktcrt).commitEncounter(pkt);
+                                            }
+                                            //associate criteria to packet
+                                            pkt.addStatistics(crt, this.statsTable.get(pktcrt));
+                                        } else {
+                                            throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
                                         }
-                                        if (this.statsTable.containsKey(pktcrt)) {
-                                            //update criteria statsTable
-                                            this.statsTable.get(pktcrt).commitEncounter(pkt);
-                                        }
-                                        //associate criteria to packet
-                                        pkt.addStatistics(crt, this.statsTable.get(pktcrt));
                                     } else {
-                                        throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
+                                        pkt.addStatistics(crt, null);
                                     }
-                                } else {
-                                    pkt.addStatistics(crt, null);
                                 }
+                                this.processed++;
+                                //forward packet
+                                if (this.outQueue != null) {
+                                    this.outQueue.add(pkt);
+                                }
+                            } else {
+                                throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
                             }
-                            this.processed++;
-                            //forward packet
-                            if (this.outQueue != null) {
-                                this.outQueue.add(pkt);
-                            }
-                        } else {
-                            throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
                         }
                     }
                 }

@@ -48,15 +48,17 @@ public class ComponentFork extends ComponentActive {
                 }
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
-                    if (this.outQueues != null) {
-                        this.processed++;
-                        for (IntermodulePipe<PduAtomic> outQueue : this.outQueues) {
-                            if (outQueue != null) {
-                                outQueue.add(pkt);
+                    synchronized (pkt) {
+                        if (this.outQueues != null) {
+                            this.processed++;
+                            for (IntermodulePipe<PduAtomic> outQueue : this.outQueues) {
+                                if (outQueue != null) {
+                                    outQueue.add(pkt);
+                                }
                             }
+                        } else {
+                            throw new Exception("Error: [Fork] outQueues is null.");
                         }
-                    } else {
-                        throw new Exception("Error: [Fork] outQueues is null.");
                     }
                 }
             } else {

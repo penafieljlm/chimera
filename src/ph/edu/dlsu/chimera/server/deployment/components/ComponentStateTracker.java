@@ -59,35 +59,37 @@ public final class ComponentStateTracker extends ComponentActive {
                         synchronized (this.stateTable) {
                             //poll packet
                             PduAtomic pkt = this.inQueue.poll();
-                            try {
-                                if (pkt.packet.hasHeader(new Tcp())) {
-                                    //tcp packets
-                                    SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
-                                    Tcp tcp = pkt.packet.getHeader(new Tcp());
-                                    //create state
-                                    if (!this.stateTable.containsKey(socks)) {
-                                        if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                            this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), pkt.inbound));
+                            synchronized (pkt) {
+                                try {
+                                    if (pkt.packet.hasHeader(new Tcp())) {
+                                        //tcp packets
+                                        SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
+                                        Tcp tcp = pkt.packet.getHeader(new Tcp());
+                                        //create state
+                                        if (!this.stateTable.containsKey(socks)) {
+                                            if (tcp.flags_SYN() && !tcp.flags_ACK()) {
+                                                this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), pkt.inbound));
+                                            }
+                                        }
+                                        if (this.stateTable.containsKey(socks)) {
+                                            Connection connection = this.stateTable.get(socks);
+                                            pkt.setConnection(connection);
+                                            //update state
+                                            connection.update(pkt);
+                                            //attempt to delete state
+                                            if (connection.isDone()) {
+                                                this.stateTable.remove(socks);
+                                            }
                                         }
                                     }
-                                    if (this.stateTable.containsKey(socks)) {
-                                        Connection connection = this.stateTable.get(socks);
-                                        pkt.setConnection(connection);
-                                        //update state
-                                        connection.update(pkt);
-                                        //attempt to delete state
-                                        if (connection.isDone()) {
-                                            this.stateTable.remove(socks);
-                                        }
-                                    }
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
                                 }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            this.processed++;
-                            //forward
-                            if (this.outQueue != null) {
-                                this.outQueue.add(pkt);
+                                this.processed++;
+                                //forward
+                                if (this.outQueue != null) {
+                                    this.outQueue.add(pkt);
+                                }
                             }
                         }
                     }

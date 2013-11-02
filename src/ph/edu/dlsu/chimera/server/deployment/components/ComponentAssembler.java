@@ -68,22 +68,24 @@ public final class ComponentAssembler extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt.inbound) {
-                        //tcp forward
-                        try {
-                            if (pkt.packet.hasHeader(new Tcp())) {
-                                this.handleTcp(pkt);
+                    synchronized (pkt) {
+                        if (pkt.inbound) {
+                            //tcp forward
+                            try {
+                                if (pkt.packet.hasHeader(new Tcp())) {
+                                    this.handleTcp(pkt);
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
                             }
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                            this.processed++;
+                            //forward
+                            if (this.outQueue != null) {
+                                this.outQueue.add(pkt);
+                            }
+                        } else {
+                            throw new Exception("Error: [Assembler] Encountered outbound packet.");
                         }
-                        this.processed++;
-                        //forward
-                        if (this.outQueue != null) {
-                            this.outQueue.add(pkt);
-                        }
-                    } else {
-                        throw new Exception("Error: [Assembler] Encountered outbound packet.");
                     }
                 }
             } else {

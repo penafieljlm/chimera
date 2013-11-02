@@ -34,6 +34,10 @@ public final class ComponentInjector extends ComponentActive {
 
     @Override
     protected void componentRun() throws Exception {
+        if (this.outPcapPort == null) {
+            throw new Exception("Error: [Injector] Unable to access sending device.");
+        }
+        this.outPcapPort.start();
         while (super.running) {
             if (this.inQueue != null) {
                 if (this.inQueue.isEmpty()) {
@@ -44,11 +48,9 @@ public final class ComponentInjector extends ComponentActive {
                 while (!this.inQueue.isEmpty()) {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
-                    this.sent++;
-                    if (this.outPcapPort != null) {
+                    synchronized (pkt) {
+                        this.sent++;
                         this.outPcapPort.send(pkt.packet);
-                    } else {
-                        throw new Exception("Error: [Injector] Unable to access sending device.");
                     }
                 }
             } else {

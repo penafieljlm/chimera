@@ -29,11 +29,6 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
  */
 public class DeploymentGathering extends Deployment {
 
-    public final PcapPort externalGatherPcapPort;
-    public final PcapPort externalBridgePcapPort;
-    public final PcapPort internalGatherPcapPort;
-    public final PcapPort internalBridgePcapPort;
-
     public DeploymentGathering(Assembly assembly,
             int ifExternal,
             int ifInternal,
@@ -68,16 +63,19 @@ public class DeploymentGathering extends Deployment {
         File trainingDumpFile = new File(dumpFileName);
         StringBuilder inErr = new StringBuilder();
         StringBuilder outErr = new StringBuilder();
-
+        PcapPort externalGatherPcapPort = null;
+        PcapPort externalBridgePcapPort = null;
+        PcapPort internalGatherPcapPort = null;
+        PcapPort internalBridgePcapPort = null;
         try {
-            this.externalGatherPcapPort = new PcapPort(ifExternalName);
-            this.externalBridgePcapPort = new PcapPort(ifExternalName);
+            externalGatherPcapPort = new PcapPort(ifExternalName);
+            externalBridgePcapPort = new PcapPort(ifExternalName);
         } catch (Exception ex) {
             throw new Exception("External interface cannot be opened.");
         }
         try {
-            this.internalGatherPcapPort = new PcapPort(ifInternalName);
-            this.internalBridgePcapPort = new PcapPort(ifInternalName);
+            internalGatherPcapPort = new PcapPort(ifInternalName);
+            internalBridgePcapPort = new PcapPort(ifInternalName);
         } catch (Exception ex) {
             throw new Exception("Internal interface cannot be opened.");
         }
@@ -102,36 +100,18 @@ public class DeploymentGathering extends Deployment {
         //inbound path
         //path 1 = sniffer  ->  injector
         //path 2 = sniffer  ->  stats   ->  states  ->  preprc  ->  dumper
-        super.addComponent("ex.gather.sniff", new ComponentSniffer(assembly, this.externalGatherPcapPort, exGatherSniffOut, true));
+        super.addComponent("ex.gather.sniff", new ComponentSniffer(assembly, externalGatherPcapPort, exGatherSniffOut, true));
         super.addComponent("ex.gather.stats", new ComponentStatisticsTracker(assembly, exGatherSniffOut, exGatherStatsOut, assembly.getCriterias(), statsTableAtomic));
         super.addComponent("ex.gather.states", new ComponentStateTracker(assembly, exGatherStatsOut, exGatherStateOut, stateTable));
         super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(assembly, exGatherStateOut, exGatherPrePrcOut, assembly.getCriterias(), gatherAttacks));
         super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(assembly, exGatherPrePrcOut, assembly.getCriterias(), trainingDumpFile));
 
-        super.addComponent("ex.bridge", new ComponentBridge(assembly, this.externalBridgePcapPort, this.internalBridgePcapPort));
+        super.addComponent("ex.bridge", new ComponentBridge(assembly, externalBridgePcapPort, internalBridgePcapPort));
 
         //outbound path
-        super.addComponent("in.gather.sniff", new ComponentSniffer(assembly, this.internalGatherPcapPort, inGatherSniffOut, false));
+        super.addComponent("in.gather.sniff", new ComponentSniffer(assembly, internalGatherPcapPort, inGatherSniffOut, false));
         super.addComponent("in.gather.states", new ComponentStateTracker(assembly, inGatherSniffOut, null, stateTable));
 
-        super.addComponent("in.bridge", new ComponentBridge(assembly, this.internalBridgePcapPort, this.externalBridgePcapPort));
-    }
-
-    @Override
-    public void startDeployment() {
-        super.startDeployment();
-        this.externalGatherPcapPort.start();
-        this.externalBridgePcapPort.start();
-        this.internalGatherPcapPort.start();
-        this.internalBridgePcapPort.start();
-    }
-
-    @Override
-    public synchronized void killDeployment() {
-        super.killDeployment();
-        this.externalGatherPcapPort.stop();
-        this.externalBridgePcapPort.stop();
-        this.internalGatherPcapPort.stop();
-        this.internalBridgePcapPort.stop();
+        super.addComponent("in.bridge", new ComponentBridge(assembly, internalBridgePcapPort, externalBridgePcapPort));
     }
 }

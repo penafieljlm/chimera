@@ -21,7 +21,7 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
 public final class ComponentSniffer extends ComponentActive {
 
     public final boolean inbound;
-    public final QueueingPortListener inQueue;
+    public final PcapPort inPcapPort;
     public final IntermodulePipe<PduAtomic> outQueue;
     private long received;
 
@@ -32,8 +32,7 @@ public final class ComponentSniffer extends ComponentActive {
         super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inbound = inbound;
-        this.inQueue = new QueueingPortListener();
-        inPcapPort.setListener(this.inQueue);
+        this.inPcapPort = inPcapPort;
         this.outQueue = outQueue;
         if (this.outQueue != null) {
             this.outQueue.setWriter(this);
@@ -43,15 +42,17 @@ public final class ComponentSniffer extends ComponentActive {
 
     @Override
     public void componentRun() throws Exception {
+        if (this.inPcapPort == null) {
+            throw new Exception("Error: [Sniffer] Unable to access capture device.");
+        }
+        QueueingPortListener inQueue = new QueueingPortListener();
+        this.inPcapPort.setListener(inQueue);
+        this.inPcapPort.start();
         while (super.running) {
-            if (this.inQueue != null) {
-                IngressPacket pkt = this.inQueue.receive();
-                this.received++;
-                if (this.outQueue != null) {
-                    this.outQueue.add(new PduAtomic(new PcapPacket(pkt.packet), this.inbound));
-                }
-            } else {
-                throw new Exception("Error: [Sniffer] inQueue is null.");
+            IngressPacket pkt = inQueue.receive();
+            this.received++;
+            if (this.outQueue != null) {
+                this.outQueue.add(new PduAtomic(new PcapPacket(pkt.packet), this.inbound));
             }
         }
     }
