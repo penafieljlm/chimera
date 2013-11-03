@@ -106,12 +106,12 @@ public class DeploymentGathering extends Deployment {
         super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(assembly, exGatherStateOut, exGatherPrePrcOut, assembly.getCriterias(), gatherAttacks));
         super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(assembly, exGatherPrePrcOut, assembly.getCriterias(), trainingDumpFile));
 
-        super.addComponent("ex.bridge", new ComponentBridge(assembly, externalBridgePcapPort, internalBridgePcapPort));
+//        super.addComponent("ex.bridge", new ComponentBridge(assembly, externalBridgePcapPort, internalBridgePcapPort));
 
         //outbound path
         super.addComponent("in.gather.sniff", new ComponentSniffer(assembly, internalGatherPcapPort, inGatherSniffOut, false));
         super.addComponent("in.gather.states", new ComponentStateTracker(assembly, inGatherSniffOut, null, stateTable));
 
-        super.addComponent("in.bridge", new ComponentBridge(assembly, internalBridgePcapPort, externalBridgePcapPort));
+//        super.addComponent("in.bridge", new ComponentBridge(assembly, internalBridgePcapPort, externalBridgePcapPort));
     }
 }

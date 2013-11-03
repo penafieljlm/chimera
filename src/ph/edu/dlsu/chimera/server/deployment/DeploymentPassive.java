@@ -34,12 +34,12 @@ public class DeploymentPassive extends Deployment {
             throw new Exception("Internal interface cannot be opened.");
         }
 
-        IntermodulePipe exPipe = new IntermodulePipe();
-        IntermodulePipe inPipe = new IntermodulePipe();
-        super.addComponent("ex.sniff", new ComponentSniffer(assembly, externalBridgePcapPort, exPipe, true));
-        super.addComponent("ex.inject", new ComponentInjector(assembly, exPipe, internalBridgePcapPort));
-        super.addComponent("in.sniff", new ComponentSniffer(assembly, internalBridgePcapPort, inPipe, true));
-        super.addComponent("in.inject", new ComponentInjector(assembly, inPipe, externalBridgePcapPort));
+//        IntermodulePipe exPipe = new IntermodulePipe();
+//        IntermodulePipe inPipe = new IntermodulePipe();
+//        super.addComponent("ex.sniff", new ComponentSniffer(assembly, externalBridgePcapPort, exPipe, true));
+//        super.addComponent("ex.inject", new ComponentInjector(assembly, exPipe, internalBridgePcapPort));
+//        super.addComponent("in.sniff", new ComponentSniffer(assembly, internalBridgePcapPort, inPipe, true));
+//        super.addComponent("in.inject", new ComponentInjector(assembly, inPipe, externalBridgePcapPort));
         //components
 //        super.addComponent("ex.bridge", new ComponentBridge(assembly, externalBridgePcapPort, internalBridgePcapPort));
 //        super.addComponent("in.bridge", new ComponentBridge(assembly, internalBridgePcapPort, externalBridgePcapPort));
