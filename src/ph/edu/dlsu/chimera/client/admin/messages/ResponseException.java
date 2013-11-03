@@ -2,33 +2,33 @@ package ph.edu.dlsu.chimera.client.admin.messages;
 
 import java.io.PrintStream;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
-import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
+import ph.edu.dlsu.chimera.server.admin.messages.Command;
 
 /**
  * An instance of this class constitutes a message reporting an exceptions.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class MessageException implements ClientShellMessage {
+public class ResponseException implements Response {
 
     /**
-     * The Exception carried by this MessageException object.
+     * The Exception carried by this ResponseException object.
      */
     public final Exception exceptions;
 
     /**
-     * Constructs a new MessageException object.
+     * Constructs a new ResponseException object.
      * @param exceptions - the content of the new MessageObject to be created.
      */
-    public MessageException(Exception exception) {
+    public ResponseException(Exception exception) {
         this.exceptions = exception;
     }
 
     /**
      * Allows a shell client program to handle a Message object.
      * @param outStream - the output stream where to print reports.
-     * @return the appropriate response ServerMessage object.
+     * @return the appropriate response Command object.
      */
-    public ServerMessage handleShellMessage(PrintStream outStream) {
+    public Command handleShellMessage(PrintStream outStream) {
         this.exceptions.printStackTrace();
         outStream.println(this.exceptions.getMessage());
         return new MessageFinished();

@@ -17,10 +17,8 @@ public class ComponentDebugger<TPdu extends Pdu> extends ComponentActive {
     public final IntermodulePipe<TPdu> inQueue;
     public final IntermodulePipe<TPdu> outQueue;
 
-    public ComponentDebugger(Assembly assembly,
-            IntermodulePipe<TPdu> inQueue,
+    public ComponentDebugger(IntermodulePipe<TPdu> inQueue,
             IntermodulePipe<TPdu> outQueue) {
-        super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;

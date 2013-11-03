@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server;
+package ph.edu.dlsu.chimera;
 
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
@@ -17,7 +17,7 @@ import weka.core.converters.ConverterUtils.DataSource;
  *
  * @author Emerson Chua
  */
-public class Training {
+public class TrainingSample {
 
     public static String instanceFilePath = "C:/Users/Fili Emerson Chua/Dropbox/DLSU Shared/CHIMERA/Proof of Concept/redefensedataset.csv";
     public static String classifierOptions = "-C 0.25 -M 2";
@@ -73,7 +73,7 @@ public class Training {
             System.out.println(tree.graph());
             
         } catch (Exception ex) {
-            Logger.getLogger(Training.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TrainingSample.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     

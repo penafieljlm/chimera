@@ -26,12 +26,10 @@ public class ComponentStatisticsTracker extends ComponentActive {
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
     private long processed;
 
-    public ComponentStatisticsTracker(Assembly assembly,
-            IntermodulePipe<PduAtomic> inQueue,
+    public ComponentStatisticsTracker(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable) {
-        super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;

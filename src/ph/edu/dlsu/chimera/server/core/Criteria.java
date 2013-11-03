@@ -4,6 +4,11 @@
  */
 package ph.edu.dlsu.chimera.server.core;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
@@ -77,5 +82,65 @@ public final class Criteria {
             cId[i] = this.subjects[i].getFieldValue(pkt);
         }
         return new CriteriaInstance(cId, this);
+    }
+
+    public static Criteria[] loadCriterias() throws Exception {
+        File criteriasFile = new File("criterias.config");
+        ArrayList<String> expressions = new ArrayList<>();
+        if (!criteriasFile.exists()) {
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.network.Ip4.destination)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+
+            String[] exps = new String[expressions.size()];
+            for (int i = 0; i < exps.length; i++) {
+                exps[i] = expressions.get(i);
+            }
+            Criteria.saveCriterias(exps);
+        } else {
+            Scanner cConfigFileScanner = new Scanner(criteriasFile);
+            cConfigFileScanner = cConfigFileScanner.useDelimiter(";");
+            while (cConfigFileScanner.hasNext()) {
+                String exp = cConfigFileScanner.next().trim();
+                if (exp.length() > 0) {
+                    expressions.add(exp);
+                }
+            }
+        }
+        Criteria[] criterias = new Criteria[expressions.size()];
+        for (int i = 0; i < criterias.length; i++) {
+            criterias[i] = new Criteria(expressions.get(i));
+        }
+        return criterias;
+    }
+
+    public static void saveCriterias(String[] criterias) throws Exception {
+        File criteriasFile = new File("criterias.config");
+        if (criteriasFile.exists()) {
+            try {
+                criteriasFile.delete();
+            } catch (Exception ex) {
+                throw new Exception("Unable to overwrite 'criterias.config'.");
+            }
+        }
+        try {
+            if (criteriasFile.createNewFile()) {
+                FileWriter cConfigFileWriter = new FileWriter(criteriasFile);
+                for (String exp : criterias) {
+                    cConfigFileWriter.write(exp + ";\r\n");
+                }
+                cConfigFileWriter.close();
+            }
+        } catch (IOException ex) {
+            throw new Exception("Unable to write 'criterias.config'.");
+        }
     }
 }

@@ -27,11 +27,9 @@ public final class ComponentStateTracker extends ComponentActive {
     public final IntermodulePipe<PduAtomic> outQueue;
     private long processed;
 
-    public ComponentStateTracker(Assembly assembly,
-            IntermodulePipe<PduAtomic> inQueue,
+    public ComponentStateTracker(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
-        super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.stateTable = stateTable;
         this.inQueue = inQueue;

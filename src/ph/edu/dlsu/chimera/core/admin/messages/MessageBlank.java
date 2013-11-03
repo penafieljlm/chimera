@@ -1,10 +1,8 @@
 package ph.edu.dlsu.chimera.core.admin.messages;
 
 import java.io.PrintStream;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.client.admin.Client;
-import ph.edu.dlsu.chimera.client.admin.messages.ClientShellMessage;
-import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
+import ph.edu.dlsu.chimera.client.admin.messages.Response;
+import ph.edu.dlsu.chimera.server.admin.messages.Command;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
 
@@ -12,7 +10,7 @@ import ph.edu.dlsu.chimera.server.admin.Session;
  * An instance of this class constitutes a signal which will not be sent.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class MessageBlank implements ClientShellMessage, ServerMessage {
+public class MessageBlank implements Response, Command {
 
     /**
      * Constructs a new MessageBlank object.
@@ -23,9 +21,9 @@ public class MessageBlank implements ClientShellMessage, ServerMessage {
     /**
      * Allows a shell client program to handle a Message object.
      * @param outStream - the output stream where to print reports.
-     * @return the appropriate response ServerMessage object.
+     * @return the appropriate response Command object.
      */
-    public ServerMessage handleShellMessage(PrintStream outStream) {
+    public Command handleShellMessage(PrintStream outStream) {
         return this;
     }
 
@@ -36,7 +34,7 @@ public class MessageBlank implements ClientShellMessage, ServerMessage {
      * @return a blank message.
      * @throws Exception
      */
-    public ClientShellMessage handleMessage(Session session, Assembly assembly) throws Exception {
+    public Response handleMessage(Session session, Assembly assembly) throws Exception {
         return this;
     }
 

@@ -9,10 +9,10 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.core.SocketPair;
 import ph.edu.dlsu.chimera.server.core.Statistics;
-import ph.edu.dlsu.chimera.server.deployment.components.ComponentBridge;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInstanceDumper;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentInstancePreprocessor;
 import ph.edu.dlsu.chimera.server.deployment.components.ComponentSniffer;
@@ -29,56 +29,15 @@ import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
  */
 public class DeploymentGathering extends Deployment {
 
-    public DeploymentGathering(Assembly assembly,
-            int ifExternal,
-            int ifInternal,
-            String dumpFileName,
+    public DeploymentGathering(PcapPort ifExternalPcapPort,
+            PcapPort ifInternalPcapPort,
+            Criteria[] criterias,
+            File trainingDumpFile,
             boolean gatherAttacks,
             long statsTimeoutMs,
             long stateTimeoutMs) throws Exception {
         //deployment name
         super("Data Gathering");
-
-        //get external pcap interface
-        String ifExternalName = assembly.getConfig().ifExternal;
-        if (ifExternal >= 0) {
-            try {
-                ifExternalName = assembly.getInterfaces().get(ifExternal).getName();
-            } catch (IndexOutOfBoundsException ex) {
-                throw new Exception("Interface Index '" + ifExternal + "' does not exist.");
-            }
-        }
-
-        //get internal pcap interface
-        String ifInternalName = assembly.getConfig().ifInternal;
-        if (ifInternal >= 0) {
-            try {
-                ifInternalName = assembly.getInterfaces().get(ifInternal).getName();
-            } catch (IndexOutOfBoundsException ex) {
-                throw new Exception("Interface Index '" + ifInternal + "' does not exist.");
-            }
-        }
-
-        //generic resources
-        File trainingDumpFile = new File(dumpFileName);
-        StringBuilder inErr = new StringBuilder();
-        StringBuilder outErr = new StringBuilder();
-        PcapPort externalGatherPcapPort = null;
-        PcapPort externalBridgePcapPort = null;
-        PcapPort internalGatherPcapPort = null;
-        PcapPort internalBridgePcapPort = null;
-        try {
-            externalGatherPcapPort = new PcapPort(ifExternalName);
-            externalBridgePcapPort = new PcapPort(ifExternalName);
-        } catch (Exception ex) {
-            throw new Exception("External interface cannot be opened.");
-        }
-        try {
-            internalGatherPcapPort = new PcapPort(ifInternalName);
-            internalBridgePcapPort = new PcapPort(ifInternalName);
-        } catch (Exception ex) {
-            throw new Exception("Internal interface cannot be opened.");
-        }
 
         //inbound queues
         IntermodulePipe<PduAtomic> exGatherSniffOut = new IntermodulePipe<>();
@@ -94,24 +53,18 @@ public class DeploymentGathering extends Deployment {
         ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
 
         //daemons
-        super.addComponent("stats", new ComponentStatisticsTable(assembly, assembly.getCriterias(), statsTableAtomic, statsTimeoutMs));
-        super.addComponent("states", new ComponentStateTable(assembly, stateTable, stateTimeoutMs));
+        super.addComponent("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, statsTimeoutMs));
+        super.addComponent("states", new ComponentStateTable(stateTable, stateTimeoutMs));
 
         //inbound path
-        //path 1 = sniffer  ->  injector
-        //path 2 = sniffer  ->  stats   ->  states  ->  preprc  ->  dumper
-        super.addComponent("ex.gather.sniff", new ComponentSniffer(assembly, externalGatherPcapPort, exGatherSniffOut, true));
-        super.addComponent("ex.gather.stats", new ComponentStatisticsTracker(assembly, exGatherSniffOut, exGatherStatsOut, assembly.getCriterias(), statsTableAtomic));
-        super.addComponent("ex.gather.states", new ComponentStateTracker(assembly, exGatherStatsOut, exGatherStateOut, stateTable));
-        super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(assembly, exGatherStateOut, exGatherPrePrcOut, assembly.getCriterias(), gatherAttacks));
-        super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(assembly, exGatherPrePrcOut, assembly.getCriterias(), trainingDumpFile));
-
-//        super.addComponent("ex.bridge", new ComponentBridge(assembly, externalBridgePcapPort, internalBridgePcapPort));
+        super.addComponent("ex.gather.sniff", new ComponentSniffer(ifExternalPcapPort, exGatherSniffOut, true));
+        super.addComponent("ex.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
+        super.addComponent("ex.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
+        super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(exGatherStateOut, exGatherPrePrcOut, criterias, gatherAttacks));
+        super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(exGatherPrePrcOut, criterias, trainingDumpFile));
 
         //outbound path
-        super.addComponent("in.gather.sniff", new ComponentSniffer(assembly, internalGatherPcapPort, inGatherSniffOut, false));
-        super.addComponent("in.gather.states", new ComponentStateTracker(assembly, inGatherSniffOut, null, stateTable));
-
-//        super.addComponent("in.bridge", new ComponentBridge(assembly, internalBridgePcapPort, externalBridgePcapPort));
+        super.addComponent("in.gather.sniff", new ComponentSniffer(ifInternalPcapPort, inGatherSniffOut, false));
+        super.addComponent("in.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
     }
 }

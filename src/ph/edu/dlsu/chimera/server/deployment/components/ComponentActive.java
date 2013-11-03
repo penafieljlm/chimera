@@ -19,22 +19,12 @@ public abstract class ComponentActive extends Thread implements Component {
      */
     public final ArrayList<Exception> errors;
     /**
-     * The assembly which this component is a member of.
-     */
-    public final Assembly assembly;
-    /**
      * Flags whether or not the ComponentActive object is running.
      */
     protected boolean running;
 
-    /**
-     * Constructs a new ComponentActive object.
-     *
-     * @param assembly - the assembly which this component is a member of.
-     */
-    public ComponentActive(Assembly assembly) {
+    public ComponentActive() {
         this.errors = new ArrayList<>();
-        this.assembly = assembly;
         this.running = false;
     }
 

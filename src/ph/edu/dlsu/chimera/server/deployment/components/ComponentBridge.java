@@ -21,8 +21,7 @@ public class ComponentBridge extends ComponentActive {
     public final PcapPort outPcapPort;
     private long forwarded;
 
-    public ComponentBridge(Assembly assembly, PcapPort inPcapPort, PcapPort outPcapPort) {
-        super(assembly);
+    public ComponentBridge(PcapPort inPcapPort, PcapPort outPcapPort) {
         this.setPriority(Thread.MAX_PRIORITY);
         this.inPcapPort = inPcapPort;
         this.outPcapPort = outPcapPort;
@@ -39,8 +38,6 @@ public class ComponentBridge extends ComponentActive {
         }
         QueueingPortListener inQueue = new QueueingPortListener();
         this.inPcapPort.setListener(inQueue);
-        this.inPcapPort.start();
-        this.outPcapPort.start();
         while (super.running) {
             this.outPcapPort.send(inQueue.receive().packet);
             this.forwarded++;

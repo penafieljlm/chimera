@@ -20,10 +20,7 @@ public final class ComponentStateTable extends ComponentActive {
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
     public final long stateTimeoutMs;
 
-    public ComponentStateTable(Assembly assembly,
-            ConcurrentHashMap<SocketPair, Connection> stateTable,
-            long stateTimeoutMs) {
-        super(assembly);
+    public ComponentStateTable(ConcurrentHashMap<SocketPair, Connection> stateTable, long stateTimeoutMs) {
         this.setPriority(Thread.MIN_PRIORITY);
         this.stateTable = stateTable;
         this.stateTimeoutMs = stateTimeoutMs;

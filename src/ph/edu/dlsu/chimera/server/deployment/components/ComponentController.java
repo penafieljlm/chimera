@@ -1,31 +1,30 @@
-package ph.edu.dlsu.chimera.server.admin;
+package ph.edu.dlsu.chimera.server.deployment.components;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
 import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.admin.Session;
 
 /**
  * An instance of this class constitutes a module which listens for connections creates handlers which handle those connections.
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class AdministrativeModule extends ComponentActive {
+public class ComponentController extends ComponentActive {
+
+    public final Assembly assembly;
 
     /**
-     * The port which this AdministrativeModule is running on.
+     * The port which this ComponentController is running on.
      */
     public final int port;
 
     /**
-     * Constructs a new AdministrativeModule object.
+     * Constructs a new ComponentController object.
      * @param assembly - the assembly which this component belongs to.
      * @param port - the port number to listen for connections.
      */
-    public AdministrativeModule(Assembly assembly, int port) {
-        super(assembly);
+    public ComponentController(Assembly assembly, int port) {
+        this.assembly = assembly;
         this.port = port;
     }
 
