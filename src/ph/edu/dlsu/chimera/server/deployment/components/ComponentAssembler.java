@@ -32,13 +32,11 @@ public final class ComponentAssembler extends ComponentActive {
     public final ConcurrentHashMap<SocketPair, Connection> stateTable;
     private long processed;
 
-    public ComponentAssembler(Assembly assembly,
-            IntermodulePipe<PduAtomic> inQueue,
+    public ComponentAssembler(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<SocketPair, Connection> stateTable) {
-        super(assembly);
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;

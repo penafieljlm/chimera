@@ -27,11 +27,9 @@ public class ComponentInstanceDumper extends ComponentActive {
     private long processed;
     private boolean headerOk;
 
-    public ComponentInstanceDumper(Assembly assembly,
-            IntermodulePipe<PduAtomic> inQueue,
+    public ComponentInstanceDumper(IntermodulePipe<PduAtomic> inQueue,
             Criteria[] criterias,
             File trainingFile) {
-        super(assembly);
         this.inQueue = inQueue;
         if (this.inQueue != null) {
             this.inQueue.setReader(this);

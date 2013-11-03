@@ -19,10 +19,7 @@ public class ComponentAssemblerTable extends ComponentActive {
 
     public final ConcurrentHashMap<SocketPair, Assembler> assemblertable;
 
-    public ComponentAssemblerTable(
-            Assembly assembly,
-            ConcurrentHashMap<SocketPair, Assembler> assemblertable) {
-        super(assembly);
+    public ComponentAssemblerTable(ConcurrentHashMap<SocketPair, Assembler> assemblertable) {
         this.assemblertable = assemblertable;
     }
 

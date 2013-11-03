@@ -21,8 +21,7 @@ public final class ComponentInjector extends ComponentActive {
     public final PcapPort outPcapPort;
     private long sent;
 
-    public ComponentInjector(Assembly assembly, IntermodulePipe<PduAtomic> inQueue, PcapPort outPcapPort) {
-        super(assembly);
+    public ComponentInjector(IntermodulePipe<PduAtomic> inQueue, PcapPort outPcapPort) {
         this.setPriority(Thread.MAX_PRIORITY);
         this.inQueue = inQueue;
         if (this.inQueue != null) {
@@ -37,7 +36,6 @@ public final class ComponentInjector extends ComponentActive {
         if (this.outPcapPort == null) {
             throw new Exception("Error: [Injector] Unable to access sending device.");
         }
-        this.outPcapPort.start();
         while (super.running) {
             if (this.inQueue != null) {
                 if (this.inQueue.isEmpty()) {

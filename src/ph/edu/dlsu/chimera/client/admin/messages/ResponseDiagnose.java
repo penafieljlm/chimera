@@ -9,18 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageFinished;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.admin.messages.ServerMessage;
+import ph.edu.dlsu.chimera.server.admin.messages.Command;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class MessageDiagnostics implements ClientShellMessage {
+public class ResponseDiagnose implements Response {
 
     public final String componentName;
     public final ArrayList<Diagnostic> diagnostics;
 
-    public MessageDiagnostics(String componentName, ArrayList<Diagnostic> diagnostics) {
+    public ResponseDiagnose(String componentName, ArrayList<Diagnostic> diagnostics) {
         this.componentName = componentName;
         this.diagnostics = diagnostics;
     }
@@ -28,9 +28,9 @@ public class MessageDiagnostics implements ClientShellMessage {
     /**
      * Allows a shell client program to handle a Message object.
      * @param outStream - the output stream where to print reports.
-     * @return the appropriate response ServerMessage object.
+     * @return the appropriate response Command object.
      */
-    public ServerMessage handleShellMessage(PrintStream outStream) {
+    public Command handleShellMessage(PrintStream outStream) {
         if (this.diagnostics == null) {
             outStream.println("The component: '" + this.componentName + "' was not found or is not active!");
         }

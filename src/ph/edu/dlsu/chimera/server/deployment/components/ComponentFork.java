@@ -20,10 +20,8 @@ public class ComponentFork extends ComponentActive {
     public final IntermodulePipe<PduAtomic>[] outQueues;
     private long processed;
 
-    public ComponentFork(Assembly assembly,
-            IntermodulePipe<PduAtomic> inQueue,
+    public ComponentFork(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic>... outQueues) {
-        super(assembly);
         this.inQueue = inQueue;
         this.outQueues = outQueues;
         if (this.inQueue != null) {

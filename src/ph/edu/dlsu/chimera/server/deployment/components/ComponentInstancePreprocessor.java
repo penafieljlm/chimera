@@ -27,12 +27,10 @@ public class ComponentInstancePreprocessor extends ComponentActive {
     public final String[] instanceHeaders;
     private long processed;
 
-    public ComponentInstancePreprocessor(Assembly assembly,
-            IntermodulePipe<PduAtomic> inQueue,
+    public ComponentInstancePreprocessor(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
             boolean tagTrafficAsAttacks) {
-        super(assembly);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
         if (this.inQueue != null) {

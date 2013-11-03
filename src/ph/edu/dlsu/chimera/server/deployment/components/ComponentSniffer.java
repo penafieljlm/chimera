@@ -25,11 +25,9 @@ public final class ComponentSniffer extends ComponentActive {
     public final IntermodulePipe<PduAtomic> outQueue;
     private long received;
 
-    public ComponentSniffer(Assembly assembly,
-            PcapPort inPcapPort,
+    public ComponentSniffer(PcapPort inPcapPort,
             IntermodulePipe<PduAtomic> outQueue,
             boolean inbound) {
-        super(assembly);
         this.setPriority(Thread.MAX_PRIORITY);
         this.inbound = inbound;
         this.inPcapPort = inPcapPort;
@@ -47,7 +45,6 @@ public final class ComponentSniffer extends ComponentActive {
         }
         QueueingPortListener inQueue = new QueueingPortListener();
         this.inPcapPort.setListener(inQueue);
-        this.inPcapPort.start();
         while (super.running) {
             IngressPacket pkt = inQueue.receive();
             this.received++;

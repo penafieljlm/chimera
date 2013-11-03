@@ -22,11 +22,9 @@ public class ComponentStatisticsTable extends ComponentActive {
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
     public final long statsTimeoutMs;
 
-    public ComponentStatisticsTable(Assembly assembly,
-            Criteria[] criterias,
+    public ComponentStatisticsTable(Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable,
             long statsTimeoutMs) {
-        super(assembly);
         this.setPriority(Thread.MIN_PRIORITY);
         this.criterias = criterias;
         this.statsTable = statsTable;
