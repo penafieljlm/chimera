@@ -23,6 +23,7 @@ public class ComponentBridge extends ComponentActive {
 
     public ComponentBridge(Assembly assembly, PcapPort inPcapPort, PcapPort outPcapPort) {
         super(assembly);
+        this.setPriority(Thread.MAX_PRIORITY);
         this.inPcapPort = inPcapPort;
         this.outPcapPort = outPcapPort;
         this.forwarded = 0;
