@@ -16,7 +16,7 @@ import ph.edu.dlsu.chimera.util.ToolsInterface;
 public class cifaces {
 
     public static final String USAGE = ""
-            + "\nCHIMERA Interfaces Command Usage"
+            + "\nCHIMERA Interfaces Command Usage (cifaces)"
             + "\nDescription:"
             + "\n    The cifaces command prints the configuration of all detected interfaces."
             + "\n    The index of an interface is indicated by ."

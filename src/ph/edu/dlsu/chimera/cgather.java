@@ -22,7 +22,7 @@ import ph.edu.dlsu.chimera.util.ToolsParse;
 public class cgather {
 
     public static final String USAGE = ""
-            + "\nCHIMERA Gather Command Usage"
+            + "\nCHIMERA Gather Command Usage (cgather)"
             + "\nDescription:"
             + "\n    The cgather command starts the CHIMERA's data gathering phase."
             + "\n    The training set used in the Training Phase is compiled in this phase."
@@ -35,8 +35,6 @@ public class cgather {
             + "\n        [REQUIRED] The output file name of the training set to be produced."
             + "\n    /attacks"
             + "\n        [OPTIONAL] Mark the data in the produced training set as attacks."
-            + "\n        Provide the value 'true' (case insensitive) to enable."
-            + "\n        [DEFAULT VALUE : 'false']"
             + "\n    -external"
             + "\n        [OPTIONAL] The index of the external interface."
             + "\n        Refer to the output of the 'cifaces' command."

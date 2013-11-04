@@ -17,7 +17,7 @@ import ph.edu.dlsu.chimera.util.ToolsParse;
 public class cdiag {
 
     public static final String USAGE = ""
-            + "\nCHIMERA Diagnose Command Usage"
+            + "\nCHIMERA Diagnose Command Usage (cdiag)"
             + "\nDescription:"
             + "\n    The cdiag command prints the state of a specified component."
             + "\n    The command will only work if there is an ongoing phase."
