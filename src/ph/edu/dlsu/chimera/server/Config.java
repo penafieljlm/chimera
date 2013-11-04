@@ -18,14 +18,14 @@ import java.io.IOException;
  */
 public final class Config {
 
-    public int adminPort;
+    public int controlPort;
     public String ifExternal;
     public String ifInternal;
     public long statsTimeoutMs;
     public long stateTimeoutMs;
 
     public Config() {
-        this.adminPort = -1;
+        this.controlPort = -1;
         this.ifExternal = null;
         this.ifInternal = null;
         this.statsTimeoutMs = 300000;

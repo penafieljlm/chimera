@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**

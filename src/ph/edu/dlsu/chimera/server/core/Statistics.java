@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.IDiagnosable;
-import ph.edu.dlsu.chimera.server.deployment.components.data.pdu.Pdu;
+import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.Pdu;
 import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**

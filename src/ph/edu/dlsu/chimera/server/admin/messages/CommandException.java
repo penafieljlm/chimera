@@ -9,10 +9,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.client.admin.messages.Response;
 import ph.edu.dlsu.chimera.client.admin.messages.ResponseText;
-import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
-import ph.edu.dlsu.chimera.server.deployment.components.Component;
-import ph.edu.dlsu.chimera.server.deployment.components.ComponentActive;
+import ph.edu.dlsu.chimera.server.assembly.Assembly;
+import ph.edu.dlsu.chimera.server.assembly.components.Component;
+import ph.edu.dlsu.chimera.server.assembly.components.ComponentActive;
 
 /**
  *
@@ -31,10 +31,10 @@ public class CommandException implements Command {
     }
 
     public Response handleMessage(Session session, Assembly assembly) throws Exception {
-        if (assembly.deployment == null) {
+        if (assembly == null) {
             throw new Exception("A deployment phase is not being executed!");
         }
-        Component comp = assembly.deployment.getComponent(this.component);
+        Component comp = assembly.getComponent(this.component);
         if (comp instanceof ComponentActive) {
             ComponentActive active = (ComponentActive) comp;
             ArrayList<Exception> errors;

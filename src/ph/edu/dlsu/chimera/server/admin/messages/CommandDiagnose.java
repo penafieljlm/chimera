@@ -7,8 +7,8 @@ package ph.edu.dlsu.chimera.server.admin.messages;
 
 import ph.edu.dlsu.chimera.client.admin.messages.Response;
 import ph.edu.dlsu.chimera.client.admin.messages.ResponseDiagnose;
-import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
+import ph.edu.dlsu.chimera.server.assembly.Assembly;
 
 /**
  *
@@ -23,9 +23,9 @@ public class CommandDiagnose implements Command {
     }
 
     public Response handleMessage(Session session, Assembly assembly) throws Exception {
-        if(assembly.deployment == null)
+        if(assembly == null)
             throw new Exception("A deployment phase is not being executed!");
-        return new ResponseDiagnose(this.component, assembly.deployment.getComponent(this.component).getDiagnostics());
+        return new ResponseDiagnose(this.component, assembly.getComponent(this.component).getDiagnostics());
     }
 
 }

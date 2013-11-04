@@ -17,11 +17,15 @@ public abstract class ToolsParse {
         HashMap<String, String> _args = new HashMap<>();
         String varname = null;
         for (int i = 0; i < args.length; i++) {
-            if(varname == null && args[i].startsWith("-")) {
+            if (varname == null && args[i].startsWith("/")) {
+                _args.put(args[i], "true");
+                continue;
+            }
+            if (varname == null && args[i].startsWith("-")) {
                 varname = args[i];
                 continue;
             }
-            if(varname != null) {
+            if (varname != null) {
                 _args.put(varname, args[i]);
                 varname = null;
                 continue;

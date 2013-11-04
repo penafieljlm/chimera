@@ -3,8 +3,8 @@ package ph.edu.dlsu.chimera.core.admin.messages;
 import java.io.PrintStream;
 import ph.edu.dlsu.chimera.client.admin.messages.Response;
 import ph.edu.dlsu.chimera.server.admin.messages.Command;
-import ph.edu.dlsu.chimera.server.Assembly;
 import ph.edu.dlsu.chimera.server.admin.Session;
+import ph.edu.dlsu.chimera.server.assembly.Assembly;
 
 /**
  * An instance of this class constitutes a signal meaning that a host is finished communicating with its partner.
