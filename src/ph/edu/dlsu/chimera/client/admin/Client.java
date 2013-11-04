@@ -17,12 +17,12 @@ import ph.edu.dlsu.chimera.server.admin.messages.Command;
  */
 public class Client implements Runnable {
 
-    public final int deploymentPort;
+    public final int assemblyPort;
     public final PrintStream outStream;
     public final Command command;
 
     public Client(int serverport, PrintStream outStream, Command command) {
-        this.deploymentPort = serverport;
+        this.assemblyPort = serverport;
         this.outStream = outStream;
         this.command = command;
     }
@@ -33,7 +33,7 @@ public class Client implements Runnable {
             //trigger event: connecting
             this.eventConnecting();
             //connect
-            Socket client = new Socket("localhost", this.deploymentPort);
+            Socket client = new Socket("localhost", this.assemblyPort);
             Transceiver transc = new Transceiver(client);
 
             //start communication

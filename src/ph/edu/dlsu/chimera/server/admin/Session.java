@@ -9,7 +9,7 @@ import ph.edu.dlsu.chimera.client.admin.messages.ResponseException;
 import ph.edu.dlsu.chimera.core.Transceiver;
 import ph.edu.dlsu.chimera.core.admin.messages.MessageBlank;
 import ph.edu.dlsu.chimera.server.admin.messages.Command;
-import ph.edu.dlsu.chimera.server.Assembly;
+import ph.edu.dlsu.chimera.server.assembly.Assembly;
 
 /**
  * An instance of this class constitutes a session between a client and the server.
@@ -17,38 +17,20 @@ import ph.edu.dlsu.chimera.server.Assembly;
  */
 public class Session extends Thread {
 
-    /**
-     * The Transceiver which handles sending and receiving from the Socket given in the constructor.
-     */
     private final Transceiver transceiver;
-    /**
-     * The assembly which the parent AdministrativeModule is a member of.
-     */
     private final Assembly assembly;
 
-    /**
-     * Constructs a new Session object.
-     * @param client - an incoming connection to be handled.
-     */
     public Session(Socket client, Assembly assembly) {
         this.transceiver = new Transceiver(client);
         this.assembly = assembly;
     }
 
-    /**
-     * Handles received connections.
-     */
     @Override
     public void run() {
         while (this.reply(this.handle(this.receive()))) {
         }
     }
 
-    /**
-     * Performs a blocking receive.
-     * Logs all Transceiver exceptions.
-     * @return the received Message object.
-     */
     private Command receive() {
         Command recv = null;
         try {
