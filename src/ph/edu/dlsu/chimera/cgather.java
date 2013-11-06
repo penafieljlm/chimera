@@ -118,6 +118,9 @@ public class cgather {
                 gatherAttacks = Boolean.parseBoolean(_args.get("/attacks"));
             }
 
+            ifExternalPort.start();
+            ifInternalPort.start();
+            
             //prepare assembly
             AssemblyGathering assembly = null;
             assembly = new AssemblyGathering(config.controlPort,
@@ -131,6 +134,8 @@ public class cgather {
             assembly.run();
 
             //end
+            ifExternalPort.stop();
+            ifInternalPort.stop();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
