@@ -25,7 +25,7 @@ public final class Config {
     public long stateTimeoutMs;
 
     public Config() {
-        this.controlPort = -1;
+        this.controlPort = 9999;
         this.ifExternal = null;
         this.ifInternal = null;
         this.statsTimeoutMs = 300000;
