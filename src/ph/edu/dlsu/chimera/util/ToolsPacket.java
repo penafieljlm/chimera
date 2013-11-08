@@ -61,38 +61,6 @@ public abstract class ToolsPacket {
         return null;
     }
 
-    public static int getTcpPort(PcapPacket pkt, boolean source) {
-        try {
-            if (pkt.hasHeader(new Tcp())) {
-                Tcp tcp = pkt.getHeader(new Tcp());
-                if (source) {
-                    return tcp.source();
-                } else {
-                    return tcp.destination();
-                }
-            }
-        } catch (Exception ex) {
-
-        }
-        return -1;
-    }
-
-    public static int getUdpPort(PcapPacket pkt, boolean source) {
-        try {
-            if (pkt.hasHeader(new Udp())) {
-                Udp udp = pkt.getHeader(new Udp());
-                if (source) {
-                    return udp.source();
-                } else {
-                    return udp.destination();
-                }
-            }
-        } catch (Exception ex) {
-
-        }
-        return -1;
-    }
-
     public static Ethernet reverse(Ethernet arg) {
         byte[] src = arg.source();
         byte[] dst = arg.destination();
