@@ -5,6 +5,8 @@
 package ph.edu.dlsu.chimera.server.assembly.components;
 
 import java.util.ArrayList;
+import org.jnetpcap.protocol.tcpip.Tcp;
+import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.core.Connection;
 import ph.edu.dlsu.chimera.server.core.Criteria;
@@ -79,6 +81,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         header.add("pdu_size");
         header.add("dest_tcp");
         header.add("dest_udp");
+        header.add("flag_tcp");
         header.add("conn_in_enc_timed");
         header.add("conn_ou_enc_timed");
         header.add("conn_in_enc_count");
@@ -104,6 +107,8 @@ public class ComponentInstancePreprocessor extends ComponentActive {
     private String[] getInstance(PduAtomic pkt) {
         ArrayList<String> set = new ArrayList<>();
         Connection conn = pkt.getConnection();
+        Tcp tcp = pkt.packet.getHeader(new Tcp());
+        Udp udp = pkt.packet.getHeader(new Udp());
 
         //field - protocol
         set.add("" + pkt.getProtocolName());
@@ -112,10 +117,13 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         set.add("" + pkt.packet.size());
 
         //field - destination tcp port
-        set.add("" + ToolsPacket.getTcpPort(pkt.packet, false));
+        set.add("" + ((tcp == null) ? null : tcp.destination()));
 
         //field - destination udp port
-        set.add("" + ToolsPacket.getUdpPort(pkt.packet, false));
+        set.add("" + ((udp == null) ? null : udp.destination()));
+
+        //field - tcp flags value
+        set.add("" + ((tcp == null) ? null : tcp.flags()));
 
         //field - connection inbound encounter interval
         set.add("" + ((conn == null) ? null : conn.inboundLastEncounterDeltaNs()));

@@ -5,6 +5,7 @@
 package ph.edu.dlsu.chimera.server.core.reflection;
 
 import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.tcpip.Tcp;
 
 /**
  *
@@ -28,7 +29,17 @@ public final class PacketFilter {
     public boolean matches(PcapPacket pkt) throws Exception {
         Object val = this.subject.getFieldValue(pkt);
         if (val != null) {
-            return val.equals(this.value.value);
+            if (val instanceof Number && this.value.value instanceof Number) {
+                Number x = (Number) val;
+                Number y = (Number) this.value.value;
+                if (x.doubleValue() == y.doubleValue()) {
+                    return true;
+                }
+                if (x.longValue() == y.longValue()) {
+                    return true;
+                }
+            }
+            return this.value.value.equals(val);
         }
         return false;
     }
