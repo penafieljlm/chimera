@@ -91,7 +91,7 @@ public final class PacketField {
                     JHeader jh = pkt.getHeader(inst);
                     for (JField f : jh.getFields()) {
                         if (f.getName().equals(this.fieldName)) {
-                            byte[] value = jh.getByteArray(f.getOffset(jh), f.getLength(jh));
+                            byte[] value = jh.getByteArray(f.getOffset(jh) / 8, f.getLength(jh) / 8);
                             return new BigInteger(value);
                         }
                     }

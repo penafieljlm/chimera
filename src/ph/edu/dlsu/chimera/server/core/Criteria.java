@@ -28,7 +28,7 @@ public final class Criteria {
     public static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
     public final String expression;
     public final PacketField[] subjects;
-    public final PacketFilterExpression filters;
+    public final PacketFilter filter;
 
     //syntax: subject(<subject 1>, ... , <subject n>) filter(<filter 1>, ... , <filter n>)
     public Criteria(String expression) throws Exception {
@@ -56,9 +56,9 @@ public final class Criteria {
                 filterexp = filterexp.replaceFirst("filter", "");
                 filterexp = filterexp.substring(1, filterexp.length() - 1);
                 filterexp = filterexp.trim();
-                this.filters = new PacketFilterExpression(filterexp);
+                this.filter = PacketFilter.parseExpression(filterexp);
             } else {
-                this.filters = null;
+                this.filter = null;
             }
             this.expression = expression;
         } else {
@@ -67,8 +67,10 @@ public final class Criteria {
     }
 
     public CriteriaInstance createInstance(PcapPacket pkt) throws Exception {
-        if (!this.filters.matches(pkt)) {
-            return null;
+        if (this.filter != null) {
+            if (!this.filter.matches(pkt)) {
+                return null;
+            }
         }
         Object[] cId = new Object[this.subjects.length];
         for (int i = 0; i < this.subjects.length; i++) {

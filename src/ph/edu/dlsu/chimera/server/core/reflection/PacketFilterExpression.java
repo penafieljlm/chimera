@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera.server.core.reflection;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
@@ -22,13 +23,20 @@ public final class PacketFilterExpression extends PacketFilter {
         if (expression.startsWith("(") && expression.endsWith(")")) {
             exp = exp.substring(1, exp.length() - 1);
         }
-        String[] ops = exp.split("([^!&|\\^()]+)|(\\(.+\\))");
-        Pattern eptrn = Pattern.compile("([^!&|\\^()]+)|(\\(.+\\))");
-        Matcher emtch = eptrn.matcher(exp);
-        String[] exps = new String[emtch.groupCount()];
-        for (int i = 0; i < exp.length(); i++) {
-            exps[i] = emtch.group(i);
+        String[] ops = exp.split("[ ]*(([^!&|\\^()]+)|(\\(.+\\)))[ ]*");
+        if (!ops[0].isEmpty()) {
+            throw new Exception("Parse Error: Syntax structure error in expression '" + exp + "'");
         }
+        String[] _ops = new String[ops.length - 1];
+        System.arraycopy(ops, 1, _ops, 0, _ops.length);
+        ops = _ops;
+        Pattern eptrn = Pattern.compile("[ ]*(([^!&|\\^()]+)|(\\(.+\\)))[ ]*");
+        Matcher emtch = eptrn.matcher(exp);
+        ArrayList<String> _exps = new ArrayList<>();
+        while (emtch.find()) {
+            _exps.add(emtch.group().trim());
+        }
+        String[] exps = _exps.toArray(new String[0]);
         if (exps.length > 0) {
             if (ops.length != exps.length - 1) {
                 throw new Exception("Parse Error: Syntax structure error in expression '" + exp + "'");

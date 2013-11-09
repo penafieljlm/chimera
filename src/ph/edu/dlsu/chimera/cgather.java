@@ -8,8 +8,6 @@ import com.gremwell.jnetbridge.PcapPort;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapBpfProgram;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Config;
 import ph.edu.dlsu.chimera.server.core.Criteria;
@@ -197,6 +195,7 @@ public class cgather {
             ifExternalPort.stop();
             ifInternalPort.stop();
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
             return;
