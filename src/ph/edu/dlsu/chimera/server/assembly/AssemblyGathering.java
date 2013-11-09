@@ -21,6 +21,7 @@ import ph.edu.dlsu.chimera.server.assembly.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.server.assembly.components.ComponentStatisticsTracker;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
 
 /**
  *
@@ -33,7 +34,9 @@ public class AssemblyGathering extends Assembly {
             PcapPort ifInternalPcapPort,
             Criteria[] criterias,
             File trainingDumpFile,
-            boolean gatherAttacks,
+            PacketFilter excludeFilter,
+            PacketFilter filter,
+            boolean tagFilteredAsAttacks,
             long statsTimeoutMs,
             long stateTimeoutMs) throws Exception {
         super("Data Gathering", controlPort);
@@ -56,14 +59,14 @@ public class AssemblyGathering extends Assembly {
         super.addComponent("states", new ComponentStateTable(stateTable, stateTimeoutMs));
 
         //inbound path
-        super.addComponent("ex.gather.sniff", new ComponentSniffer(ifExternalPcapPort, exGatherSniffOut, true));
+        super.addComponent("ex.gather.sniff", new ComponentSniffer(ifExternalPcapPort, exGatherSniffOut, excludeFilter, false, true));
         super.addComponent("ex.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
         super.addComponent("ex.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-        super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(exGatherStateOut, exGatherPrePrcOut, criterias, gatherAttacks));
+        super.addComponent("ex.gather.preprc", new ComponentInstancePreprocessor(exGatherStateOut, exGatherPrePrcOut, criterias, filter, tagFilteredAsAttacks));
         super.addComponent("ex.gather.dumper", new ComponentInstanceDumper(exGatherPrePrcOut, criterias, trainingDumpFile));
 
         //outbound path
-        super.addComponent("in.gather.sniff", new ComponentSniffer(ifInternalPcapPort, inGatherSniffOut, false));
+        super.addComponent("in.gather.sniff", new ComponentSniffer(ifInternalPcapPort, inGatherSniffOut, excludeFilter, false, false));
         super.addComponent("in.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
     }
 }

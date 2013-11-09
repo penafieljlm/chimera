@@ -14,6 +14,7 @@ import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Config;
 import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.assembly.AssemblyGathering;
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.util.ToolsInterface;
 import ph.edu.dlsu.chimera.util.ToolsParse;
 
@@ -108,6 +109,12 @@ public class cgather {
             //parse args
             HashMap<String, String> _args = ToolsParse.parseArgs(args);
 
+            //load dump file
+            if (!_args.containsKey("-output")) {
+                throw new Exception("The argument '-output' must be provided.");
+            }
+            File trainingDumpFile = new File(_args.get("-output"));
+
             //load interfaces
             int ifExternalIdx = -1;
             int ifInternalIdx = -1;
@@ -151,21 +158,27 @@ public class cgather {
                 throw new Exception("Cannot open internal interface.");
             }
 
-            //load dump file
-            if (!_args.containsKey("-output")) {
-                throw new Exception("The argument '-output' must be provided.");
+            //exclude filter
+            PacketFilter exclude = null;
+            if (_args.containsKey("-exclude")) {
+                exclude = PacketFilter.parseExpression(_args.get("-exclude"));
             }
-            File trainingDumpFile = new File(_args.get("-output"));
+
+            //filter
+            PacketFilter filter = null;
+            if (_args.containsKey("-filter")) {
+                filter = PacketFilter.parseExpression(_args.get("-filter"));
+            }
 
             //gather attacks flag
-            boolean gatherAttacks = false;
+            boolean tagFilteredAsAttacks = false;
             if (_args.containsKey("/attacks")) {
-                gatherAttacks = Boolean.parseBoolean(_args.get("/attacks"));
+                tagFilteredAsAttacks = Boolean.parseBoolean(_args.get("/attacks"));
             }
 
             ifExternalPort.start();
             ifInternalPort.start();
-            
+
             //prepare assembly
             AssemblyGathering assembly = null;
             assembly = new AssemblyGathering(config.controlPort,
@@ -173,7 +186,9 @@ public class cgather {
                     ifInternalPort,
                     criterias,
                     trainingDumpFile,
-                    gatherAttacks,
+                    exclude,
+                    filter,
+                    tagFilteredAsAttacks,
                     config.statsTimeoutMs,
                     config.stateTimeoutMs);
             assembly.run();
