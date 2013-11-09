@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera.server.core.reflection;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -13,7 +14,7 @@ import java.net.UnknownHostException;
  */
 public final class ParsedValue {
 
-    public final Object value;
+    public final BigInteger value;
 
     //value formats
     //ip:<ip-address>
@@ -30,21 +31,21 @@ public final class ParsedValue {
         switch (type) {
             case "ip":
                 try {
-                    this.value = InetAddress.getByName(val).getAddress();
+                    this.value = new BigInteger(InetAddress.getByName(val).getAddress());
                 } catch (UnknownHostException ex) {
                     throw new Exception("Parse Error: Invalid IP Address '" + val + "'!");
                 }
                 break;
             case "dec":
                 try {
-                    this.value = Long.valueOf(val);
+                    this.value = new BigInteger(val);
                 } catch (NumberFormatException ex) {
                     throw new Exception("Parse Error: Value '" + val + "' is not a decimal number!");
                 }
                 break;
             case "hex":
                 try {
-                    this.value = Long.valueOf(val, 16);
+                    this.value = new BigInteger(val, 16);
                 } catch (NumberFormatException ex) {
                     throw new Exception("Parse Error: Value '" + val + "' is not a hexadecimal number!");
                 }

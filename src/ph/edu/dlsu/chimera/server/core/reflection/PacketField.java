@@ -5,6 +5,7 @@
 package ph.edu.dlsu.chimera.server.core.reflection;
 
 import java.lang.reflect.Constructor;
+import java.math.BigInteger;
 import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.structure.JField;
@@ -81,7 +82,7 @@ public final class PacketField {
         this.fieldName = field;
     }
 
-    public Object getFieldValue(PcapPacket pkt) {
+    public BigInteger getFieldValue(PcapPacket pkt) {
         try {
             JHeader type = (JHeader) this.headerConstructor.newInstance();
             try {
@@ -90,12 +91,12 @@ public final class PacketField {
                     JHeader jh = pkt.getHeader(inst);
                     for (JField f : jh.getFields()) {
                         if (f.getName().equals(this.fieldName)) {
-                            return f.getValue(jh);
+                            byte[] value = jh.getByteArray(f.getOffset(jh), f.getLength(jh));
+                            return new BigInteger(value);
                         }
                     }
                 }
             } catch (Exception ex) {
-
             }
         } catch (Exception ex) {
         }

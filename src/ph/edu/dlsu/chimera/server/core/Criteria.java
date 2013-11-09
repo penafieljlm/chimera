@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera.server.core;
 
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilterExpression;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,8 +13,9 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilterCondition;
 import ph.edu.dlsu.chimera.server.core.reflection.PacketField;
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
 
 /**
  *
@@ -26,7 +28,7 @@ public final class Criteria {
     public static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
     public final String expression;
     public final PacketField[] subjects;
-    public final PacketFilter[] filters;
+    public final PacketFilterExpression filters;
 
     //syntax: subject(<subject 1>, ... , <subject n>) filter(<filter 1>, ... , <filter n>)
     public Criteria(String expression) throws Exception {
@@ -54,12 +56,7 @@ public final class Criteria {
                 filterexp = filterexp.replaceFirst("filter", "");
                 filterexp = filterexp.substring(1, filterexp.length() - 1);
                 filterexp = filterexp.trim();
-                String[] fexps = filterexp.split(",");
-                PacketFilter[] _filters = new PacketFilter[fexps.length];
-                for (int i = 0; i < fexps.length; i++) {
-                    _filters[i] = new PacketFilter(fexps[i].trim());
-                }
-                this.filters = _filters;
+                this.filters = new PacketFilterExpression(filterexp);
             } else {
                 this.filters = null;
             }
@@ -70,12 +67,8 @@ public final class Criteria {
     }
 
     public CriteriaInstance createInstance(PcapPacket pkt) throws Exception {
-        if (this.filters != null) {
-            for (PacketFilter f : this.filters) {
-                if (!f.matches(pkt)) {
-                    return null;
-                }
-            }
+        if (!this.filters.matches(pkt)) {
+            return null;
         }
         Object[] cId = new Object[this.subjects.length];
         for (int i = 0; i < this.subjects.length; i++) {
@@ -90,15 +83,15 @@ public final class Criteria {
         if (!criteriasFile.exists()) {
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source)");
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source)");
-            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source) filter(org.jnetpcap.protocol.tcpip.Tcp.flags==hex:02)");
 
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination)");
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
-            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags==hex:02)");
 
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.network.Ip4.destination)");
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination)");
-            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags=hex:02)");
+            expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source, org.jnetpcap.protocol.network.Ip4.destination, org.jnetpcap.protocol.tcpip.Tcp.destination) filter(org.jnetpcap.protocol.tcpip.Tcp.flags==hex:02)");
 
             String[] exps = new String[expressions.size()];
             for (int i = 0; i < exps.length; i++) {
