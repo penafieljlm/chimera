@@ -25,7 +25,9 @@ public class cdiag {
             + "\n    cdiag (((-<varname> <value>) | (/<flag>))[ ])*(((-<varname> <value>) | (/<flag>)))"
             + "\nParameters"
             + "\n    -component"
-            + "\n        [REQUIRED] The name of the component to be diagnosed.";
+            + "\n        DESCRIPTION"
+            + "\n            The name of the component to be diagnosed."
+            + "\n        REQUIRED.. Yes";
 
     public static void main(String[] args) {
         try {

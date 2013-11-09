@@ -8,6 +8,8 @@ import com.gremwell.jnetbridge.PcapPort;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapBpfProgram;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Config;
 import ph.edu.dlsu.chimera.server.core.Criteria;
@@ -32,17 +34,60 @@ public class cgather {
             + "\n    cgather (((-<varname> <value>) | (/<flag>))[ ])*(((-<varname> <value>) | (/<flag>)))"
             + "\nParameters"
             + "\n    -output"
-            + "\n        [REQUIRED] The output file name of the training set to be produced."
-            + "\n    /attacks"
-            + "\n        [OPTIONAL] Mark the data in the produced training set as attacks."
+            + "\n        DESCRIPTION"
+            + "\n            The output file name of the training set to be produced."
+            + "\n        REQUIRED........ Yes"
             + "\n    -external"
-            + "\n        [OPTIONAL] The index of the external interface."
-            + "\n        Refer to the output of the 'cifaces' command."
-            + "\n        [DEFAULT VALUE : as specified in the 'chimera.config' file]"
+            + "\n        DESCRIPTION"
+            + "\n            The index of the external interface."
+            + "\n            Refer to the output of the 'cifaces' command."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... as specified in the 'chimera.config' file"
             + "\n    -internal"
-            + "\n        [OPTIONAL] The index of the internal interface."
-            + "\n        Refer to the output of the 'cifaces' command."
-            + "\n        [DEFAULT VALUE : as specified in the 'chimera.config' file]";
+            + "\n        DESCRIPTION"
+            + "\n            The index of the internal interface."
+            + "\n            Refer to the output of the 'cifaces' command."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... as specified in the 'chimera.config' file"
+            + "\n    -exclude"
+            + "\n        DESCRIPTION"
+            + "\n            A CHIMERA-JNetPcap Packet Filter Expression."
+            + "\n            Excludes matching packets from the produced training set."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    -filter"
+            + "\n        DESCRIPTION"
+            + "\n            A CHIMERA-JNetPcap Packet Filter Expression."
+            + "\n            If provided, the following apply:"
+            + "\n                If the /attacks flag is set, the following apply:"
+            + "\n                    Matching packets are flagged as attacks."
+            + "\n                    Non matching packets are flagged as normal."
+            + "\n                If the /attacks flag is not set, the following apply:"
+            + "\n                    Matching packets are flagged as normal."
+            + "\n                    Non matching packets are flagged as attacks."
+            + "\n            If not provided, the following apply:"
+            + "\n                If the /attacks flag is set, the following apply:"
+            + "\n                    All packets are flagged as attacks."
+            + "\n                If the /attacks flag is not set, the following apply:"
+            + "\n                    All packets are flagged as normal."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    /attacks"
+            + "\n        DESCRIPTION"
+            + "\n            If set, the following apply:"
+            + "\n                If -filter is provided, the following apply:"
+            + "\n                    Packets matching -filter are flagged as attacks."
+            + "\n                    Packets not matching -filter are flagged as normal."
+            + "\n                If -filter is not provided, the following apply:"
+            + "\n                    All packets are flagged as attacks."
+            + "\n            If not set, the following apply:"
+            + "\n                If -filter is provided, the following apply:"
+            + "\n                    Packets matching -filter are flagged as normal."
+            + "\n                    Packets not matching -filter are flagged as attacks."
+            + "\n                If -filter is not provided, the following apply:"
+            + "\n                    All packets are flagged as normal."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A";
 
     public static void main(String[] args) {
         try {
