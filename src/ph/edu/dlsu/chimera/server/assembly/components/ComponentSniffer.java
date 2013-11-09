@@ -12,6 +12,7 @@ import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
 
 /**
  *
@@ -22,10 +23,14 @@ public final class ComponentSniffer extends ComponentActive {
     public final boolean inbound;
     public final PcapPort inPcapPort;
     public final IntermodulePipe<PduAtomic> outQueue;
+    public final PacketFilter filter;
+    public final boolean allowFiltered;
     private long received;
 
     public ComponentSniffer(PcapPort inPcapPort,
             IntermodulePipe<PduAtomic> outQueue,
+            PacketFilter filter,
+            boolean allowFiltered,
             boolean inbound) {
         this.setPriority(Thread.MAX_PRIORITY);
         this.inbound = inbound;
@@ -34,7 +39,15 @@ public final class ComponentSniffer extends ComponentActive {
         if (this.outQueue != null) {
             this.outQueue.setWriter(this);
         }
+        this.filter = filter;
+        this.allowFiltered = allowFiltered;
         this.received = 0;
+    }
+
+    public ComponentSniffer(PcapPort inPcapPort,
+            IntermodulePipe<PduAtomic> outQueue,
+            boolean inbound) {
+        this(inPcapPort, outQueue, null, true, inbound);
     }
 
     @Override
@@ -48,7 +61,16 @@ public final class ComponentSniffer extends ComponentActive {
             IngressPacket pkt = inQueue.receive();
             this.received++;
             if (this.outQueue != null) {
-                this.outQueue.add(new PduAtomic(new PcapPacket(pkt.packet), this.inbound));
+                PcapPacket pcappkt = new PcapPacket(pkt.packet);
+                if (this.filter != null) {
+                    if (!(this.filter.matches(pcappkt) ^ this.allowFiltered)) {
+                        this.outQueue.add(new PduAtomic(pcappkt, this.inbound));
+                    }
+                } else {
+                    if (this.allowFiltered) {
+                        this.outQueue.add(new PduAtomic(pcappkt, this.inbound));
+                    }
+                }
             }
         }
     }

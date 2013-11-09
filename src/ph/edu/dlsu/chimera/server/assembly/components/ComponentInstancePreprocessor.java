@@ -13,7 +13,7 @@ import ph.edu.dlsu.chimera.server.core.Criteria;
 import ph.edu.dlsu.chimera.server.core.Statistics;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.ToolsPacket;
+import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
 
 /**
  *
@@ -24,14 +24,16 @@ public class ComponentInstancePreprocessor extends ComponentActive {
     public final IntermodulePipe<PduAtomic> inQueue;
     public final IntermodulePipe<PduAtomic> outQueue;
     public final Criteria[] criterias;
-    public final boolean tagTrafficAsAttacks;
     public final String[] instanceHeaders;
+    public final PacketFilter filter;
+    public final boolean tagFilteredAsAttacks;
     private long processed;
 
     public ComponentInstancePreprocessor(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
-            boolean tagTrafficAsAttacks) {
+            PacketFilter filter,
+            boolean tagFilteredAsAttacks) {
         this.inQueue = inQueue;
         this.outQueue = outQueue;
         if (this.inQueue != null) {
@@ -41,9 +43,16 @@ public class ComponentInstancePreprocessor extends ComponentActive {
             this.outQueue.setWriter(this);
         }
         this.criterias = criterias;
-        this.tagTrafficAsAttacks = tagTrafficAsAttacks;
         this.instanceHeaders = this.getInstanceHeaders();
         this.processed = 0;
+        this.filter = filter;
+        this.tagFilteredAsAttacks = tagFilteredAsAttacks;
+    }
+
+    public ComponentInstancePreprocessor(IntermodulePipe<PduAtomic> inQueue,
+            IntermodulePipe<PduAtomic> outQueue,
+            Criteria[] criterias) {
+        this(inQueue, outQueue, criterias, null, false);
     }
 
     @Override
@@ -176,7 +185,7 @@ public class ComponentInstancePreprocessor extends ComponentActive {
         }
 
         //verdict
-        set.add("" + this.tagTrafficAsAttacks);
+        set.add("" + ((this.filter == null) ? this.tagFilteredAsAttacks : (!(this.filter.matches(pkt.packet) ^ this.tagFilteredAsAttacks))));
 
         return set.toArray(new String[0]);
     }
