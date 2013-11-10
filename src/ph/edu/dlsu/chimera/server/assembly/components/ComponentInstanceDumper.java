@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.core.Criteria;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 
 /**

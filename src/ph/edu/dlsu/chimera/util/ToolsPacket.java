@@ -12,7 +12,7 @@ import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
-import ph.edu.dlsu.chimera.server.core.SocketPair;
+import ph.edu.dlsu.chimera.core.SocketPair;
 
 /**
  *

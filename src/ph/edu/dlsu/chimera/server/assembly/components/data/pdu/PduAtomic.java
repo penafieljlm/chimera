@@ -8,7 +8,7 @@ import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.JHeaderPool;
 import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.core.Connection;
 
 /**
  *

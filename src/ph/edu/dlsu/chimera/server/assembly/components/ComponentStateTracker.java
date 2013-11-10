@@ -10,8 +10,8 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsPacket;
-import ph.edu.dlsu.chimera.server.core.SocketPair;
-import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 
 /**

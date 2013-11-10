@@ -7,11 +7,11 @@ package ph.edu.dlsu.chimera.server.assembly;
 import com.gremwell.jnetbridge.PcapPort;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
-import ph.edu.dlsu.chimera.server.core.Connection;
-import ph.edu.dlsu.chimera.server.core.Criteria;
-import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
-import ph.edu.dlsu.chimera.server.core.SocketPair;
-import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.Criteria;
+import ph.edu.dlsu.chimera.core.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.server.assembly.components.ComponentInstanceDumper;
 import ph.edu.dlsu.chimera.server.assembly.components.ComponentInstancePreprocessor;
 import ph.edu.dlsu.chimera.server.assembly.components.ComponentSniffer;
@@ -21,7 +21,7 @@ import ph.edu.dlsu.chimera.server.assembly.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.server.assembly.components.ComponentStatisticsTracker;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
 
 /**
  *
