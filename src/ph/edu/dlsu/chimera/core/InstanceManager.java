@@ -33,6 +33,12 @@ public final class InstanceManager {
         instance.add("" + ((tcp == null) ? null : tcp.flags()));
         return instance.toArray(new String[0]);
     }
+
+    public static String[] getCoreInstance(String[] instance) {
+        String[] subinst = new String[InstanceManager.CORE_HEADERS.length];
+        System.arraycopy(instance, 0, subinst, 0, subinst.length);
+        return subinst;
+    }
     public static final String[] CONN_HEADERS = {"conn_in_enc_timed",
         "conn_ou_enc_timed",
         "conn_in_enc_count",
@@ -59,6 +65,12 @@ public final class InstanceManager {
         instance.add("" + ((conn == null) ? null : conn.outboundRatePerSec()));
         return instance.toArray(new String[0]);
     }
+
+    public static String[] getConnectionInstance(String[] instance) {
+        String[] subinst = new String[InstanceManager.CONN_HEADERS.length];
+        System.arraycopy(instance, InstanceManager.CORE_HEADERS.length, subinst, 0, subinst.length);
+        return subinst;
+    }
     public static final String ATTK_HEADER = "attack";
 
     public static String[] getCriteriaHeaders(Criteria criteria) {
@@ -82,10 +94,27 @@ public final class InstanceManager {
         instance.add("" + ((crtstats == null) ? null : crtstats.getTrafficRatePerSec()));
         return instance.toArray(new String[0]);
     }
+    
     public final Criteria[] criterias;
 
     public InstanceManager(Criteria[] criterias) {
         this.criterias = criterias;
+    }
+
+    public String[] getCriteriaInstance(Criteria criteria, String[] instance) {
+        String[] subinst = new String[5];
+        int offset = -1;
+        for (int i = 0; i < this.criterias.length; i++) {
+            if (this.criterias[i] == criteria) {
+                offset = 5 * i;
+                break;
+            }
+        }
+        if (offset < 0) {
+            return null;
+        }
+        System.arraycopy(instance, InstanceManager.CORE_HEADERS.length + InstanceManager.CONN_HEADERS.length + offset, subinst, 0, subinst.length);
+        return subinst;
     }
 
     public String[] getCriteriasHeaders() {
@@ -115,7 +144,7 @@ public final class InstanceManager {
         return headers.toArray(new String[0]);
     }
 
-    public String[] getDumpInstance(PduAtomic packet) {
+    public String[] getInstance(PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
         instance.addAll(Arrays.asList(InstanceManager.getCoreInstance(packet)));
         instance.addAll(Arrays.asList(InstanceManager.getConnectionInstance(packet)));

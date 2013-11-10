@@ -11,31 +11,30 @@ import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.Criteria;
+import ph.edu.dlsu.chimera.core.InstanceManager;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentInstanceDumper extends ComponentActive {
+public class ComponentDumper extends ComponentActive {
 
     public final IntermodulePipe<PduAtomic> inQueue;
-    public final Criteria[] criterias;
+    public final InstanceManager instanceManager;
     public final File trainingFile;
     private long processed;
-    private boolean headerOk;
 
-    public ComponentInstanceDumper(IntermodulePipe<PduAtomic> inQueue,
+    public ComponentDumper(IntermodulePipe<PduAtomic> inQueue,
             Criteria[] criterias,
             File trainingFile) {
         this.inQueue = inQueue;
         if (this.inQueue != null) {
             this.inQueue.setReader(this);
         }
-        this.criterias = criterias;
+        this.instanceManager = new InstanceManager(criterias);
         this.trainingFile = trainingFile;
         this.processed = 0;
-        this.headerOk = false;
     }
 
     @Override
@@ -43,6 +42,8 @@ public class ComponentInstanceDumper extends ComponentActive {
         if (this.trainingFile != null) {
             try {
                 CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
+                String[] headers = this.instanceManager.getHeaders();
+                writer.writeNext(headers);
                 while (super.running) {
                     if (this.inQueue != null) {
                         if (this.inQueue.isEmpty()) {
@@ -54,31 +55,28 @@ public class ComponentInstanceDumper extends ComponentActive {
                             PduAtomic pkt = this.inQueue.poll();
                             synchronized (pkt) {
                                 if (pkt.inbound) {
-                                    if (pkt.getInstanceHeaders().length != pkt.getInstanceData().length) {
-                                        throw new Exception("Error: [Instance Dumper] Headers do not match data.");
+                                    String[] instance = this.instanceManager.getInstance(pkt);
+                                    if (headers.length != instance.length) {
+                                        throw new Exception("Error: [Dumper] Headers do not match data.");
                                     }
-                                    if (!this.headerOk) {
-                                        this.headerOk = true;
-                                        writer.writeNext(pkt.getInstanceHeaders());
-                                    }
-                                    writer.writeNext(pkt.getInstanceData());
+                                    writer.writeNext(instance);
                                     writer.flush();
                                     this.processed++;
                                 } else {
-                                    throw new Exception("Error: [Instance Dumper] Encountered outbound packet.");
+                                    throw new Exception("Error: [Dumper] Encountered outbound packet.");
                                 }
                             }
                         }
                     } else {
-                        throw new Exception("Error: [Instance Dumper] inQueue is null.");
+                        throw new Exception("Error: [Dumper] inQueue is null.");
                     }
                 }
                 writer.close();
             } catch (Exception ex) {
-                throw new Exception("Error: [Instance Dumper] cannot access file '" + this.trainingFile.getName() + "'.");
+                throw new Exception("Error: [Dumper] cannot access file '" + this.trainingFile.getName() + "'.");
             }
         } else {
-            throw new Exception("Error: [Instance Dumper] trainingFile is null.");
+            throw new Exception("Error: [Dumper] trainingFile is null.");
         }
     }
 
