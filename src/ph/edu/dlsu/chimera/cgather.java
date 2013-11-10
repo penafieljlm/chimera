@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.server.Config;
-import ph.edu.dlsu.chimera.server.core.Criteria;
+import ph.edu.dlsu.chimera.core.Criteria;
 import ph.edu.dlsu.chimera.server.assembly.AssemblyGathering;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.util.ToolsInterface;
 import ph.edu.dlsu.chimera.util.ToolsParse;
 

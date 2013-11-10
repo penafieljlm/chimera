@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.core;
+package ph.edu.dlsu.chimera.core;
 
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilterExpression;
+import ph.edu.dlsu.chimera.core.reflection.PacketFilterExpression;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,9 +13,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilterCondition;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketField;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.core.reflection.PacketField;
+import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
 
 /**
  *

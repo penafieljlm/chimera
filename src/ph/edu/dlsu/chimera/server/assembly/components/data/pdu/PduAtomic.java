@@ -8,7 +8,7 @@ import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.JHeaderPool;
 import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.core.Connection;
 
 /**
  *
@@ -18,8 +18,6 @@ public class PduAtomic extends Pdu {
 
     public final PcapPacket packet;
     private Connection connection;
-    private String[] instanceHeaders;
-    private String[] instanceData;
 
     public PduAtomic(PcapPacket packet,
             boolean inbound) {
@@ -51,19 +49,6 @@ public class PduAtomic extends Pdu {
             }
         }
         return "Unknown";
-    }
-
-    public void setInstance(String[] headers, String[] data) {
-        this.instanceHeaders = headers;
-        this.instanceData = data;
-    }
-
-    public String[] getInstanceHeaders() {
-        return this.instanceHeaders;
-    }
-
-    public String[] getInstanceData() {
-        return this.instanceData;
     }
 
     @Override

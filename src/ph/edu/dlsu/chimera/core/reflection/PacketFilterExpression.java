@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.server.core.reflection;
+package ph.edu.dlsu.chimera.core.reflection;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;

@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.core.Statistics;
-import ph.edu.dlsu.chimera.server.core.Criteria;
-import ph.edu.dlsu.chimera.server.core.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.Criteria;
+import ph.edu.dlsu.chimera.core.CriteriaInstance;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 
 /**
