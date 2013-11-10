@@ -6,8 +6,8 @@ package ph.edu.dlsu.chimera.server.assembly.components.data.pdu;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.server.assembly.components.assembler.Assembler;
-import ph.edu.dlsu.chimera.server.core.Connection;
-import ph.edu.dlsu.chimera.server.core.SocketPair;
+import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.SocketPair;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduCompositeTcp;
 
 /**

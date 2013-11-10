@@ -7,8 +7,8 @@ package ph.edu.dlsu.chimera.server.assembly.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.core.SocketPair;
-import ph.edu.dlsu.chimera.server.core.Connection;
+import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.Connection;
 
 /**
  *

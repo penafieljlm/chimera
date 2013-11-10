@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.server.assembly.components;
 
 import java.io.File;
@@ -11,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import ph.edu.dlsu.chimera.core.Criteria;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
@@ -25,14 +25,17 @@ public class ComponentTraining extends ComponentActive {
     public static String CLASSIFIER_OPTIONS = "-C 0.25 -M 2";
     public final File trainingFile;
     public final File modelFile;
+    public final Criteria[] criterias;
 
-    public ComponentTraining(File trainingFile, File modelFile) {
+    public ComponentTraining(File trainingFile, File modelFile, Criteria[] criterias) {
         this.trainingFile = trainingFile;
         this.modelFile = modelFile;
+        this.criterias = criterias;
     }
 
     @Override
     protected void componentRun() throws Exception {
+
         //read data source
         DataSource source = null;
         try {

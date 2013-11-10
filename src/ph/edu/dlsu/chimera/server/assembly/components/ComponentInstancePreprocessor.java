@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.server.core.Connection;
-import ph.edu.dlsu.chimera.server.core.Criteria;
-import ph.edu.dlsu.chimera.server.core.Statistics;
+import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.Criteria;
+import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.server.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
 
 /**
  *
