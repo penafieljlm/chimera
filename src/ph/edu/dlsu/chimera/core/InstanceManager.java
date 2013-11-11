@@ -7,8 +7,6 @@ package ph.edu.dlsu.chimera.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
@@ -17,7 +15,7 @@ import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class InstanceManager {
+public abstract class InstanceManager {
 
     public static final String[] CORE_HEADERS = {"protocol",
         "weekday",
@@ -26,6 +24,17 @@ public final class InstanceManager {
         "dest_tcp",
         "dest_udp",
         "flag_tcp"};
+    public static final String[] CONN_HEADERS = {"conn.in_enc_timed",
+        "conn.ou_enc_timed",
+        "conn.in_enc_count",
+        "conn.ou_enc_count",
+        "conn.in_tsize",
+        "conn.ou_tsize",
+        "conn.in_asize",
+        "conn.ou_asize",
+        "conn.in_rateps",
+        "conn.ou_rateps"};
+    public static final String ATTK_HEADER = "attack";
 
     public static String[] getCoreInstance(PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
@@ -46,16 +55,6 @@ public final class InstanceManager {
         System.arraycopy(instance, 0, subinst, 0, subinst.length);
         return subinst;
     }
-    public static final String[] CONN_HEADERS = {"conn_in_enc_timed",
-        "conn_ou_enc_timed",
-        "conn_in_enc_count",
-        "conn_ou_enc_count",
-        "conn_in_tsize",
-        "conn_ou_tsize",
-        "conn_in_asize",
-        "conn_ou_asize",
-        "conn_in_rateps",
-        "conn_ou_rateps"};
 
     public static String[] getConnectionInstance(PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
@@ -78,16 +77,15 @@ public final class InstanceManager {
         System.arraycopy(instance, InstanceManager.CORE_HEADERS.length, subinst, 0, subinst.length);
         return subinst;
     }
-    public static final String ATTK_HEADER = "attack";
 
     public static String[] getCriteriaHeaders(Criteria criteria) {
         ArrayList<String> headers = new ArrayList<>();
         String exp = criteria.expression.replaceAll(" ", "");
-        headers.add(exp + "_enc_timed");
-        headers.add(exp + "_enc_count");
-        headers.add(exp + "_enc_tsize");
-        headers.add(exp + "_enc_asize");
-        headers.add(exp + "_enc_rateps");
+        headers.add("exp(" + exp + ").enc_timed");
+        headers.add("exp(" + exp + ").enc_count");
+        headers.add("exp(" + exp + ").enc_tsize");
+        headers.add("exp(" + exp + ").enc_asize");
+        headers.add("exp(" + exp + ").enc_rateps");
         return headers.toArray(new String[0]);
     }
 
@@ -101,60 +99,58 @@ public final class InstanceManager {
         instance.add("" + ((crtstats == null) ? null : crtstats.getTrafficRatePerSec()));
         return instance.toArray(new String[0]);
     }
-    public final Criteria[] criterias;
 
-    public InstanceManager(Criteria[] criterias) {
-        this.criterias = criterias;
-    }
-
-    public String[] getCriteriaInstance(Criteria criteria, String[] instance) {
-        String[] subinst = new String[5];
-        int offset = -1;
-        for (int i = 0; i < this.criterias.length; i++) {
-            if (this.criterias[i] == criteria) {
-                offset = 5 * i;
-                break;
-            }
-        }
-        if (offset < 0) {
+    public static String[] getCriteriaInstance(Criteria criteria, String[] headers, String[] instance) {
+        if (headers.length != instance.length) {
             return null;
         }
-        System.arraycopy(instance, InstanceManager.CORE_HEADERS.length + InstanceManager.CONN_HEADERS.length + offset, subinst, 0, subinst.length);
+        String[] _headers = InstanceManager.getCriteriaHeaders(criteria);
+        String[] subinst = new String[headers.length];
+        for (int hCounter = 0; hCounter < _headers.length; hCounter++) {
+            String _header = _headers[hCounter];
+            String _value = null;
+            for (int locCounter = 0; locCounter < headers.length; locCounter++) {
+                if (_header.equals(headers[locCounter])) {
+                    _value = instance[locCounter];
+                }
+            }
+            subinst[hCounter] = _value;
+        }
         return subinst;
     }
 
-    public String[] getCriteriasHeaders() {
+    public static String[] getCriteriasHeaders(Criteria[] criterias) {
         ArrayList<String> headers = new ArrayList<>();
-        for (Criteria crt : this.criterias) {
+        for (Criteria crt : criterias) {
             headers.addAll(Arrays.asList(InstanceManager.getCriteriaHeaders(crt)));
         }
         return headers.toArray(new String[0]);
     }
 
-    public String[] getCriteriasInstance(PduAtomic packet) {
+    public static String[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
-        for (Criteria crt : this.criterias) {
+        for (Criteria crt : criterias) {
             instance.addAll(Arrays.asList(InstanceManager.getCriteriaInstance(crt, packet)));
         }
         return instance.toArray(new String[0]);
     }
 
-    public String[] getHeaders() {
+    public static String[] getHeaders(Criteria[] criterias) {
         ArrayList<String> headers = new ArrayList<>();
         headers.addAll(Arrays.asList(InstanceManager.CORE_HEADERS));
         headers.addAll(Arrays.asList(InstanceManager.CONN_HEADERS));
-        for (Criteria crt : this.criterias) {
+        for (Criteria crt : criterias) {
             headers.addAll(Arrays.asList(InstanceManager.getCriteriaHeaders(crt)));
         }
         headers.add(InstanceManager.ATTK_HEADER);
         return headers.toArray(new String[0]);
     }
 
-    public String[] getInstance(PduAtomic packet, boolean tagAsAttack) {
+    public static String[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack) {
         ArrayList<String> instance = new ArrayList<>();
         instance.addAll(Arrays.asList(InstanceManager.getCoreInstance(packet)));
         instance.addAll(Arrays.asList(InstanceManager.getConnectionInstance(packet)));
-        for (Criteria crt : this.criterias) {
+        for (Criteria crt : criterias) {
             instance.addAll(Arrays.asList(InstanceManager.getCriteriaInstance(crt, packet)));
         }
         instance.add("" + tagAsAttack);
