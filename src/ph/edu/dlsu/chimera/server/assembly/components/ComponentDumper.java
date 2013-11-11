@@ -22,7 +22,7 @@ import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 public class ComponentDumper extends ComponentActive {
 
     public final IntermodulePipe<PduAtomic> inQueue;
-    public final InstanceManager instanceManager;
+    public final Criteria[] criterias;
     public final File trainingFile;
     public final PacketFilter trainingFilter;
     public final boolean tagFilteredAsAttack;
@@ -37,7 +37,7 @@ public class ComponentDumper extends ComponentActive {
         if (this.inQueue != null) {
             this.inQueue.setReader(this);
         }
-        this.instanceManager = new InstanceManager(criterias);
+        this.criterias = criterias;
         this.trainingFile = trainingFile;
         this.trainingFilter = trainingFilter;
         this.tagFilteredAsAttack = tagFilteredAsAttack;
@@ -48,7 +48,7 @@ public class ComponentDumper extends ComponentActive {
     protected void componentRun() throws Exception {
         if (this.trainingFile != null) {
             CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
-            String[] headers = this.instanceManager.getHeaders();
+            String[] headers = InstanceManager.getHeaders(this.criterias);
             writer.writeNext(headers);
             writer.flush();
             while (super.running) {
@@ -66,7 +66,7 @@ public class ComponentDumper extends ComponentActive {
                                 if (this.trainingFilter != null) {
                                     attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
                                 }
-                                String[] instance = this.instanceManager.getInstance(pkt, attack);
+                                String[] instance = InstanceManager.getInstance(this.criterias, pkt, attack);
                                 if (headers.length != instance.length) {
                                     throw new Exception("Error: [Dumper] Headers do not match data.");
                                 }

@@ -4,13 +4,20 @@
  */
 package ph.edu.dlsu.chimera.server.assembly.components;
 
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.Criteria;
+import ph.edu.dlsu.chimera.core.InstanceManager;
+import ph.edu.dlsu.chimera.util.ToolsArray;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
@@ -35,6 +42,33 @@ public class ComponentTraining extends ComponentActive {
 
     @Override
     protected void componentRun() throws Exception {
+        CSVReader reader = new CSVReader(new FileReader(this.modelFile));
+        File connectionDataSet = File.createTempFile("connection", ".trntmpcsv");
+        HashMap<Criteria, File> criteriaDataSets = new HashMap<>();
+        for (Criteria crt : this.criterias) {
+            criteriaDataSets.put(crt, File.createTempFile("exp(" + crt.expression.replaceAll(" ", "") + ")", ".trntmpcsv"));
+        }
+        CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet));
+        connDataSetWriter.writeNext(ToolsArray.concat(InstanceManager.CORE_HEADERS, InstanceManager.CONN_HEADERS));
+        HashMap<Criteria, CSVWriter> criteriaDataSetWriter = new HashMap<>();
+        for (Criteria crt : this.criterias) {
+            criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSets.get(crt))));
+            criteriaDataSetWriter.get(crt).writeNext(ToolsArray.concat(InstanceManager.CORE_HEADERS, InstanceManager.getCriteriaHeaders(crt)));
+        }
+        String[] headers = reader.readNext();
+        if (headers == null) {
+            throw new Exception("Error: [Training] Missing headers.");
+        }
+        String[] instance = null;
+        while ((instance = reader.readNext()) != null) {
+            String[] core = InstanceManager.getCoreInstance(instance);
+            String[] conn = InstanceManager.getConnectionInstance(instance);
+            HashMap<Criteria, String[]> crts = new HashMap<>();
+            for (Criteria crt : this.criterias) {
+                crts.put(crt, InstanceManager.getCriteriaInstance(crt, headers, instance));
+            }
+
+        }
 
         //read data source
         DataSource source = null;
