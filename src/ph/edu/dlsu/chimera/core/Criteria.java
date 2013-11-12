@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera.core;
 
-import ph.edu.dlsu.chimera.core.reflection.PacketFilterExpression;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -74,6 +73,9 @@ public final class Criteria {
         Object[] cId = new Object[this.subjects.length];
         for (int i = 0; i < this.subjects.length; i++) {
             cId[i] = this.subjects[i].getFieldValue(pkt);
+            if (cId[i] == null) {
+                return null;
+            }
         }
         return new CriteriaInstance(cId, this);
     }
