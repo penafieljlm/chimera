@@ -12,6 +12,7 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.Criteria;
 import ph.edu.dlsu.chimera.core.InstanceManager;
+import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.server.assembly.components.data.IntermodulePipe;
 
 /**
@@ -23,58 +24,65 @@ public class ComponentDumper extends ComponentActive {
     public final IntermodulePipe<PduAtomic> inQueue;
     public final InstanceManager instanceManager;
     public final File trainingFile;
+    public final PacketFilter trainingFilter;
+    public final boolean tagFilteredAsAttack;
     private long processed;
 
     public ComponentDumper(IntermodulePipe<PduAtomic> inQueue,
             Criteria[] criterias,
-            File trainingFile) {
+            File trainingFile,
+            PacketFilter trainingFilter,
+            boolean tagFilteredAsAttack) {
         this.inQueue = inQueue;
         if (this.inQueue != null) {
             this.inQueue.setReader(this);
         }
         this.instanceManager = new InstanceManager(criterias);
         this.trainingFile = trainingFile;
+        this.trainingFilter = trainingFilter;
+        this.tagFilteredAsAttack = tagFilteredAsAttack;
         this.processed = 0;
     }
 
     @Override
     protected void componentRun() throws Exception {
         if (this.trainingFile != null) {
-            try {
-                CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
-                String[] headers = this.instanceManager.getHeaders();
-                writer.writeNext(headers);
-                while (super.running) {
-                    if (this.inQueue != null) {
-                        if (this.inQueue.isEmpty()) {
-                            synchronized (this) {
-                                this.wait();
-                            }
+            CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
+            String[] headers = this.instanceManager.getHeaders();
+            writer.writeNext(headers);
+            writer.flush();
+            while (super.running) {
+                if (this.inQueue != null) {
+                    if (this.inQueue.isEmpty()) {
+                        synchronized (this) {
+                            this.wait();
                         }
-                        while (!this.inQueue.isEmpty()) {
-                            PduAtomic pkt = this.inQueue.poll();
-                            synchronized (pkt) {
-                                if (pkt.inbound) {
-                                    String[] instance = this.instanceManager.getInstance(pkt);
-                                    if (headers.length != instance.length) {
-                                        throw new Exception("Error: [Dumper] Headers do not match data.");
-                                    }
-                                    writer.writeNext(instance);
-                                    writer.flush();
-                                    this.processed++;
-                                } else {
-                                    throw new Exception("Error: [Dumper] Encountered outbound packet.");
-                                }
-                            }
-                        }
-                    } else {
-                        throw new Exception("Error: [Dumper] inQueue is null.");
                     }
+                    while (!this.inQueue.isEmpty()) {
+                        PduAtomic pkt = this.inQueue.poll();
+                        synchronized (pkt) {
+                            if (pkt.inbound) {
+                                boolean attack = this.tagFilteredAsAttack;
+                                if (this.trainingFilter != null) {
+                                    attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
+                                }
+                                String[] instance = this.instanceManager.getInstance(pkt, attack);
+                                if (headers.length != instance.length) {
+                                    throw new Exception("Error: [Dumper] Headers do not match data.");
+                                }
+                                writer.writeNext(instance);
+                                writer.flush();
+                                this.processed++;
+                            } else {
+                                throw new Exception("Error: [Dumper] Encountered outbound packet.");
+                            }
+                        }
+                    }
+                } else {
+                    throw new Exception("Error: [Dumper] inQueue is null.");
                 }
-                writer.close();
-            } catch (Exception ex) {
-                throw new Exception("Error: [Dumper] cannot access file '" + this.trainingFile.getName() + "'.");
             }
+            writer.close();
         } else {
             throw new Exception("Error: [Dumper] trainingFile is null.");
         }

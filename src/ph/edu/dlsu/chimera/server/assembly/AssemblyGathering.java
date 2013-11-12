@@ -33,8 +33,9 @@ public class AssemblyGathering extends Assembly {
             PcapPort ifInternalPcapPort,
             Criteria[] criterias,
             File trainingDumpFile,
-            PacketFilter excludeFilter,
-            PacketFilter filter,
+            PacketFilter accessFilter,
+            boolean allowFiltered,
+            PacketFilter trainingFilter,
             boolean tagFilteredAsAttacks,
             long statsTimeoutMs,
             long stateTimeoutMs) throws Exception {
@@ -57,13 +58,13 @@ public class AssemblyGathering extends Assembly {
         super.addComponent("states", new ComponentStateTable(stateTable, stateTimeoutMs));
 
         //inbound path
-        super.addComponent("ex.gather.sniff", new ComponentSniffer(ifExternalPcapPort, exGatherSniffOut, excludeFilter, false, true));
+        super.addComponent("ex.gather.sniff", new ComponentSniffer(ifExternalPcapPort, exGatherSniffOut, accessFilter, allowFiltered, true));
         super.addComponent("ex.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
         super.addComponent("ex.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-        super.addComponent("ex.gather.dumper", new ComponentDumper(exGatherStateOut, criterias, trainingDumpFile));
+        super.addComponent("ex.gather.dumper", new ComponentDumper(exGatherStateOut, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
 
         //outbound path
-        super.addComponent("in.gather.sniff", new ComponentSniffer(ifInternalPcapPort, inGatherSniffOut, excludeFilter, false, false));
+        super.addComponent("in.gather.sniff", new ComponentSniffer(ifInternalPcapPort, inGatherSniffOut, accessFilter, allowFiltered, false));
         super.addComponent("in.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
     }
 }

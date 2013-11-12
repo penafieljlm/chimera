@@ -23,13 +23,13 @@ public final class ComponentSniffer extends ComponentActive {
     public final boolean inbound;
     public final PcapPort inPcapPort;
     public final IntermodulePipe<PduAtomic> outQueue;
-    public final PacketFilter filter;
+    public final PacketFilter accessFilter;
     public final boolean allowFiltered;
     private long received;
 
     public ComponentSniffer(PcapPort inPcapPort,
             IntermodulePipe<PduAtomic> outQueue,
-            PacketFilter filter,
+            PacketFilter accessFilter,
             boolean allowFiltered,
             boolean inbound) {
         this.setPriority(Thread.MAX_PRIORITY);
@@ -39,7 +39,7 @@ public final class ComponentSniffer extends ComponentActive {
         if (this.outQueue != null) {
             this.outQueue.setWriter(this);
         }
-        this.filter = filter;
+        this.accessFilter = accessFilter;
         this.allowFiltered = allowFiltered;
         this.received = 0;
     }
@@ -62,14 +62,12 @@ public final class ComponentSniffer extends ComponentActive {
             this.received++;
             if (this.outQueue != null) {
                 PcapPacket pcappkt = new PcapPacket(pkt.packet);
-                if (this.filter != null) {
-                    if (!(this.filter.matches(pcappkt) ^ this.allowFiltered)) {
-                        this.outQueue.add(new PduAtomic(pcappkt, this.inbound));
-                    }
-                } else {
-                    if (this.allowFiltered) {
-                        this.outQueue.add(new PduAtomic(pcappkt, this.inbound));
-                    }
+                boolean allow = this.allowFiltered;
+                if (this.accessFilter != null) {
+                    allow = !(this.accessFilter.matches(pcappkt) ^ allow);
+                }
+                if (allow) {
+                    this.outQueue.add(new PduAtomic(pcappkt, this.inbound));
                 }
             }
         }

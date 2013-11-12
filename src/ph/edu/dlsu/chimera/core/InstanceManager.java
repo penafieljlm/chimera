@@ -6,6 +6,9 @@ package ph.edu.dlsu.chimera.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
@@ -17,6 +20,8 @@ import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
 public final class InstanceManager {
 
     public static final String[] CORE_HEADERS = {"protocol",
+        "weekday",
+        "timeofday",
         "pdu_size",
         "dest_tcp",
         "dest_udp",
@@ -27,6 +32,8 @@ public final class InstanceManager {
         Tcp tcp = packet.packet.getHeader(new Tcp());
         Udp udp = packet.packet.getHeader(new Udp());
         instance.add("" + packet.getProtocolName());
+        instance.add("" + Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+        instance.add("" + ((Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 3600) + (Calendar.getInstance().get(Calendar.MINUTE) * 60) + (Calendar.getInstance().get(Calendar.SECOND) * 1)));
         instance.add("" + packet.packet.size());
         instance.add("" + ((tcp == null) ? null : tcp.destination()));
         instance.add("" + ((udp == null) ? null : udp.destination()));
@@ -94,7 +101,6 @@ public final class InstanceManager {
         instance.add("" + ((crtstats == null) ? null : crtstats.getTrafficRatePerSec()));
         return instance.toArray(new String[0]);
     }
-    
     public final Criteria[] criterias;
 
     public InstanceManager(Criteria[] criterias) {
@@ -144,13 +150,14 @@ public final class InstanceManager {
         return headers.toArray(new String[0]);
     }
 
-    public String[] getInstance(PduAtomic packet) {
+    public String[] getInstance(PduAtomic packet, boolean tagAsAttack) {
         ArrayList<String> instance = new ArrayList<>();
         instance.addAll(Arrays.asList(InstanceManager.getCoreInstance(packet)));
         instance.addAll(Arrays.asList(InstanceManager.getConnectionInstance(packet)));
         for (Criteria crt : this.criterias) {
             instance.addAll(Arrays.asList(InstanceManager.getCriteriaInstance(crt, packet)));
         }
+        instance.add("" + tagAsAttack);
         return instance.toArray(new String[0]);
     }
 }
