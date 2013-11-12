@@ -48,42 +48,68 @@ public class cgather {
             + "\n            Refer to the output of the 'cifaces' command."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... as specified in the 'chimera.config' file"
-            + "\n    -exclude"
-            + "\n        DESCRIPTION"
-            + "\n            A CHIMERA-JNetPcap Packet Filter Expression."
-            + "\n            Excludes matching packets from the produced training set."
-            + "\n        REQUIRED........ No"
-            + "\n        DEFAULT VALUE... N/A"
-            + "\n    -filter"
-            + "\n        DESCRIPTION"
+            + "\n    -access"
             + "\n            A CHIMERA-JNetPcap Packet Filter Expression."
             + "\n            If provided, the following apply:"
-            + "\n                If the /attacks flag is set, the following apply:"
-            + "\n                    Matching packets are flagged as attacks."
-            + "\n                    Non matching packets are flagged as normal."
-            + "\n                If the /attacks flag is not set, the following apply:"
-            + "\n                    Matching packets are flagged as normal."
-            + "\n                    Non matching packets are flagged as attacks."
+            + "\n                If the /allow flag is set, the following apply:"
+            + "\n                    Matching packets are included in the training set."
+            + "\n                    Non matching packets are excluded from the training set."
+            + "\n                If the /allow flag is not set, the following apply:"
+            + "\n                    Matching packets are excluded from the training set."
+            + "\n                    Non matching packets are included in the training set."
             + "\n            If not provided, the following apply:"
-            + "\n                If the /attacks flag is set, the following apply:"
+            + "\n                If the /allow flag is set, the following apply:"
+            + "\n                    All packets are included in the training set."
+            + "\n                If the /allow flag is not set, the following apply:"
+            + "\n                    All packets are excluded from the training set."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    /allow"
+            + "\n        DESCRIPTION"
+            + "\n            If set, the following apply:"
+            + "\n                If -access is provided, the following apply:"
+            + "\n                    Packets matching -access are flagged as attacks."
+            + "\n                    Packets not matching -access are flagged as normal."
+            + "\n                If -access is not provided, the following apply:"
             + "\n                    All packets are flagged as attacks."
-            + "\n                If the /attacks flag is not set, the following apply:"
+            + "\n            If not set, the following apply:"
+            + "\n                If -access is provided, the following apply:"
+            + "\n                    Packets matching -access are flagged as normal."
+            + "\n                    Packets not matching -access are flagged as attacks."
+            + "\n                If -access is not provided, the following apply:"
             + "\n                    All packets are flagged as normal."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
-            + "\n    /attacks"
+            + "\n    -training"
+            + "\n        DESCRIPTION"
+            + "\n            A CHIMERA-JNetPcap Packet Filter Expression."
+            + "\n            If provided, the following apply:"
+            + "\n                If the /attack flag is set, the following apply:"
+            + "\n                    Matching packets are flagged as attacks."
+            + "\n                    Non matching packets are flagged as normal."
+            + "\n                If the /attack flag is not set, the following apply:"
+            + "\n                    Matching packets are flagged as normal."
+            + "\n                    Non matching packets are flagged as attacks."
+            + "\n            If not provided, the following apply:"
+            + "\n                If the /attack flag is set, the following apply:"
+            + "\n                    All packets are flagged as attacks."
+            + "\n                If the /attack flag is not set, the following apply:"
+            + "\n                    All packets are flagged as normal."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    /attack"
             + "\n        DESCRIPTION"
             + "\n            If set, the following apply:"
-            + "\n                If -filter is provided, the following apply:"
-            + "\n                    Packets matching -filter are flagged as attacks."
-            + "\n                    Packets not matching -filter are flagged as normal."
-            + "\n                If -filter is not provided, the following apply:"
+            + "\n                If -training is provided, the following apply:"
+            + "\n                    Packets matching -training are flagged as attacks."
+            + "\n                    Packets not matching -training are flagged as normal."
+            + "\n                If -training is not provided, the following apply:"
             + "\n                    All packets are flagged as attacks."
             + "\n            If not set, the following apply:"
-            + "\n                If -filter is provided, the following apply:"
-            + "\n                    Packets matching -filter are flagged as normal."
-            + "\n                    Packets not matching -filter are flagged as attacks."
-            + "\n                If -filter is not provided, the following apply:"
+            + "\n                If -training is provided, the following apply:"
+            + "\n                    Packets matching -training are flagged as normal."
+            + "\n                    Packets not matching -training are flagged as attacks."
+            + "\n                If -training is not provided, the following apply:"
             + "\n                    All packets are flagged as normal."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A";
@@ -157,21 +183,27 @@ public class cgather {
             }
 
             //exclude filter
-            PacketFilter exclude = null;
-            if (_args.containsKey("-exclude")) {
-                exclude = PacketFilter.parseExpression(_args.get("-exclude"));
+            PacketFilter accessFilter = null;
+            if (_args.containsKey("-access")) {
+                accessFilter = PacketFilter.parseExpression(_args.get("-access"));
+            }
+
+            //gather access flag
+            boolean allowFiltered = false;
+            if (_args.containsKey("/allow")) {
+                allowFiltered = Boolean.parseBoolean(_args.get("/allow"));
             }
 
             //filter
-            PacketFilter filter = null;
-            if (_args.containsKey("-filter")) {
-                filter = PacketFilter.parseExpression(_args.get("-filter"));
+            PacketFilter trainingFilter = null;
+            if (_args.containsKey("-training")) {
+                trainingFilter = PacketFilter.parseExpression(_args.get("-training"));
             }
 
             //gather attacks flag
             boolean tagFilteredAsAttacks = false;
-            if (_args.containsKey("/attacks")) {
-                tagFilteredAsAttacks = Boolean.parseBoolean(_args.get("/attacks"));
+            if (_args.containsKey("/attack")) {
+                tagFilteredAsAttacks = Boolean.parseBoolean(_args.get("/attack"));
             }
 
             ifExternalPort.start();
@@ -184,8 +216,9 @@ public class cgather {
                     ifInternalPort,
                     criterias,
                     trainingDumpFile,
-                    exclude,
-                    filter,
+                    accessFilter,
+                    allowFiltered,
+                    trainingFilter,
                     tagFilteredAsAttacks,
                     config.statsTimeoutMs,
                     config.stateTimeoutMs);
