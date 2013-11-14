@@ -4,7 +4,7 @@
  */
 package ph.edu.dlsu.chimera.server.assembly.components;
 
-import ph.edu.dlsu.chimera.server.IDiagnosable;
+import ph.edu.dlsu.chimera.core.IDiagnosable;
 
 /**
  *

@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.jnetpcap.PcapIf;
-import ph.edu.dlsu.chimera.server.Config;
+import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.util.ToolsInterface;
 import ph.edu.dlsu.chimera.util.ToolsParse;
 
