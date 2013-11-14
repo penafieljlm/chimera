@@ -49,6 +49,11 @@ public class ComponentDumper extends ComponentActive {
         if (this.trainingFile != null) {
             CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
             String[] headers = InstanceManager.getHeaders(this.criterias);
+            String[] _criterias = new String[this.criterias.length];
+            for (int i = 0; i < this.criterias.length; i++) {
+                _criterias[i] = this.criterias[i].expression;
+            }
+            writer.writeNext(_criterias);
             writer.writeNext(headers);
             writer.flush();
             while (super.running) {

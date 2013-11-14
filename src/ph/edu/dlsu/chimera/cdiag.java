@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.client.admin.Client;
-import ph.edu.dlsu.chimera.server.Config;
+import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.server.admin.messages.CommandDiagnose;
 import ph.edu.dlsu.chimera.util.ToolsParse;
 

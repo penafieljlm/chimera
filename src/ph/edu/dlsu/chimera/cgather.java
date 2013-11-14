@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.jnetpcap.PcapIf;
-import ph.edu.dlsu.chimera.server.Config;
+import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Criteria;
 import ph.edu.dlsu.chimera.server.assembly.AssemblyGathering;
 import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
