@@ -28,8 +28,8 @@ import ph.edu.dlsu.chimera.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.components.ComponentStatisticsTracker;
 import ph.edu.dlsu.chimera.core.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.ToolsInterface;
-import ph.edu.dlsu.chimera.util.ToolsParse;
+import ph.edu.dlsu.chimera.util.PcapUtils;
+import ph.edu.dlsu.chimera.util.ParseUtils;
 
 /**
  *
@@ -146,7 +146,7 @@ public class cgather {
             Criteria[] criterias = Criteria.loadCriterias();
 
             //parse args
-            HashMap<String, String> _args = ToolsParse.parseArgs(args);
+            HashMap<String, String> _args = ParseUtils.parseArgs(args);
 
             //load dump file
             if (!_args.containsKey("-output")) {
@@ -171,7 +171,7 @@ public class cgather {
             } catch (Exception ex) {
                 throw new Exception("The argument '-internal' must provide a numerical value.");
             }
-            ArrayList<PcapIf> interfaces = ToolsInterface.getInterfaces();
+            ArrayList<PcapIf> interfaces = PcapUtils.getInterfaces();
             String ifExternalName = null;
             String ifInternalName = null;
             try {

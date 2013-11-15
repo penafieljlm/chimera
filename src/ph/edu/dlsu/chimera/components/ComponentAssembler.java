@@ -14,7 +14,7 @@ import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.assembler.AssemblerUdp;
 import ph.edu.dlsu.chimera.core.IntermodulePipe;
-import ph.edu.dlsu.chimera.util.ToolsPacket;
+import ph.edu.dlsu.chimera.util.PacketUtils;
 
 /**
  *
@@ -94,7 +94,7 @@ public final class ComponentAssembler extends ComponentActive {
     private void handleTcp(PduAtomic pkt) throws Exception {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
-                SocketPair socks = ToolsPacket.getSocketPair(pkt.packet);
+                SocketPair socks = PacketUtils.getSocketPair(pkt.packet);
                 if (!this.tcpAssemblerTable.contains(socks)) {
                     //create assembler
                     AssemblerTcp asm = this.tcpPortProtocolLookup.get(socks.destinationPort);

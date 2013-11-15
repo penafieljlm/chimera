@@ -1,8 +1,6 @@
 package ph.edu.dlsu.chimera.messages;
 
 import java.io.PrintStream;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import ph.edu.dlsu.chimera.core.Client;
 
 /**
  * An instance of this class constitutes a simple text message that can be sent between hosts.

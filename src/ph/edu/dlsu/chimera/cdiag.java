@@ -5,10 +5,10 @@
 package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.core.Client;
+import ph.edu.dlsu.chimera.util.CommandUtils;
 import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.messages.CommandDiagnose;
-import ph.edu.dlsu.chimera.util.ToolsParse;
+import ph.edu.dlsu.chimera.util.ParseUtils;
 
 /**
  *
@@ -38,20 +38,20 @@ public class cdiag {
                     return;
                 }
             }
-            
+
             //load config
             Config config = Config.loadConfig();
 
             //parse args
-            HashMap<String, String> _args = ToolsParse.parseArgs(args);
+            HashMap<String, String> _args = ParseUtils.parseArgs(args);
             if (!_args.containsKey("-component")) {
                 throw new Exception("The argument '-component' must be provided.");
             }
             String component = _args.get("-component");
-            
+
             //run command
-            Client client = new Client(config.controlPort, System.out, new CommandDiagnose(component));
-            client.run();
+            CommandUtils.send(config.controlPort, new CommandDiagnose(component), System.out);
+
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cdiag /help' to see usage.");

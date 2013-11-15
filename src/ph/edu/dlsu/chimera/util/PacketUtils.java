@@ -6,7 +6,6 @@ package ph.edu.dlsu.chimera.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.jnetpcap.packet.JPacket;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
@@ -18,7 +17,7 @@ import ph.edu.dlsu.chimera.core.SocketPair;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class ToolsPacket {
+public abstract class PacketUtils {
 
     public static SocketPair getSocketPair(PcapPacket pkt) {
         try {

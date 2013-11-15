@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class ToolsArray {
+public abstract class ArrayUtils {
 
     public static byte[] reverse(byte[] arg) {
         byte[] ok = new byte[arg.length];
@@ -32,7 +32,7 @@ public abstract class ToolsArray {
     public static byte[] concat(byte[] left, byte[]... right) {
         byte[] result = left;
         for (byte[] a : right) {
-            result = ToolsArray.concat(result, a);
+            result = ArrayUtils.concat(result, a);
         }
         return result;
     }
@@ -47,7 +47,7 @@ public abstract class ToolsArray {
     public static <T> T[] concat(T[] left, T[]... right) {
         T[] result = left;
         for (T[] a : right) {
-            result = ToolsArray.concat(result, a);
+            result = ArrayUtils.concat(result, a);
         }
         return result;
     }
@@ -55,13 +55,13 @@ public abstract class ToolsArray {
     public static <T> T[] append(T[] a, T e) {
         T[] o = (T[]) Array.newInstance(a.getClass().getComponentType(), 1);
         o[0] = e;
-        return ToolsArray.concat(a, o);
+        return ArrayUtils.concat(a, o);
     }
 
     public static <T> T[] append(T[] a, T... e) {
         T[] ta = a;
         for (T t : e) {
-            ta = ToolsArray.append(ta, t);
+            ta = ArrayUtils.append(ta, t);
         }
         return ta;
     }
