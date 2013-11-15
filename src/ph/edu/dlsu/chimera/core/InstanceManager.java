@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
-import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.pdu.PduAtomic;
 
 /**
  *

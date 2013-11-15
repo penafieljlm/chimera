@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.core;
 
 import java.util.ArrayList;
 import java.util.Date;
-import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.Pdu;
+import ph.edu.dlsu.chimera.pdu.Pdu;
 import ph.edu.dlsu.chimera.util.ToolsTime;
 
 /**

@@ -8,11 +8,26 @@ import com.gremwell.jnetbridge.PcapPort;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Config;
+import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.Criteria;
-import ph.edu.dlsu.chimera.server.assembly.AssemblyGathering;
-import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.core.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.components.Component;
+import ph.edu.dlsu.chimera.components.ComponentActive;
+import ph.edu.dlsu.chimera.components.ComponentController;
+import ph.edu.dlsu.chimera.components.ComponentDumper;
+import ph.edu.dlsu.chimera.components.ComponentSniffer;
+import ph.edu.dlsu.chimera.components.ComponentStateTable;
+import ph.edu.dlsu.chimera.components.ComponentStateTracker;
+import ph.edu.dlsu.chimera.components.ComponentStatisticsTable;
+import ph.edu.dlsu.chimera.components.ComponentStatisticsTracker;
+import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.ToolsInterface;
 import ph.edu.dlsu.chimera.util.ToolsParse;
 
@@ -209,20 +224,55 @@ public class cgather {
             ifExternalPort.start();
             ifInternalPort.start();
 
-            //prepare assembly
-            AssemblyGathering assembly = null;
-            assembly = new AssemblyGathering(config.controlPort,
-                    ifExternalPort,
-                    ifInternalPort,
-                    criterias,
-                    trainingDumpFile,
-                    accessFilter,
-                    allowFiltered,
-                    trainingFilter,
-                    tagFilteredAsAttacks,
-                    config.statsTimeoutMs,
-                    config.stateTimeoutMs);
-            assembly.run();
+            //inbound queues
+            IntermodulePipe<PduAtomic> exGatherSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> exGatherStatsOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> exGatherStateOut = new IntermodulePipe<>();
+
+            //outbound queues
+            IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
+
+            //shared resources
+            ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
+            ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
+
+            //component holder
+            HashMap<String, Component> components = new HashMap<>();
+
+            //daemons
+            components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
+            components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
+
+            //inbound path
+            components.put("ex.gather.sniff", new ComponentSniffer(ifExternalPort, exGatherSniffOut, accessFilter, allowFiltered, true));
+            components.put("ex.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
+            components.put("ex.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
+            components.put("ex.gather.dumper", new ComponentDumper(exGatherStateOut, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
+
+            //outbound path
+            components.put("in.gather.sniff", new ComponentSniffer(ifInternalPort, inGatherSniffOut, accessFilter, allowFiltered, false));
+            components.put("in.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
+
+            //controller
+            ComponentController controller = new ComponentController(components, config.controlPort);
+
+            //start components
+            for (String c : components.keySet()) {
+                Component _c = components.get(c);
+                if (_c instanceof ComponentActive) {
+                    ((ComponentActive) (_c)).start();
+                }
+            }
+            controller.start();
+
+            //join threads
+            for (String c : components.keySet()) {
+                Component _c = components.get(c);
+                if (_c instanceof ComponentActive) {
+                    ((ComponentActive) (_c)).join();
+                }
+            }
+            controller.join();
 
             //end
             ifExternalPort.stop();
