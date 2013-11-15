@@ -9,7 +9,7 @@ import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.TimeUtils;
+import ph.edu.dlsu.chimera.util.UtilsTime;
 
 /**
  *
@@ -110,11 +110,11 @@ public final class Connection extends Statistics {
     }
 
     public synchronized double inboundTimeSinceLastEncounterMs() {
-        return TimeUtils.nowMs() - TimeUtils.nsToMs(this.inboundLastEncounterNanos);
+        return UtilsTime.nowMs() - UtilsTime.nsToMs(this.inboundLastEncounterNanos);
     }
 
     public synchronized double outboundTimeSinceLastEncounterMs() {
-        return TimeUtils.nowMs() - TimeUtils.nsToMs(this.outboundLastEncounterNanos);
+        return UtilsTime.nowMs() - UtilsTime.nsToMs(this.outboundLastEncounterNanos);
     }
 
     public synchronized long inboundLastEncounterDeltaNs() {
@@ -169,8 +169,8 @@ public final class Connection extends Statistics {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        Date inencounter = (this.inboundLastEncounterNanos < 0) ? null : new java.sql.Date(TimeUtils.nsToMs(this.inboundLastEncounterNanos));
-        Date outencounter = (this.outboundLastEncounterNanos < 0) ? null : new java.sql.Date(TimeUtils.nsToMs(this.outboundLastEncounterNanos));
+        Date inencounter = (this.inboundLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.inboundLastEncounterNanos));
+        Date outencounter = (this.outboundLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.outboundLastEncounterNanos));
         diag.add(new Diagnostic("direction", "Direction", (this.inbound) ? "inbound" : "outbound"));
         diag.add(new Diagnostic("inboundct", "Inbound Packets Encountered", this.inboundEncounters));
         diag.add(new Diagnostic("outboundct", "Outbound Packets Encountered", this.outboundEncounters));

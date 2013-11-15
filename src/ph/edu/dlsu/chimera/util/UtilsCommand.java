@@ -15,7 +15,7 @@ import ph.edu.dlsu.chimera.messages.Command;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class CommandUtils {
+public abstract class UtilsCommand {
 
     public static void send(int serverport, Command command, PrintStream out) throws Exception {
         //connect

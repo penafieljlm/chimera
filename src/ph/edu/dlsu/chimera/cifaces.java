@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.NicData;
 import ph.edu.dlsu.chimera.core.NicDataAddress;
-import ph.edu.dlsu.chimera.util.PcapUtils;
+import ph.edu.dlsu.chimera.util.UtilsPcap;
 
 /**
  *
@@ -35,7 +35,7 @@ public class cifaces {
 
             System.out.println("CHIMERA Network Interfaces:");
             int intctr = 0;
-            for (PcapIf nic : PcapUtils.getInterfaces()) {
+            for (PcapIf nic : UtilsPcap.getInterfaces()) {
                 NicData _nic = new NicData(nic);
                 System.out.println("Interface................ " + intctr++);
                 System.out.println("    Name................. " + _nic.name);

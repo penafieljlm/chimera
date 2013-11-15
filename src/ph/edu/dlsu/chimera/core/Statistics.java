@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.core;
 import java.util.ArrayList;
 import java.util.Date;
 import ph.edu.dlsu.chimera.pdu.Pdu;
-import ph.edu.dlsu.chimera.util.TimeUtils;
+import ph.edu.dlsu.chimera.util.UtilsTime;
 
 /**
  *
@@ -45,7 +45,7 @@ public class Statistics implements IDiagnosable {
     }
 
     public synchronized long getTimeExistedMs() {
-        return TimeUtils.nowMs() - TimeUtils.nsToMs((this.timeCreatedNanos));
+        return UtilsTime.nowMs() - UtilsTime.nsToMs((this.timeCreatedNanos));
     }
 
     public synchronized double getTrafficRatePerSec() {
@@ -62,7 +62,7 @@ public class Statistics implements IDiagnosable {
     }
 
     public synchronized double getTimeSinceLastEncounterMs() {
-        return TimeUtils.nowMs() - TimeUtils.nsToMs((this.lastEncounterNanos));
+        return UtilsTime.nowMs() - UtilsTime.nsToMs((this.lastEncounterNanos));
     }
 
     public synchronized long getLastEncounterDeltaNs() {
@@ -72,8 +72,8 @@ public class Statistics implements IDiagnosable {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = new ArrayList<>();
-        Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(TimeUtils.nsToMs(this.timeCreatedNanos));
-        Date update = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(TimeUtils.nsToMs(this.lastEncounterNanos));
+        Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.timeCreatedNanos));
+        Date update = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.lastEncounterNanos));
         diag.add(new Diagnostic("createtime", "Time Created", (create == null) ? "N/A" : create.toLocaleString()));
         diag.add(new Diagnostic("encounters", "Packets Encountered", this.totalEncounters));
         diag.add(new Diagnostic("totalsize", "Traffic Total Size", this.totalSize));

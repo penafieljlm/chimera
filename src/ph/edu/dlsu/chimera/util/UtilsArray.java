@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class ArrayUtils {
+public abstract class UtilsArray {
 
     public static byte[] reverse(byte[] arg) {
         byte[] ok = new byte[arg.length];
@@ -32,7 +32,7 @@ public abstract class ArrayUtils {
     public static byte[] concat(byte[] left, byte[]... right) {
         byte[] result = left;
         for (byte[] a : right) {
-            result = ArrayUtils.concat(result, a);
+            result = UtilsArray.concat(result, a);
         }
         return result;
     }
@@ -47,7 +47,7 @@ public abstract class ArrayUtils {
     public static <T> T[] concat(T[] left, T[]... right) {
         T[] result = left;
         for (T[] a : right) {
-            result = ArrayUtils.concat(result, a);
+            result = UtilsArray.concat(result, a);
         }
         return result;
     }
@@ -55,13 +55,13 @@ public abstract class ArrayUtils {
     public static <T> T[] append(T[] a, T e) {
         T[] o = (T[]) Array.newInstance(a.getClass().getComponentType(), 1);
         o[0] = e;
-        return ArrayUtils.concat(a, o);
+        return UtilsArray.concat(a, o);
     }
 
     public static <T> T[] append(T[] a, T... e) {
         T[] ta = a;
         for (T t : e) {
-            ta = ArrayUtils.append(ta, t);
+            ta = UtilsArray.append(ta, t);
         }
         return ta;
     }

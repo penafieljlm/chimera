@@ -5,10 +5,10 @@
 package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.util.CommandUtils;
+import ph.edu.dlsu.chimera.util.UtilsCommand;
 import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.messages.CommandDiagnose;
-import ph.edu.dlsu.chimera.util.ParseUtils;
+import ph.edu.dlsu.chimera.util.UtilsParse;
 
 /**
  *
@@ -43,14 +43,14 @@ public class cdiag {
             Config config = Config.loadConfig();
 
             //parse args
-            HashMap<String, String> _args = ParseUtils.parseArgs(args);
+            HashMap<String, String> _args = UtilsParse.parseArgs(args);
             if (!_args.containsKey("-component")) {
                 throw new Exception("The argument '-component' must be provided.");
             }
             String component = _args.get("-component");
 
             //run command
-            CommandUtils.send(config.controlPort, new CommandDiagnose(component), System.out);
+            UtilsCommand.send(config.controlPort, new CommandDiagnose(component), System.out);
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());

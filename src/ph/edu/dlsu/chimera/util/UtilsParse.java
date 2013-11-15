@@ -11,7 +11,7 @@ import java.util.HashMap;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class ParseUtils {
+public abstract class UtilsParse {
 
     public static HashMap<String, String> parseArgs(String[] args) throws ParseException {
         HashMap<String, String> _args = new HashMap<>();
