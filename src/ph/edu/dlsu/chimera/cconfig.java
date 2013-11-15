@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Config;
-import ph.edu.dlsu.chimera.util.ToolsInterface;
-import ph.edu.dlsu.chimera.util.ToolsParse;
+import ph.edu.dlsu.chimera.util.PcapUtils;
+import ph.edu.dlsu.chimera.util.ParseUtils;
 
 
 /**
@@ -78,7 +78,7 @@ public class cconfig {
             Config config = Config.loadConfig();
 
             //parse args
-            HashMap<String, String> _args = ToolsParse.parseArgs(args);
+            HashMap<String, String> _args = ParseUtils.parseArgs(args);
 
             //control port
             try {
@@ -90,7 +90,7 @@ public class cconfig {
             }
 
             //interfaces
-            ArrayList<PcapIf> interfaces = ToolsInterface.getInterfaces();
+            ArrayList<PcapIf> interfaces = PcapUtils.getInterfaces();
             if (_args.containsKey("-external")) {
                 int ifExternalIdx = -1;
                 try {

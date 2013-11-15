@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.Criteria;
-import ph.edu.dlsu.chimera.core.InstanceManager;
+import ph.edu.dlsu.chimera.util.InstanceUtils;
 import ph.edu.dlsu.chimera.core.ModelFile;
 import ph.edu.dlsu.chimera.core.ModelLive;
-import ph.edu.dlsu.chimera.util.ToolsArray;
+import ph.edu.dlsu.chimera.util.ArrayUtils;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
@@ -56,13 +56,13 @@ public class ComponentTraining extends ComponentActive {
             criteriaDataSet.put(crt, File.createTempFile("exp(" + crt.expression.replaceAll(" ", "") + ")", ".trntmpcsv"));
         }
         //open writers and write headers
-        String[] attackHeader = {InstanceManager.ATTK_HEADER};
+        String[] attackHeader = {InstanceUtils.ATTK_HEADER};
         CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet));
-        connDataSetWriter.writeNext(ToolsArray.concat(InstanceManager.CORE_HEADERS, InstanceManager.CONN_HEADERS, attackHeader));
+        connDataSetWriter.writeNext(ArrayUtils.concat(InstanceUtils.CORE_HEADERS, InstanceUtils.CONN_HEADERS, attackHeader));
         HashMap<Criteria, CSVWriter> criteriaDataSetWriter = new HashMap<>();
         for (Criteria crt : criterias) {
             criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
-            criteriaDataSetWriter.get(crt).writeNext(ToolsArray.concat(InstanceManager.CORE_HEADERS, InstanceManager.getCriteriaHeaders(crt), attackHeader));
+            criteriaDataSetWriter.get(crt).writeNext(ArrayUtils.concat(InstanceUtils.CORE_HEADERS, InstanceUtils.getCriteriaHeaders(crt), attackHeader));
         }
         //get header
         String[] headers = reader.readNext();
@@ -73,17 +73,17 @@ public class ComponentTraining extends ComponentActive {
         String[] instance = null;
         while ((instance = reader.readNext()) != null) {
             //get subinstances
-            String[] core = InstanceManager.getCoreInstance(instance);
-            String[] conn = InstanceManager.getConnectionInstance(instance);
+            String[] core = InstanceUtils.getCoreInstance(instance);
+            String[] conn = InstanceUtils.getConnectionInstance(instance);
             HashMap<Criteria, String[]> crts = new HashMap<>();
             for (Criteria crt : criterias) {
-                crts.put(crt, InstanceManager.getCriteriaInstance(crt, headers, instance));
+                crts.put(crt, InstanceUtils.getCriteriaInstance(crt, headers, instance));
             }
             String[] attack = {instance[instance.length - 1]};
             //place core and attack header to subinstances
-            conn = ToolsArray.concat(core, conn, attack);
+            conn = ArrayUtils.concat(core, conn, attack);
             for (Criteria crt : criterias) {
-                crts.put(crt, ToolsArray.concat(core, crts.get(crt), attack));
+                crts.put(crt, ArrayUtils.concat(core, crts.get(crt), attack));
             }
             //write subinstances
             connDataSetWriter.writeNext(conn);

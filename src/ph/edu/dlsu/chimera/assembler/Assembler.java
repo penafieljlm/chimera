@@ -11,7 +11,7 @@ import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.pdu.PduComposite;
 import ph.edu.dlsu.chimera.core.Statistics;
-import ph.edu.dlsu.chimera.util.ToolsTime;
+import ph.edu.dlsu.chimera.util.TimeUtils;
 
 /**
  *
@@ -25,7 +25,7 @@ public abstract class Assembler extends Statistics {
     public Assembler(long timeCreatedNanos) {
         super(timeCreatedNanos);
         this.queue = new ConcurrentLinkedQueue<>();
-        this.currentConstructionStartedMs = ToolsTime.nowMs();
+        this.currentConstructionStartedMs = TimeUtils.nowMs();
     }
 
     public long getTimeCurrentConstructionStartedMs() {
@@ -33,7 +33,7 @@ public abstract class Assembler extends Statistics {
     }
 
     public long getOngoingConstructionTimeMs() {
-        return ToolsTime.nowMs() - this.currentConstructionStartedMs;
+        return TimeUtils.nowMs() - this.currentConstructionStartedMs;
     }
 
     public PduComposite poll() {
@@ -52,7 +52,7 @@ public abstract class Assembler extends Statistics {
 
     protected void outputPDU(PduComposite pdu) {
         this.queue.add(pdu);
-        this.currentConstructionStartedMs = ToolsTime.nowMs();
+        this.currentConstructionStartedMs = TimeUtils.nowMs();
     }
 
     @Override

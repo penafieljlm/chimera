@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.Criteria;
-import ph.edu.dlsu.chimera.core.InstanceManager;
+import ph.edu.dlsu.chimera.util.InstanceUtils;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.core.IntermodulePipe;
 
@@ -48,7 +48,7 @@ public class ComponentDumper extends ComponentActive {
     protected void componentRun() throws Exception {
         if (this.trainingFile != null) {
             CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
-            String[] headers = InstanceManager.getHeaders(this.criterias);
+            String[] headers = InstanceUtils.getHeaders(this.criterias);
             String[] _criterias = new String[this.criterias.length];
             for (int i = 0; i < this.criterias.length; i++) {
                 _criterias[i] = this.criterias[i].expression;
@@ -71,7 +71,7 @@ public class ComponentDumper extends ComponentActive {
                                 if (this.trainingFilter != null) {
                                     attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
                                 }
-                                String[] instance = InstanceManager.getInstance(this.criterias, pkt, attack);
+                                String[] instance = InstanceUtils.getInstance(this.criterias, pkt, attack);
                                 if (headers.length != instance.length) {
                                     throw new Exception("Error: [Dumper] Headers do not match data.");
                                 }
