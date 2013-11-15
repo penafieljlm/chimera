@@ -12,7 +12,7 @@ import org.jnetpcap.PcapIf;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class PcapUtils {
+public abstract class UtilsPcap {
 
     public static ArrayList<PcapIf> getInterfaces() throws Exception {
         StringBuilder pcapStrBldr = new StringBuilder();

@@ -8,10 +8,10 @@ package ph.edu.dlsu.chimera.util;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class TimeUtils {
+public abstract class UtilsTime {
 
     public static long nowNs() {
-        return TimeUtils.msToNs(System.currentTimeMillis());
+        return UtilsTime.msToNs(System.currentTimeMillis());
     }
 
     public static long nowMs() {

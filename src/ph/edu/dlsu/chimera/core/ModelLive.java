@@ -21,7 +21,7 @@ public class ModelLive {
         this.criteriaTrees = criteriaTrees;
     }
 
-    public ModelLive(ModelFile file) throws Exception {
+    public ModelLive(ModelSerializable file) throws Exception {
         this.connectionTree = file.connectionTree;
         HashMap<Criteria, J48> _criteriaTrees = new HashMap<>();
         for (String crt : file.criteriaTrees.keySet()) {

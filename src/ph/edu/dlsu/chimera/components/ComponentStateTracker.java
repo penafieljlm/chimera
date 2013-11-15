@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.PacketUtils;
+import ph.edu.dlsu.chimera.util.UtilsPacket;
 import ph.edu.dlsu.chimera.core.SocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.IntermodulePipe;
@@ -60,7 +60,7 @@ public final class ComponentStateTracker extends ComponentActive {
                                 try {
                                     if (pkt.packet.hasHeader(new Tcp())) {
                                         //tcp packets
-                                        SocketPair socks = PacketUtils.getSocketPair(pkt.packet);
+                                        SocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
                                         Tcp tcp = pkt.packet.getHeader(new Tcp());
                                         //create state
                                         if (!this.stateTable.containsKey(socks)) {

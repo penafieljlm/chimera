@@ -28,8 +28,8 @@ import ph.edu.dlsu.chimera.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.components.ComponentStatisticsTracker;
 import ph.edu.dlsu.chimera.core.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.util.PcapUtils;
-import ph.edu.dlsu.chimera.util.ParseUtils;
+import ph.edu.dlsu.chimera.util.UtilsPcap;
+import ph.edu.dlsu.chimera.util.UtilsParse;
 
 /**
  *
@@ -40,16 +40,17 @@ public class cgather {
     public static final String USAGE = ""
             + "\nCHIMERA Gather Command Usage (cgather)"
             + "\nDescription:"
-            + "\n    The cgather command starts the CHIMERA's data gathering phase."
+            + "\n    The cgather command starts the CHIMERA's Data Gathering phase."
             + "\n    The training set used in the Training Phase is compiled in this phase."
             + "\n    This phase produces the said training set using the traffic captured."
-            + "\n    Training sets produced are stored on .csv files."
+            + "\n    Training set produced is stored on a .csv file."
             + "\nSyntax:"
             + "\n    cgather (((-<varname> <value>) | (/<flag>))[ ])*(((-<varname> <value>) | (/<flag>)))"
             + "\nParameters"
             + "\n    -output"
             + "\n        DESCRIPTION"
             + "\n            The output file name of the training set to be produced."
+            + "\n            Automatically ends with '.ctset'."
             + "\n        REQUIRED........ Yes"
             + "\n    -external"
             + "\n        DESCRIPTION"
@@ -146,13 +147,13 @@ public class cgather {
             Criteria[] criterias = Criteria.loadCriterias();
 
             //parse args
-            HashMap<String, String> _args = ParseUtils.parseArgs(args);
+            HashMap<String, String> _args = UtilsParse.parseArgs(args);
 
             //load dump file
             if (!_args.containsKey("-output")) {
                 throw new Exception("The argument '-output' must be provided.");
             }
-            File trainingDumpFile = new File(_args.get("-output"));
+            File trainingDumpFile = new File(_args.get("-output") + ".ctset");
 
             //load interfaces
             int ifExternalIdx = -1;
@@ -171,7 +172,7 @@ public class cgather {
             } catch (Exception ex) {
                 throw new Exception("The argument '-internal' must provide a numerical value.");
             }
-            ArrayList<PcapIf> interfaces = PcapUtils.getInterfaces();
+            ArrayList<PcapIf> interfaces = UtilsPcap.getInterfaces();
             String ifExternalName = null;
             String ifInternalName = null;
             try {
@@ -278,7 +279,6 @@ public class cgather {
             ifExternalPort.stop();
             ifInternalPort.stop();
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
             return;

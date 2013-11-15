@@ -17,7 +17,7 @@ import ph.edu.dlsu.chimera.core.SocketPair;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public abstract class PacketUtils {
+public abstract class UtilsPacket {
 
     public static SocketPair getSocketPair(PcapPacket pkt) {
         try {

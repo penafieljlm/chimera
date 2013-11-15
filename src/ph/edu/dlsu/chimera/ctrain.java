@@ -4,83 +4,89 @@
  */
 package ph.edu.dlsu.chimera;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import weka.classifiers.Evaluation;
-import weka.classifiers.trees.J48;
-import weka.core.Instances;
-import weka.core.converters.ConverterUtils.DataSource;
+import java.util.HashMap;
+import ph.edu.dlsu.chimera.core.ModelSerializable;
+import ph.edu.dlsu.chimera.core.ModelLive;
+import ph.edu.dlsu.chimera.util.UtilsParse;
+import ph.edu.dlsu.chimera.util.UtilsTraining;
 
 /**
  *
- * @author Emerson Chua
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class ctrain {
 
-    public static String instanceFilePath = "C:/Users/Fili Emerson Chua/Dropbox/DLSU Shared/CHIMERA/Proof of Concept/redefensedataset.csv";
-    public static String classifierOptions = "-C 0.25 -M 2";
-    public static String modelFile = "C:/Users/Fili Emerson Chua/Dropbox/DLSU Shared/CHIMERA/Proof of Concept/baseline.model";
-    
-    /**
-     * @param args the command line arguments
-     */
+    public static final String USAGE = ""
+            + "\nCHIMERA Training Command Usage (ctrain)"
+            + "\nDescription:"
+            + "\n    The ctrain command starts the CHIMERA's model building phase."
+            + "\n    The 'normal' model used in the Production Phase is built in this phase."
+            + "\n    This phase produces the said model using the training set captured during Data Gathering."
+            + "\n    The model produced is stored on a .cmodel file."
+            + "\nSyntax:"
+            + "\n    ctrain (((-<varname> <value>) | (/<flag>))[ ])*(((-<varname> <value>) | (/<flag>)))"
+            + "\nParameters"
+            + "\n    -input"
+            + "\n        DESCRIPTION"
+            + "\n            The input file name of the training set file."
+            + "\n            Automatically ends with '.ctset'."
+            + "\n        REQUIRED........ Yes"
+            + "\n    -output"
+            + "\n        DESCRIPTION"
+            + "\n            The output file name of the model to be produced."
+            + "\n            Automatically ends with '.cmodel'."
+            + "\n        REQUIRED........ Yes";
+
     public static void main(String[] args) {
         try {
-            //read data source
-            DataSource source = new DataSource(instanceFilePath);
-            Instances data = source.getDataSet();
-            
-            //set class attribute
-            if (data.classIndex() == -1) {
-                data.setClassIndex(data.numAttributes() - 1);
+            //help
+            if (args.length == 1) {
+                if (args[0].equals("/help")) {
+                    System.out.println(ctrain.USAGE);
+                    return;
+                }
             }
-            
-            String[] options = weka.core.Utils.splitOptions(classifierOptions);
-            
-            J48 tree = new J48();
-            tree.setOptions(options);
-            tree.buildClassifier(data);
-            
-            System.out.println("\nNumber of Leaves: " + tree.measureNumLeaves());
-            System.out.println("\nSize of the Tree: " + tree.measureTreeSize());
-            
-            Evaluation eval = new Evaluation(data);
-            double x[] = eval.evaluateModel(tree, data);
-            System.out.println(eval.toSummaryString("\n== Evaluation on Training Set ==\n", false));
-            
-            System.out.println("Eval result");
-            int oneCount = 0;
-            int zeroCount = 0;
-            for(double d : x) {
-                if(d == 1.0)
-                    oneCount++;
-                if(d == 0.0)
-                    zeroCount++;
-                System.out.println(d);
+
+            //parse args
+            HashMap<String, String> _args = UtilsParse.parseArgs(args);
+
+            //load training file
+            if (!_args.containsKey("-input")) {
+                throw new Exception("The argument '-input' must be provided.");
             }
-            System.out.println("ONE: " + oneCount);
-            System.out.println("ZERO: " + zeroCount);
-            
-            ObjectOutputStream oos = new ObjectOutputStream(
-                    new FileOutputStream(modelFile));
-            
-            oos.writeObject(tree);
+            File trainingFile = new File(_args.get("-input") + ".ctset");
+
+            //load model file
+            if (!_args.containsKey("-output")) {
+                throw new Exception("The argument '-output' must be provided.");
+            }
+            File modelFile = new File(_args.get("-output") + ".cmodel");
+
+            //create model
+            ModelLive model = UtilsTraining.createModel(trainingFile);
+
+            //wrap into serializable model
+            ModelSerializable modelSerializable = new ModelSerializable(model);
+
+            //open output stream
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
+
+            //write
+            oos.writeObject(modelSerializable);
+
+            //flush
             oos.flush();
+
+            //close
             oos.close();
-            
-            System.out.println(tree.graph());
-            
+
         } catch (Exception ex) {
-            Logger.getLogger(ctrain.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println(ex.getMessage());
+            System.out.println("Type 'ctrain /help' to see usage.");
+            return;
         }
     }
-    
-    
-//    // deserialize model
-//    ObjectInputStream ois = new ObjectInputStream(
-//                              new FileInputStream("/some/where/j48.model"));
-//    Classifier cls = (Classifier) ois.readObject();
-//    ois.close();
 }
