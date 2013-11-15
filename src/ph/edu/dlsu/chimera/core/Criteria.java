@@ -12,8 +12,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.core.reflection.PacketField;
-import ph.edu.dlsu.chimera.core.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.reflection.PacketField;
+import ph.edu.dlsu.chimera.reflection.PacketFilter;
 
 /**
  *

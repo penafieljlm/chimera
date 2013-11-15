@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.core;
 import java.util.Collections;
 import java.util.List;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.server.assembly.components.data.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.pdu.PduAtomic;
 
 /**
  *
