@@ -13,7 +13,7 @@ import ph.edu.dlsu.chimera.core.SocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.assembler.AssemblerUdp;
-import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.util.UtilsPacket;
 
 /**

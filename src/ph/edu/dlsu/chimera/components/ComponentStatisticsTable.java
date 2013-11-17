@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.Statistics;
-import ph.edu.dlsu.chimera.core.Criteria;
-import ph.edu.dlsu.chimera.core.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.criteria.Criteria;
+import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 
 /**
  *

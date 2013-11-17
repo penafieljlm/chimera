@@ -10,7 +10,7 @@ import com.gremwell.jnetbridge.QueueingPortListener;
 import java.util.ArrayList;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 

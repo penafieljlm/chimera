@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.components;
 import com.gremwell.jnetbridge.PcapPort;
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 
 /**

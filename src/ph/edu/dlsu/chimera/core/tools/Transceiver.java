@@ -1,4 +1,4 @@
-package ph.edu.dlsu.chimera.core;
+package ph.edu.dlsu.chimera.core.tools;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

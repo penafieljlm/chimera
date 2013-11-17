@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.Statistics;
-import ph.edu.dlsu.chimera.core.Criteria;
-import ph.edu.dlsu.chimera.core.CriteriaInstance;
-import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.core.criteria.Criteria;
+import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
  *

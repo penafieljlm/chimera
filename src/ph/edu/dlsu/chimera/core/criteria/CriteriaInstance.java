@@ -2,10 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.core;
+package ph.edu.dlsu.chimera.core.criteria;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
+import ph.edu.dlsu.chimera.core.iptables.IpTablesChain;
 
 /**
  *
@@ -13,10 +15,12 @@ import java.util.Objects;
  */
 public final class CriteriaInstance {
 
-    public final Object[] criteriaId;
+    public static final String CHAIN_PREFIX = "ccrtinstchain(";
+    public static final String CHAIN_SUFFIX = ")";
+    public final BigInteger[] criteriaId;
     public final Criteria criteria;
 
-    public CriteriaInstance(Object[] criteriaId, Criteria criteria) {
+    public CriteriaInstance(BigInteger[] criteriaId, Criteria criteria) {
         this.criteriaId = criteriaId;
         this.criteria = criteria;
     }
@@ -26,7 +30,7 @@ public final class CriteriaInstance {
         for (Object o : this.criteriaId) {
             if (o instanceof Object[]) {
                 Object[] oba = (Object[]) o;
-                for(Object obae : oba) {
+                for (Object obae : oba) {
                     id = id.append("[").append(obae.toString()).append("]");
                 }
             } else {
@@ -58,5 +62,18 @@ public final class CriteriaInstance {
         hash = 67 * hash + Arrays.deepHashCode(this.criteriaId);
         hash = 67 * hash + Objects.hashCode(this.criteria);
         return hash;
+    }
+
+    public String getChainName() {
+        StringBuilder id = new StringBuilder();
+        for (BigInteger o : this.criteriaId) {
+            id.append(o).append(".");
+        }
+        return CriteriaInstance.CHAIN_PREFIX + id.substring(0, id.length() - 1) + CriteriaInstance.CHAIN_SUFFIX;
+    }
+
+    public IpTablesChain getChain() {
+        //TODO: implement
+        return null;
     }
 }

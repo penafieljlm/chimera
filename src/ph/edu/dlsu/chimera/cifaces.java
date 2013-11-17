@@ -5,8 +5,8 @@
 package ph.edu.dlsu.chimera;
 
 import org.jnetpcap.PcapIf;
-import ph.edu.dlsu.chimera.core.NicData;
-import ph.edu.dlsu.chimera.core.NicDataAddress;
+import ph.edu.dlsu.chimera.core.nic.NicData;
+import ph.edu.dlsu.chimera.core.nic.NicDataAddress;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
 
 /**

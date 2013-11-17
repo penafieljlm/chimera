@@ -1,5 +1,6 @@
 package ph.edu.dlsu.chimera.core;
 
+import ph.edu.dlsu.chimera.core.tools.Transceiver;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
@@ -8,7 +9,6 @@ import java.util.logging.Logger;
 import ph.edu.dlsu.chimera.messages.Response;
 import ph.edu.dlsu.chimera.messages.ResponseException;
 import ph.edu.dlsu.chimera.components.Component;
-import ph.edu.dlsu.chimera.core.Transceiver;
 import ph.edu.dlsu.chimera.messages.MessageBlank;
 import ph.edu.dlsu.chimera.messages.Command;
 

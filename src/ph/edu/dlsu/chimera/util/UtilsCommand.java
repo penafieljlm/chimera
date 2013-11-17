@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.util;
 
 import java.io.PrintStream;
 import java.net.Socket;
-import ph.edu.dlsu.chimera.core.Transceiver;
+import ph.edu.dlsu.chimera.core.tools.Transceiver;
 import ph.edu.dlsu.chimera.messages.Response;
 import ph.edu.dlsu.chimera.messages.MessageFinished;
 import ph.edu.dlsu.chimera.messages.Command;

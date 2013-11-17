@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.core;
+package ph.edu.dlsu.chimera.core.model;
 
+import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import java.io.Serializable;
 import java.util.HashMap;
 import weka.classifiers.trees.J48;

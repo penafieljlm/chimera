@@ -12,7 +12,7 @@ import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsPacket;
 import ph.edu.dlsu.chimera.core.SocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
-import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
  * Tracks states and ensures TCP delivery.

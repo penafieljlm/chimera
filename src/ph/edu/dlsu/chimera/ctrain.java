@@ -8,8 +8,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.core.ModelSerializable;
-import ph.edu.dlsu.chimera.core.ModelLive;
+import ph.edu.dlsu.chimera.core.model.ModelSerializable;
+import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 

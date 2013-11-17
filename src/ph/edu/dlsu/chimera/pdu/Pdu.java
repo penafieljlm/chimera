@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.pdu;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.Statistics;
-import ph.edu.dlsu.chimera.core.Criteria;
+import ph.edu.dlsu.chimera.core.criteria.Criteria;
 
 /**
  *
