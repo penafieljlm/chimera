@@ -2,11 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.core;
+package ph.edu.dlsu.chimera.core.criteria;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -70,7 +71,7 @@ public final class Criteria {
                 return null;
             }
         }
-        Object[] cId = new Object[this.subjects.length];
+        BigInteger[] cId = new BigInteger[this.subjects.length];
         for (int i = 0; i < this.subjects.length; i++) {
             cId[i] = this.subjects[i].getFieldValue(pkt);
             if (cId[i] == null) {

@@ -4,7 +4,7 @@
  */
 package ph.edu.dlsu.chimera.components;
 
-import ph.edu.dlsu.chimera.core.IntermodulePipe;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.Pdu;
 
 /**

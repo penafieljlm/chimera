@@ -6,7 +6,7 @@ package ph.edu.dlsu.chimera.assembler;
 
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Connection;
-import ph.edu.dlsu.chimera.core.TcpQueue;
+import ph.edu.dlsu.chimera.core.tools.TcpQueue;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 
 /**
