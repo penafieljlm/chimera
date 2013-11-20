@@ -19,9 +19,9 @@ public abstract class PduComposite extends Pdu {
 
     public PduComposite(Connection connection,
             Assembler assembler,
-            boolean inbound,
+            boolean ingress,
             long timestampInNanos) {
-        super(inbound, timestampInNanos);
+        super(ingress, timestampInNanos);
         this.connection = connection;
         this.assembler = assembler;
     }

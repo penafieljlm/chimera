@@ -4,11 +4,11 @@
  */
 package ph.edu.dlsu.chimera;
 
-import com.gremwell.jnetbridge.PcapPort;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jnetpcap.Pcap.Direction;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Connection;
@@ -52,15 +52,9 @@ public class cgather {
             + "\n            The output file name of the training set to be produced."
             + "\n            Automatically ends with '.ctset'."
             + "\n        REQUIRED........ Yes"
-            + "\n    -external"
+            + "\n    -protected"
             + "\n        DESCRIPTION"
-            + "\n            The index of the external interface."
-            + "\n            Refer to the output of the 'cifaces' command."
-            + "\n        REQUIRED........ No"
-            + "\n        DEFAULT VALUE... as specified in the 'chimera.config' file"
-            + "\n    -internal"
-            + "\n        DESCRIPTION"
-            + "\n            The index of the internal interface."
+            + "\n            The index of the interface facing the protected network."
             + "\n            Refer to the output of the 'cifaces' command."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... as specified in the 'chimera.config' file"
@@ -156,46 +150,20 @@ public class cgather {
             File trainingDumpFile = new File(_args.get("-output") + ".ctset");
 
             //load interfaces
-            int ifExternalIdx = -1;
-            int ifInternalIdx = -1;
+            int ifProtectedIdx = -1;
             try {
-                if (_args.containsKey("-external")) {
-                    ifExternalIdx = Integer.parseInt(_args.get("-external"));
+                if (_args.containsKey("-protected")) {
+                    ifProtectedIdx = Integer.parseInt(_args.get("-protected"));
                 }
             } catch (Exception ex) {
-                throw new Exception("The argument '-external' must provide a numerical value.");
-            }
-            try {
-                if (_args.containsKey("-internal")) {
-                    ifInternalIdx = Integer.parseInt(_args.get("-internal"));
-                }
-            } catch (Exception ex) {
-                throw new Exception("The argument '-internal' must provide a numerical value.");
+                throw new Exception("The argument '-protected' must provide a numerical value.");
             }
             ArrayList<PcapIf> interfaces = UtilsPcap.getInterfaces();
-            String ifExternalName = null;
-            String ifInternalName = null;
+            PcapIf ifProtected = null;
             try {
-                ifExternalName = (ifExternalIdx < 0) ? config.ifExternal : interfaces.get(ifExternalIdx).getName();
+                ifProtected = interfaces.get(ifProtectedIdx);
             } catch (Exception ex) {
-                throw new Exception("Interface index '" + ifExternalIdx + "' is invalid.");
-            }
-            try {
-                ifInternalName = (ifInternalIdx < 0) ? config.ifInternal : interfaces.get(ifInternalIdx).getName();
-            } catch (Exception ex) {
-                throw new Exception("Interface index '" + ifInternalIdx + "' is invalid.");
-            }
-            PcapPort ifExternalPort = null;
-            PcapPort ifInternalPort = null;
-            try {
-                ifExternalPort = new PcapPort(ifExternalName);
-            } catch (Exception ex) {
-                throw new Exception("Cannot open external interface.");
-            }
-            try {
-                ifInternalPort = new PcapPort(ifInternalName);
-            } catch (Exception ex) {
-                throw new Exception("Cannot open internal interface.");
+                throw new Exception("Interface index '" + ifProtectedIdx + "' is invalid.");
             }
 
             //exclude filter
@@ -222,15 +190,12 @@ public class cgather {
                 tagFilteredAsAttacks = Boolean.parseBoolean(_args.get("/attack"));
             }
 
-            ifExternalPort.start();
-            ifInternalPort.start();
-
-            //inbound queues
+            //ingress queues
             IntermodulePipe<PduAtomic> exGatherSniffOut = new IntermodulePipe<>();
             IntermodulePipe<PduAtomic> exGatherStatsOut = new IntermodulePipe<>();
             IntermodulePipe<PduAtomic> exGatherStateOut = new IntermodulePipe<>();
 
-            //outbound queues
+            //egress queues
             IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
 
             //shared resources
@@ -244,15 +209,15 @@ public class cgather {
             components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
-            //inbound path
-            components.put("ex.gather.sniff", new ComponentSniffer(ifExternalPort, exGatherSniffOut, accessFilter, allowFiltered, true));
-            components.put("ex.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
-            components.put("ex.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-            components.put("ex.gather.dumper", new ComponentDumper(exGatherStateOut, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
+            //ingress path
+            components.put("in.gather.sniff", new ComponentSniffer(ifProtected, exGatherSniffOut, accessFilter, allowFiltered, true, Direction.OUT));
+            components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
+            components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
+            components.put("in.gather.dumper", new ComponentDumper(exGatherStateOut, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
 
-            //outbound path
-            components.put("in.gather.sniff", new ComponentSniffer(ifInternalPort, inGatherSniffOut, accessFilter, allowFiltered, false));
-            components.put("in.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
+            //egress path
+            components.put("eg.gather.sniff", new ComponentSniffer(ifProtected, inGatherSniffOut, accessFilter, allowFiltered, false, Direction.IN));
+            components.put("eg.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
 
             //controller
             ComponentController controller = new ComponentController(components, config.controlPort);
@@ -274,10 +239,6 @@ public class cgather {
                 }
             }
             controller.join();
-
-            //end
-            ifExternalPort.stop();
-            ifInternalPort.stop();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");

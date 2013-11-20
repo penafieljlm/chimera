@@ -20,8 +20,8 @@ public class PduAtomic extends Pdu {
     private Connection connection;
 
     public PduAtomic(PcapPacket packet,
-            boolean inbound) {
-        super(inbound, packet.getCaptureHeader().timestampInNanos());
+            boolean ingress) {
+        super(ingress, packet.getCaptureHeader().timestampInNanos());
         this.packet = packet;
         this.connection = null;
     }

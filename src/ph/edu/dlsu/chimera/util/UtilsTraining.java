@@ -75,16 +75,16 @@ public abstract class UtilsTraining {
     public static String[] getConnectionInstance(PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
         Connection conn = packet.getConnection();
-        instance.add("" + ((conn == null) ? null : conn.inboundLastEncounterDeltaNs()));
-        instance.add("" + ((conn == null) ? null : conn.outboundLastEncounterDeltaNs()));
-        instance.add("" + ((conn == null) ? null : conn.inboundEncounters()));
-        instance.add("" + ((conn == null) ? null : conn.outboundEncounters()));
-        instance.add("" + ((conn == null) ? null : conn.inboundTotalSize()));
-        instance.add("" + ((conn == null) ? null : conn.outboundTotalSize()));
-        instance.add("" + ((conn == null) ? null : conn.inboundAverageSize()));
-        instance.add("" + ((conn == null) ? null : conn.outboundAverageSize()));
-        instance.add("" + ((conn == null) ? null : conn.inboundRatePerSec()));
-        instance.add("" + ((conn == null) ? null : conn.outboundRatePerSec()));
+        instance.add("" + ((conn == null) ? null : conn.ingressLastEncounterDeltaNs()));
+        instance.add("" + ((conn == null) ? null : conn.egressLastEncounterDeltaNs()));
+        instance.add("" + ((conn == null) ? null : conn.ingressEncounters()));
+        instance.add("" + ((conn == null) ? null : conn.egressEncounters()));
+        instance.add("" + ((conn == null) ? null : conn.ingressTotalSize()));
+        instance.add("" + ((conn == null) ? null : conn.egressTotalSize()));
+        instance.add("" + ((conn == null) ? null : conn.ingressAverageSize()));
+        instance.add("" + ((conn == null) ? null : conn.egressAverageSize()));
+        instance.add("" + ((conn == null) ? null : conn.ingressRatePerSec()));
+        instance.add("" + ((conn == null) ? null : conn.egressRatePerSec()));
         return instance.toArray(new String[0]);
     }
 

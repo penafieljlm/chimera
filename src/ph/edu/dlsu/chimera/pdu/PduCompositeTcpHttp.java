@@ -4,11 +4,8 @@
  */
 package ph.edu.dlsu.chimera.pdu;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.assembler.Assembler;
 import ph.edu.dlsu.chimera.core.Connection;
-import ph.edu.dlsu.chimera.core.SocketPair;
-import ph.edu.dlsu.chimera.pdu.PduCompositeTcp;
 
 /**
  *
@@ -23,9 +20,9 @@ public class PduCompositeTcpHttp extends PduCompositeTcp {
             Assembler assembler,
             String header,
             String body,
-            boolean inbound,
+            boolean ingress,
             long timestampInNanos) {
-        super(connection, assembler, inbound, timestampInNanos);
+        super(connection, assembler, ingress, timestampInNanos);
         this.header = header;
         this.body = body;
     }

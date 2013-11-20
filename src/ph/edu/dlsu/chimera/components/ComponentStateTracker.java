@@ -65,7 +65,7 @@ public final class ComponentStateTracker extends ComponentActive {
                                         //create state
                                         if (!this.stateTable.containsKey(socks)) {
                                             if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                                this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), pkt.inbound));
+                                                this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), pkt.ingress));
                                             }
                                         }
                                         if (this.stateTable.containsKey(socks)) {

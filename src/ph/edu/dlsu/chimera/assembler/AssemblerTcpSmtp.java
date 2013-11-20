@@ -38,7 +38,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
             this.messageBuilder.append(data);
             if (data.endsWith(AssemblerTcpSmtp.TOKEN_DAT_END)) {
                 //data segment ends
-                this.finishSmtp(pkt.inbound, pkt.timestampInNanos);
+                this.finishSmtp(pkt.ingress, pkt.timestampInNanos);
             }
         } else {
             StringBuilder tdata = new StringBuilder(data);
@@ -48,7 +48,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
                 tdata = tdata.delete(0, msgend);
                 this.messageBuilder = this.messageBuilder.append(msgstr);
                 String msg = this.messageBuilder.toString();
-                this.finishSmtp(pkt.inbound, pkt.timestampInNanos);
+                this.finishSmtp(pkt.ingress, pkt.timestampInNanos);
                 if (msg.toUpperCase().startsWith(AssemblerTcpSmtp.TOKEN_CMD_DATA)) {
                     //data clause received
                     this.dataOpen = true;
@@ -75,12 +75,12 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
         this.expectingCmd = false;
     }
 
-    private void finishSmtp(boolean inbound, long timestampInNanos) {
+    private void finishSmtp(boolean ingress, long timestampInNanos) {
         PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(super.connection,
                 this,
                 this.messageBuilder.toString(),
                 !this.dataOpen,
-                inbound,
+                ingress,
                 timestampInNanos);
         super.outputPDU(http);
         this.resetSmtp();

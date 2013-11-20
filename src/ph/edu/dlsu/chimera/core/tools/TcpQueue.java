@@ -27,7 +27,7 @@ public final class TcpQueue {
         try {
             if (packet.packet.hasHeader(new Tcp())) {
                 Tcp tcp = packet.packet.getHeader(new Tcp());
-                if (packet.inbound) {
+                if (packet.ingress) {
                     if (tcp.getPayloadLength() > 0 && this.inNextSequenceNo <= tcp.seq()) {
                         if (!this.contains(tcp)) {
                             return this.inQueue.add(packet);

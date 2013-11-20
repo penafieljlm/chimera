@@ -66,7 +66,7 @@ public class ComponentDumper extends ComponentActive {
                     while (!this.inQueue.isEmpty()) {
                         PduAtomic pkt = this.inQueue.poll();
                         synchronized (pkt) {
-                            if (pkt.inbound) {
+                            if (pkt.ingress) {
                                 boolean attack = this.tagFilteredAsAttack;
                                 if (this.trainingFilter != null) {
                                     attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
@@ -79,7 +79,7 @@ public class ComponentDumper extends ComponentActive {
                                 writer.flush();
                                 this.processed++;
                             } else {
-                                throw new Exception("Error: [Dumper] Encountered outbound packet.");
+                                throw new Exception("Error: [Dumper] Encountered egress packet.");
                             }
                         }
                     }

@@ -19,15 +19,13 @@ import java.io.IOException;
 public final class Config {
 
     public int controlPort;
-    public String ifExternal;
-    public String ifInternal;
+    public String ifProtected;
     public long statsTimeoutMs;
     public long stateTimeoutMs;
 
     public Config() {
         this.controlPort = 9999;
-        this.ifExternal = null;
-        this.ifInternal = null;
+        this.ifProtected = null;
         this.statsTimeoutMs = 300000;
         this.stateTimeoutMs = 300000;
     }
