@@ -56,7 +56,7 @@ public final class ComponentStateTable extends ComponentActive {
                     int insprt;
                     String ext;
                     int extprt;
-                    if (connection.inbound) {
+                    if (connection.ingress) {
                         ins = socks.destination.getHostAddress();
                         insprt = socks.destinationPort;
                         ext = socks.source.getHostAddress();

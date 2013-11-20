@@ -67,7 +67,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
                         this.bodyBuilder.append(body);
                     }
                     if (this.bodyLength == 0) {
-                        this.finishHttp(pkt.inbound, pkt.timestampInNanos);
+                        this.finishHttp(pkt.ingress, pkt.timestampInNanos);
                     }
                 }
             } else {
@@ -80,12 +80,12 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
             if (this.keepAlive) {
                 //wait until body length reached
                 if (this.bodyBuilder.toString().length() >= this.bodyLength) {
-                    this.finishHttp(pkt.inbound, pkt.timestampInNanos);
+                    this.finishHttp(pkt.ingress, pkt.timestampInNanos);
                 }
             } else {
                 //wait until fin flag
                 if (tcp.flags_FIN()) {
-                    this.finishHttp(pkt.inbound, pkt.timestampInNanos);
+                    this.finishHttp(pkt.ingress, pkt.timestampInNanos);
                 }
             }
         }
@@ -107,12 +107,12 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
         this.bodyLength = -1;
     }
 
-    private void finishHttp(boolean inbound, long timestampInNanos) {
+    private void finishHttp(boolean ingress, long timestampInNanos) {
         PduCompositeTcpHttp http = new PduCompositeTcpHttp(super.connection,
                 this,
                 this.headerBuilder.toString(),
                 this.bodyBuilder.toString(),
-                inbound,
+                ingress,
                 timestampInNanos);
         super.outputPDU(http);
         this.resetHttp();

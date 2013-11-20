@@ -11,7 +11,6 @@ import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 
-
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
@@ -32,16 +31,9 @@ public class cconfig {
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n        DEFAULT CONFIG.. 9999"
-            + "\n    -external"
+            + "\n    -protected"
             + "\n        DESCRIPTION"
-            + "\n            The index of the external interface."
-            + "\n            Refer to the output of the 'cifaces' command."
-            + "\n        REQUIRED........ No"
-            + "\n        DEFAULT VALUE... N/A"
-            + "\n        DEFAULT CONFIG.. N/A"
-            + "\n    -internal"
-            + "\n        DESCRIPTION"
-            + "\n            The index of the internal interface."
+            + "\n            The index of the interface facing the protected network."
             + "\n            Refer to the output of the 'cifaces' command."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
@@ -91,35 +83,20 @@ public class cconfig {
 
             //interfaces
             ArrayList<PcapIf> interfaces = UtilsPcap.getInterfaces();
-            if (_args.containsKey("-external")) {
-                int ifExternalIdx = -1;
+            if (_args.containsKey("-protected")) {
+                int ifProtectedIdx = -1;
                 try {
-                    ifExternalIdx = Integer.parseInt(_args.get("-external"));
+                    ifProtectedIdx = Integer.parseInt(_args.get("-protected"));
                 } catch (Exception ex) {
-                    throw new Exception("The argument '-external' must provide a numerical value.");
+                    throw new Exception("The argument '-protected' must provide a numerical value.");
                 }
-                String ifExternalName = null;
+                String ifProtectedName = null;
                 try {
-                    ifExternalName = (ifExternalIdx < 0) ? config.ifExternal : interfaces.get(ifExternalIdx).getName();
+                    ifProtectedName = (ifProtectedIdx < 0) ? config.ifProtected : interfaces.get(ifProtectedIdx).getName();
                 } catch (Exception ex) {
-                    throw new Exception("Interface index '" + ifExternalIdx + "' is invalid.");
+                    throw new Exception("Interface index '" + ifProtectedIdx + "' is invalid.");
                 }
-                config.ifExternal = ifExternalName;
-            }
-            if (_args.containsKey("-internal")) {
-                int ifInternalIdx = -1;
-                try {
-                    ifInternalIdx = Integer.parseInt(_args.get("-internal"));
-                } catch (Exception ex) {
-                    throw new Exception("The argument '-internal' must provide a numerical value.");
-                }
-                String ifInternalName = null;
-                try {
-                    ifInternalName = (ifInternalIdx < 0) ? config.ifInternal : interfaces.get(ifInternalIdx).getName();
-                } catch (Exception ex) {
-                    throw new Exception("Interface index '" + ifInternalIdx + "' is invalid.");
-                }
-                config.ifInternal = ifInternalName;
+                config.ifProtected = ifProtectedName;
             }
 
             //state timout
@@ -145,11 +122,10 @@ public class cconfig {
             if (_args.containsKey("/show")) {
                 show = Boolean.parseBoolean(_args.get("/show"));
             }
-            if(show) {
+            if (show) {
                 System.out.println("CHIMERA Configuration:");
                 System.out.println("    config.controlPort....." + config.controlPort);
-                System.out.println("    config.ifExternal......" + config.ifExternal);
-                System.out.println("    config.ifInternal......" + config.ifInternal);
+                System.out.println("    config.ifProtected....." + config.ifProtected);
                 System.out.println("    config.stateTimeoutMs.." + config.stateTimeoutMs);
                 System.out.println("    config.statsTimeoutMs.." + config.statsTimeoutMs);
             }

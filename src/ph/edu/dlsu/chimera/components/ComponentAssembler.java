@@ -66,7 +66,7 @@ public final class ComponentAssembler extends ComponentActive {
                     //poll packet
                     PduAtomic pkt = this.inQueue.poll();
                     synchronized (pkt) {
-                        if (pkt.inbound) {
+                        if (pkt.ingress) {
                             //tcp forward
                             try {
                                 if (pkt.packet.hasHeader(new Tcp())) {
@@ -81,7 +81,7 @@ public final class ComponentAssembler extends ComponentActive {
                                 this.outQueue.add(pkt);
                             }
                         } else {
-                            throw new Exception("Error: [Assembler] Encountered outbound packet.");
+                            throw new Exception("Error: [Assembler] Encountered egress packet.");
                         }
                     }
                 }

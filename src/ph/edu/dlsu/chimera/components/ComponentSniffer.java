@@ -4,11 +4,11 @@
  */
 package ph.edu.dlsu.chimera.components;
 
-import com.gremwell.jnetbridge.IngressPacket;
-import com.gremwell.jnetbridge.PcapPort;
-import com.gremwell.jnetbridge.QueueingPortListener;
 import java.util.ArrayList;
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
@@ -18,36 +18,40 @@ import ph.edu.dlsu.chimera.reflection.PacketFilter;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentSniffer extends ComponentActive {
+public final class ComponentSniffer extends ComponentActive implements PcapPacketHandler<Pcap> {
 
-    public final boolean inbound;
-    public final PcapPort inPcapPort;
+    public final PcapIf inPcapPort;
     public final IntermodulePipe<PduAtomic> outQueue;
     public final PacketFilter accessFilter;
     public final boolean allowFiltered;
+    public final boolean ingress;
+    public final Pcap.Direction direction;
     private long received;
 
-    public ComponentSniffer(PcapPort inPcapPort,
+    public ComponentSniffer(PcapIf inPcapIf,
             IntermodulePipe<PduAtomic> outQueue,
             PacketFilter accessFilter,
             boolean allowFiltered,
-            boolean inbound) {
+            boolean ingress,
+            Pcap.Direction direction) {
         this.setPriority(Thread.MAX_PRIORITY);
-        this.inbound = inbound;
-        this.inPcapPort = inPcapPort;
+        this.inPcapPort = inPcapIf;
         this.outQueue = outQueue;
         if (this.outQueue != null) {
             this.outQueue.setWriter(this);
         }
         this.accessFilter = accessFilter;
         this.allowFiltered = allowFiltered;
+        this.ingress = ingress;
+        this.direction = direction;
         this.received = 0;
     }
 
-    public ComponentSniffer(PcapPort inPcapPort,
+    public ComponentSniffer(PcapIf inPcapIf,
             IntermodulePipe<PduAtomic> outQueue,
-            boolean inbound) {
-        this(inPcapPort, outQueue, null, true, inbound);
+            boolean ingress,
+            Pcap.Direction direction) {
+        this(inPcapIf, outQueue, null, true, ingress, direction);
     }
 
     @Override
@@ -55,20 +59,39 @@ public final class ComponentSniffer extends ComponentActive {
         if (this.inPcapPort == null) {
             throw new Exception("Error: [Sniffer] Unable to access capture device.");
         }
-        QueueingPortListener inQueue = new QueueingPortListener();
-        this.inPcapPort.setListener(inQueue);
-        while (super.running) {
-            IngressPacket pkt = inQueue.receive();
-            this.received++;
-            if (this.outQueue != null) {
-                PcapPacket pcappkt = new PcapPacket(pkt.packet);
-                boolean allow = this.allowFiltered;
-                if (this.accessFilter != null) {
-                    allow = !(this.accessFilter.matches(pcappkt) ^ allow);
-                }
-                if (allow) {
-                    this.outQueue.add(new PduAtomic(pcappkt, this.inbound));
-                }
+        StringBuilder errBuff = new StringBuilder();
+        Pcap pcap;
+        try {
+            pcap = Pcap.openLive(this.inPcapPort.getName(), 64 * 1024, Pcap.MODE_PROMISCUOUS, 1, errBuff);
+        } catch (Exception ex) {
+            throw new Exception("Error: [Sniffer] Unable to open interface '" + this.inPcapPort.getName() + "'.");
+        }
+        if (pcap == null) {
+            throw new Exception("Error: [Sniffer] Unable to open interface '" + this.inPcapPort.getName() + "'.");
+        }
+        if (pcap.setDirection(this.direction) == Pcap.ERROR) {
+            throw new Exception("Error: [Sniffer] Unable to set direction.");
+        }
+        switch (pcap.loop(-1, this, pcap)) {
+            case Pcap.OK:
+                break;
+            case Pcap.ERROR:
+                throw new Exception("Error: [Sniffer] " + errBuff.toString());
+            case Pcap.ERROR_BREAK:
+                break;
+        }
+    }
+
+    @Override
+    public void nextPacket(PcapPacket packet, Pcap user) {
+        this.received++;
+        if (this.outQueue != null) {
+            boolean allow = this.allowFiltered;
+            if (this.accessFilter != null) {
+                allow = !(this.accessFilter.matches(packet) ^ allow);
+            }
+            if (allow) {
+                this.outQueue.add(new PduAtomic(packet, this.ingress));
             }
         }
     }

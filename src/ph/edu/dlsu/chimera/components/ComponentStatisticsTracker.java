@@ -56,7 +56,7 @@ public class ComponentStatisticsTracker extends ComponentActive {
                     synchronized (this.statsTable) {
                         PduAtomic pkt = this.inQueue.poll();
                         synchronized (pkt) {
-                            if (pkt.inbound) {
+                            if (pkt.ingress) {
                                 //create / update criterias
                                 for (Criteria crt : this.criterias) {
                                     CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
@@ -85,7 +85,7 @@ public class ComponentStatisticsTracker extends ComponentActive {
                                     this.outQueue.add(pkt);
                                 }
                             } else {
-                                throw new Exception("Error: [Statistics Tracker] Encountered outbound packet.");
+                                throw new Exception("Error: [Statistics Tracker] Encountered egress packet.");
                             }
                         }
                     }

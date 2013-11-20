@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera.pdu;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.assembler.Assembler;
 import ph.edu.dlsu.chimera.core.Connection;
 
@@ -16,8 +15,8 @@ public abstract class PduCompositeTcp extends PduComposite {
 
     public PduCompositeTcp(Connection connection,
             Assembler assembler,
-            boolean inbound,
+            boolean ingress,
             long timestampInNanos) {
-        super(connection, assembler, inbound, timestampInNanos);
+        super(connection, assembler, ingress, timestampInNanos);
     }
 }

@@ -15,12 +15,12 @@ import ph.edu.dlsu.chimera.core.criteria.Criteria;
  */
 public abstract class Pdu {
 
-    public final boolean inbound;
+    public final boolean ingress;
     public final long timestampInNanos;
     private final HashMap<Criteria, Statistics> statistics; //type, statistics
 
-    public Pdu(boolean inbound, long timestampInNanos) {
-        this.inbound = inbound;
+    public Pdu(boolean ingress, long timestampInNanos) {
+        this.ingress = ingress;
         this.timestampInNanos = timestampInNanos;
         this.statistics = new HashMap<>();
     }

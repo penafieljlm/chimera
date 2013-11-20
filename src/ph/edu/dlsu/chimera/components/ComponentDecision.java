@@ -35,10 +35,10 @@ public class ComponentDecision extends ComponentActive {
             if (this.inQueue != null) {
                 while (!this.inQueue.isEmpty()) {
                     PduAtomic pkt = this.inQueue.poll();
-                    if (pkt.inbound) {
+                    if (pkt.ingress) {
                         
                     } else {
-                        throw new Exception("Error: [Decision] Encountered outbound packet.");
+                        throw new Exception("Error: [Decision] Encountered egress packet.");
                     }
                 }
             } else {

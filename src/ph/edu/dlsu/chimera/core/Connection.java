@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.core;
 import java.util.ArrayList;
 import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
-import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsTime;
 
@@ -18,111 +17,111 @@ import ph.edu.dlsu.chimera.util.UtilsTime;
 public final class Connection extends Statistics {
 
     public final SocketPair sockets;
-    public final boolean inbound;
-    private long inboundEncounters;
-    private long outboundEncounters;
-    private long inboundTotalSize;
-    private long outboundTotalSize;
-    private long inboundLastEncounterNanos;
-    private long outboundLastEncounterNanos;
-    private long inboundLastLastEncounterNanos;
-    private long outboundLastLastEncounterNanos;
+    public final boolean ingress;
+    private long ingressEncounters;
+    private long egressEncounters;
+    private long ingressTotalSize;
+    private long egressTotalSize;
+    private long ingressLastEncounterNanos;
+    private long egressLastEncounterNanos;
+    private long ingressLastLastEncounterNanos;
+    private long egressLastLastEncounterNanos;
     private boolean done;
     private byte inFin; //0 - none; 1 - fin,ack; 2 - ack
-    private byte outFin; //0 - none; 1 - fin,ack; 2 - ack
+    private byte egFin; //0 - none; 1 - fin,ack; 2 - ack
 
-    public Connection(SocketPair sockets, long timeCreatedNanos, boolean inbound) {
+    public Connection(SocketPair sockets, long timeCreatedNanos, boolean ingress) {
         super(timeCreatedNanos);
         this.sockets = sockets;
-        this.inbound = inbound;
-        this.inboundEncounters = 0;
-        this.outboundEncounters = 0;
-        this.inboundTotalSize = 0;
-        this.outboundTotalSize = 0;
-        if (inbound) {
-            this.inboundLastEncounterNanos = timeCreatedNanos;
-            this.inboundLastLastEncounterNanos = -1;
-            this.outboundLastEncounterNanos = -1;
-            this.outboundLastLastEncounterNanos = -1;
+        this.ingress = ingress;
+        this.ingressEncounters = 0;
+        this.egressEncounters = 0;
+        this.ingressTotalSize = 0;
+        this.egressTotalSize = 0;
+        if (ingress) {
+            this.ingressLastEncounterNanos = timeCreatedNanos;
+            this.ingressLastLastEncounterNanos = -1;
+            this.egressLastEncounterNanos = -1;
+            this.egressLastLastEncounterNanos = -1;
         } else {
-            this.inboundLastEncounterNanos = -1;
-            this.inboundLastLastEncounterNanos = -1;
-            this.outboundLastEncounterNanos = timeCreatedNanos;
-            this.outboundLastLastEncounterNanos = -1;
+            this.ingressLastEncounterNanos = -1;
+            this.ingressLastLastEncounterNanos = -1;
+            this.egressLastEncounterNanos = timeCreatedNanos;
+            this.egressLastLastEncounterNanos = -1;
         }
         this.done = false;
         this.inFin = 0;
-        this.outFin = 0;
+        this.egFin = 0;
     }
 
-    public synchronized long inboundEncounters() {
-        return this.inboundEncounters;
+    public synchronized long ingressEncounters() {
+        return this.ingressEncounters;
     }
 
-    public synchronized long outboundEncounters() {
-        return this.outboundEncounters;
+    public synchronized long egressEncounters() {
+        return this.egressEncounters;
     }
 
-    public synchronized long inboundTotalSize() {
-        return this.inboundTotalSize;
+    public synchronized long ingressTotalSize() {
+        return this.ingressTotalSize;
     }
 
-    public synchronized long outboundTotalSize() {
-        return this.outboundTotalSize;
+    public synchronized long egressTotalSize() {
+        return this.egressTotalSize;
     }
 
     /**
-     * @return the inbound rate of this Connection measured as packet per second.
+     * @return the ingress rate of this Connection measured as packet per second.
      */
-    public synchronized double inboundRatePerSec() {
+    public synchronized double ingressRatePerSec() {
         double sec = this.getTimeExistedMs() / 1000;
-        return (sec > 0) ? this.inboundEncounters / sec : this.inboundEncounters;
+        return (sec > 0) ? this.ingressEncounters / sec : this.ingressEncounters;
     }
 
     /**
-     * @return the outbound rate of this Connection measured as packet per second.
+     * @return the egress rate of this Connection measured as packet per second.
      */
-    public synchronized double outboundRatePerSec() {
+    public synchronized double egressRatePerSec() {
         double sec = this.getTimeExistedMs() / 1000;
-        return (sec > 0) ? this.outboundEncounters / sec : this.outboundEncounters;
+        return (sec > 0) ? this.egressEncounters / sec : this.egressEncounters;
     }
 
     /**
-     * @return the average size of inbound traffic
+     * @return the average size of ingress traffic
      */
-    public synchronized double inboundAverageSize() {
-        return (this.inboundEncounters > 0) ? this.inboundTotalSize / this.inboundEncounters : this.inboundTotalSize;
+    public synchronized double ingressAverageSize() {
+        return (this.ingressEncounters > 0) ? this.ingressTotalSize / this.ingressEncounters : this.ingressTotalSize;
     }
 
     /**
-     * @return the average size of outbound traffic
+     * @return the average size of egress traffic
      */
-    public synchronized double outboundAverageSize() {
-        return (this.outboundEncounters > 0) ? this.outboundTotalSize / this.outboundEncounters : this.outboundTotalSize;
+    public synchronized double egressAverageSize() {
+        return (this.egressEncounters > 0) ? this.egressTotalSize / this.egressEncounters : this.egressTotalSize;
     }
 
-    public synchronized long inboundLastEncounterTimeNs() {
-        return this.inboundLastEncounterNanos;
+    public synchronized long ingressLastEncounterTimeNs() {
+        return this.ingressLastEncounterNanos;
     }
 
-    public synchronized long outboundLastEncounterTimeNs() {
-        return this.outboundLastEncounterNanos;
+    public synchronized long egressLastEncounterTimeNs() {
+        return this.egressLastEncounterNanos;
     }
 
-    public synchronized double inboundTimeSinceLastEncounterMs() {
-        return UtilsTime.nowMs() - UtilsTime.nsToMs(this.inboundLastEncounterNanos);
+    public synchronized double ingressTimeSinceLastEncounterMs() {
+        return UtilsTime.nowMs() - UtilsTime.nsToMs(this.ingressLastEncounterNanos);
     }
 
-    public synchronized double outboundTimeSinceLastEncounterMs() {
-        return UtilsTime.nowMs() - UtilsTime.nsToMs(this.outboundLastEncounterNanos);
+    public synchronized double egressTimeSinceLastEncounterMs() {
+        return UtilsTime.nowMs() - UtilsTime.nsToMs(this.egressLastEncounterNanos);
     }
 
-    public synchronized long inboundLastEncounterDeltaNs() {
-        return (this.inboundLastLastEncounterNanos < 0) ? -1 : this.inboundLastEncounterNanos - this.inboundLastLastEncounterNanos;
+    public synchronized long ingressLastEncounterDeltaNs() {
+        return (this.ingressLastLastEncounterNanos < 0) ? -1 : this.ingressLastEncounterNanos - this.ingressLastLastEncounterNanos;
     }
 
-    public synchronized long outboundLastEncounterDeltaNs() {
-        return (this.outboundLastLastEncounterNanos < 0) ? -1 : this.outboundLastEncounterNanos - this.outboundLastLastEncounterNanos;
+    public synchronized long egressLastEncounterDeltaNs() {
+        return (this.egressLastLastEncounterNanos < 0) ? -1 : this.egressLastEncounterNanos - this.egressLastLastEncounterNanos;
     }
 
     /**
@@ -133,30 +132,30 @@ public final class Connection extends Statistics {
         if (!this.done) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
             super.commitEncounter(pkt);
-            if (pkt.inbound) {
-                this.inboundEncounters++;
-                this.inboundTotalSize += pkt.packet.size();
-                this.inboundLastLastEncounterNanos = this.inboundLastEncounterNanos;
-                this.inboundLastEncounterNanos = pkt.packet.getCaptureHeader().timestampInNanos();
-                if (tcp.flags_ACK() && this.outFin == 1) {
-                    this.outFin = 2;
+            if (pkt.ingress) {
+                this.ingressEncounters++;
+                this.ingressTotalSize += pkt.packet.size();
+                this.ingressLastLastEncounterNanos = this.ingressLastEncounterNanos;
+                this.ingressLastEncounterNanos = pkt.packet.getCaptureHeader().timestampInNanos();
+                if (tcp.flags_ACK() && this.egFin == 1) {
+                    this.egFin = 2;
                 }
                 if (tcp.flags_FIN() && this.inFin == 0) {
                     this.inFin = 1;
                 }
             } else {
-                this.outboundEncounters++;
-                this.outboundTotalSize += pkt.packet.size();
-                this.outboundLastLastEncounterNanos = this.outboundLastEncounterNanos;
-                this.outboundLastEncounterNanos = pkt.packet.getCaptureHeader().timestampInNanos();
+                this.egressEncounters++;
+                this.egressTotalSize += pkt.packet.size();
+                this.egressLastLastEncounterNanos = this.egressLastEncounterNanos;
+                this.egressLastEncounterNanos = pkt.packet.getCaptureHeader().timestampInNanos();
                 if (tcp.flags_ACK() && this.inFin == 1) {
                     this.inFin = 2;
                 }
-                if (tcp.flags_FIN() && this.outFin == 0) {
-                    this.outFin = 1;
+                if (tcp.flags_FIN() && this.egFin == 0) {
+                    this.egFin = 1;
                 }
             }
-            if (tcp.flags_RST() || (this.inFin == 2 && this.outFin == 2)) {
+            if (tcp.flags_RST() || (this.inFin == 2 && this.egFin == 2)) {
                 this.done = true;
             }
         }
@@ -169,21 +168,21 @@ public final class Connection extends Statistics {
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        Date inencounter = (this.inboundLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.inboundLastEncounterNanos));
-        Date outencounter = (this.outboundLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.outboundLastEncounterNanos));
-        diag.add(new Diagnostic("direction", "Direction", (this.inbound) ? "inbound" : "outbound"));
-        diag.add(new Diagnostic("inboundct", "Inbound Packets Encountered", this.inboundEncounters));
-        diag.add(new Diagnostic("outboundct", "Outbound Packets Encountered", this.outboundEncounters));
-        diag.add(new Diagnostic("inboundsize", "Inbound Traffic Total Size", this.inboundTotalSize));
-        diag.add(new Diagnostic("outboundsize", "Outbound Traffic Total Size", this.outboundTotalSize));
-        diag.add(new Diagnostic("inavgsize", "Inbound Traffic Average Size", this.inboundAverageSize()));
-        diag.add(new Diagnostic("outavgsize", "Outbound Traffic Average Size", this.outboundAverageSize()));
-        diag.add(new Diagnostic("inrate", "Inbound Traffic Rate", this.inboundRatePerSec() + "pkts/sec"));
-        diag.add(new Diagnostic("outrate", "Outbound Traffic Rate", this.outboundRatePerSec() + "pkts/sec"));
-        diag.add(new Diagnostic("inlastencounter", "Inbound Last Encounter", (inencounter == null) ? "N/A" : inencounter.toLocaleString()));
-        diag.add(new Diagnostic("outlastencounter", "Outbound Last Encounter", (outencounter == null) ? "N/A" : outencounter.toLocaleString()));
-        diag.add(new Diagnostic("inidletime", "Inbound Idle Time", (this.inboundLastEncounterNanos < 0) ? "N/A" : this.inboundTimeSinceLastEncounterMs() + "ms"));
-        diag.add(new Diagnostic("outideltime", "Outbound Idle Time", (this.outboundLastEncounterNanos < 0) ? "N/A" : this.outboundTimeSinceLastEncounterMs() + "ms"));
+        Date inencounter = (this.ingressLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.ingressLastEncounterNanos));
+        Date egencounter = (this.egressLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.egressLastEncounterNanos));
+        diag.add(new Diagnostic("direction", "Direction", (this.ingress) ? "ingress" : "egress"));
+        diag.add(new Diagnostic("ingressct", "Ingress Packets Encountered", this.ingressEncounters));
+        diag.add(new Diagnostic("egressct", "Egress Packets Encountered", this.egressEncounters));
+        diag.add(new Diagnostic("ingresssize", "Ingress Traffic Total Size", this.ingressTotalSize));
+        diag.add(new Diagnostic("egresssize", "Egress Traffic Total Size", this.egressTotalSize));
+        diag.add(new Diagnostic("inavgsize", "Ingress Traffic Average Size", this.ingressAverageSize()));
+        diag.add(new Diagnostic("egavgsize", "Egress Traffic Average Size", this.egressAverageSize()));
+        diag.add(new Diagnostic("inrate", "Ingress Traffic Rate", this.ingressRatePerSec() + "pkts/sec"));
+        diag.add(new Diagnostic("egrate", "Egress Traffic Rate", this.egressRatePerSec() + "pkts/sec"));
+        diag.add(new Diagnostic("inlastencounter", "Ingress Last Encounter", (inencounter == null) ? "N/A" : inencounter.toLocaleString()));
+        diag.add(new Diagnostic("eglastencounter", "Egress Last Encounter", (egencounter == null) ? "N/A" : egencounter.toLocaleString()));
+        diag.add(new Diagnostic("inidletime", "Ingress Idle Time", (this.ingressLastEncounterNanos < 0) ? "N/A" : this.ingressTimeSinceLastEncounterMs() + "ms"));
+        diag.add(new Diagnostic("egideltime", "Egress Idle Time", (this.egressLastEncounterNanos < 0) ? "N/A" : this.egressTimeSinceLastEncounterMs() + "ms"));
         diag.add(new Diagnostic("done", "Connection Finished", this.done));
         return diag;
     }
