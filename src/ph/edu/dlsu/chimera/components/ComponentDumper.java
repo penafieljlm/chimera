@@ -8,6 +8,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
@@ -21,6 +22,7 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  */
 public class ComponentDumper extends ComponentActive {
 
+    public final String inPcapIf;
     public final IntermodulePipe<PduAtomic> inQueue;
     public final Criteria[] criterias;
     public final File trainingFile;
@@ -29,10 +31,12 @@ public class ComponentDumper extends ComponentActive {
     private long processed;
 
     public ComponentDumper(IntermodulePipe<PduAtomic> inQueue,
+            String inPcapIf,
             Criteria[] criterias,
             File trainingFile,
             PacketFilter trainingFilter,
             boolean tagFilteredAsAttack) {
+        this.inPcapIf = inPcapIf;
         this.inQueue = inQueue;
         if (this.inQueue != null) {
             this.inQueue.setReader(this);
@@ -48,11 +52,13 @@ public class ComponentDumper extends ComponentActive {
     protected void componentRun() throws Exception {
         if (this.trainingFile != null) {
             CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
+            String[] iface = {this.inPcapIf};
             String[] headers = UtilsTraining.getHeaders(this.criterias);
             String[] _criterias = new String[this.criterias.length];
             for (int i = 0; i < this.criterias.length; i++) {
                 _criterias[i] = this.criterias[i].expression;
             }
+            writer.writeNext(iface);
             writer.writeNext(_criterias);
             writer.writeNext(headers);
             writer.flush();

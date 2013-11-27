@@ -14,15 +14,18 @@ import weka.classifiers.trees.J48;
  */
 public class ModelLive {
 
+    public final String protectedInterface;
     public final J48 connectionTree;
     public final HashMap<Criteria, J48> criteriaTrees;
 
-    public ModelLive(J48 connectionTree, HashMap<Criteria, J48> criteriaTrees) {
+    public ModelLive(String protectedInterface, J48 connectionTree, HashMap<Criteria, J48> criteriaTrees) {
+        this.protectedInterface = protectedInterface;
         this.connectionTree = connectionTree;
         this.criteriaTrees = criteriaTrees;
     }
 
     public ModelLive(ModelSerializable file) throws Exception {
+        this.protectedInterface = file.protectedInterface;
         this.connectionTree = file.connectionTree;
         HashMap<Criteria, J48> _criteriaTrees = new HashMap<>();
         for (String crt : file.criteriaTrees.keySet()) {

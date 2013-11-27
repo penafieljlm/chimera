@@ -129,7 +129,7 @@ public class cgather {
             //help
             if (args.length == 1) {
                 if (args[0].equals("/help")) {
-                    System.out.println(cgather.USAGE);
+                    System.out.println(USAGE);
                     return;
                 }
             }
@@ -159,9 +159,9 @@ public class cgather {
                 throw new Exception("The argument '-protected' must provide a numerical value.");
             }
             ArrayList<PcapIf> interfaces = UtilsPcap.getInterfaces();
-            PcapIf ifProtected = null;
+            String ifProtected = null;
             try {
-                ifProtected = interfaces.get(ifProtectedIdx);
+                ifProtected = interfaces.get(ifProtectedIdx).getName();
             } catch (Exception ex) {
                 throw new Exception("Interface index '" + ifProtectedIdx + "' is invalid.");
             }
@@ -210,13 +210,13 @@ public class cgather {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("in.gather.sniff", new ComponentSniffer(ifProtected, exGatherSniffOut, accessFilter, allowFiltered, true, Direction.OUT));
+            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, ifProtected, accessFilter, allowFiltered, true, Direction.OUT));
             components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
             components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-            components.put("in.gather.dumper", new ComponentDumper(exGatherStateOut, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
+            components.put("in.gather.dumper", new ComponentDumper(exGatherStateOut, ifProtected, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
 
             //egress path
-            components.put("eg.gather.sniff", new ComponentSniffer(ifProtected, inGatherSniffOut, accessFilter, allowFiltered, false, Direction.IN));
+            components.put("eg.gather.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, false, Direction.IN));
             components.put("eg.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
 
             //controller

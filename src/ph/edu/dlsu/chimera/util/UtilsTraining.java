@@ -176,6 +176,8 @@ public abstract class UtilsTraining {
     public static ModelLive createModel(File trainingFile) throws Exception {
         //open training set file
         CSVReader reader = new CSVReader(new FileReader(trainingFile));
+        //read interface
+        String[] ifaces = reader.readNext();
         //read criterias
         String[] _criterias = reader.readNext();
         Criteria[] criterias = new Criteria[_criterias.length];
@@ -290,7 +292,7 @@ public abstract class UtilsTraining {
             }
         }
         //return model
-        return new ModelLive(connTree, criteriaTree);
+        return new ModelLive(ifaces[0], connTree, criteriaTree);
     }
 
     public static void testClassifier(J48 tree, Instances data) throws Exception {
