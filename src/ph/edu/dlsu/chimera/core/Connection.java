@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera.core;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
@@ -14,9 +15,9 @@ import ph.edu.dlsu.chimera.util.UtilsTime;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class Connection extends Statistics {
+public final class Connection extends Statistics implements Serializable {
 
-    public final SocketPair sockets;
+    public final TcpSocketPair sockets;
     public final boolean ingress;
     private long ingressEncounters;
     private long egressEncounters;
@@ -30,7 +31,7 @@ public final class Connection extends Statistics {
     private byte inFin; //0 - none; 1 - fin,ack; 2 - ack
     private byte egFin; //0 - none; 1 - fin,ack; 2 - ack
 
-    public Connection(SocketPair sockets, long timeCreatedNanos, boolean ingress) {
+    public Connection(TcpSocketPair sockets, long timeCreatedNanos, boolean ingress) {
         super(timeCreatedNanos);
         this.sockets = sockets;
         this.ingress = ingress;

@@ -10,7 +10,7 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsPacket;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
@@ -21,14 +21,14 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  */
 public final class ComponentStateTracker extends ComponentActive {
 
-    public final ConcurrentHashMap<SocketPair, Connection> stateTable;
+    public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
     public final IntermodulePipe<PduAtomic> inQueue;
     public final IntermodulePipe<PduAtomic> outQueue;
     private long processed;
 
     public ComponentStateTracker(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
-            ConcurrentHashMap<SocketPair, Connection> stateTable) {
+            ConcurrentHashMap<TcpSocketPair, Connection> stateTable) {
         this.setPriority(Thread.NORM_PRIORITY);
         this.stateTable = stateTable;
         this.inQueue = inQueue;
@@ -60,7 +60,7 @@ public final class ComponentStateTracker extends ComponentActive {
                                 try {
                                     if (pkt.packet.hasHeader(new Tcp())) {
                                         //tcp packets
-                                        SocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
+                                        TcpSocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
                                         Tcp tcp = pkt.packet.getHeader(new Tcp());
                                         //create state
                                         if (!this.stateTable.containsKey(socks)) {

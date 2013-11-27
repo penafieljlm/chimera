@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.assembler.Assembler;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 
 /**
  *
@@ -16,9 +16,9 @@ import ph.edu.dlsu.chimera.core.SocketPair;
  */
 public class ComponentAssemblerTable extends ComponentActive {
 
-    public final ConcurrentHashMap<SocketPair, Assembler> assemblertable;
+    public final ConcurrentHashMap<TcpSocketPair, Assembler> assemblertable;
 
-    public ComponentAssemblerTable(ConcurrentHashMap<SocketPair, Assembler> assemblertable) {
+    public ComponentAssemblerTable(ConcurrentHashMap<TcpSocketPair, Assembler> assemblertable) {
         this.assemblertable = assemblertable;
     }
 
@@ -27,7 +27,7 @@ public class ComponentAssemblerTable extends ComponentActive {
         while (super.running) {
             if (this.assemblertable != null) {
                 synchronized (this.assemblertable) {
-                    for (SocketPair socks : this.assemblertable.keySet()) {
+                    for (TcpSocketPair socks : this.assemblertable.keySet()) {
                         if (this.assemblertable.get(socks).isAttackDetected()) {
                             //attack detected
                             this.assemblertable.remove(socks);
@@ -45,7 +45,7 @@ public class ComponentAssemblerTable extends ComponentActive {
         if (this.assemblertable != null) {
             synchronized (this.assemblertable) {
                 ArrayList<Diagnostic> states = new ArrayList<>();
-                for (SocketPair socks : this.assemblertable.keySet()) {
+                for (TcpSocketPair socks : this.assemblertable.keySet()) {
                     Assembler assembler = this.assemblertable.get(socks);
                     StringBuilder keybld = new StringBuilder();
                     String ins = socks.destination.getHostAddress();

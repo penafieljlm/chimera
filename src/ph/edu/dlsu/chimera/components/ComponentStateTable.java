@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
 
 /**
@@ -16,10 +16,10 @@ import ph.edu.dlsu.chimera.core.Connection;
  */
 public final class ComponentStateTable extends ComponentActive {
 
-    public final ConcurrentHashMap<SocketPair, Connection> stateTable;
+    public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
     public final long stateTimeoutMs;
 
-    public ComponentStateTable(ConcurrentHashMap<SocketPair, Connection> stateTable, long stateTimeoutMs) {
+    public ComponentStateTable(ConcurrentHashMap<TcpSocketPair, Connection> stateTable, long stateTimeoutMs) {
         this.setPriority(Thread.MIN_PRIORITY);
         this.stateTable = stateTable;
         this.stateTimeoutMs = stateTimeoutMs;
@@ -30,7 +30,7 @@ public final class ComponentStateTable extends ComponentActive {
         while (super.running) {
             if (this.stateTable != null) {
                 synchronized (this.stateTable) {
-                    for (SocketPair socks : this.stateTable.keySet()) {
+                    for (TcpSocketPair socks : this.stateTable.keySet()) {
                         if (this.stateTable.get(socks).getTimeSinceLastEncounterMs() > this.stateTimeoutMs) {
                             //state timed out
                             this.stateTable.remove(socks);
@@ -49,7 +49,7 @@ public final class ComponentStateTable extends ComponentActive {
         if (this.stateTable != null) {
             synchronized (this.stateTable) {
                 ArrayList<Diagnostic> states = new ArrayList<>();
-                for (SocketPair socks : this.stateTable.keySet()) {
+                for (TcpSocketPair socks : this.stateTable.keySet()) {
                     Connection connection = this.stateTable.get(socks);
                     StringBuilder keybld = new StringBuilder();
                     String ins;

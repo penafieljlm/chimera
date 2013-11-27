@@ -11,7 +11,7 @@ import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 
 /**
  *
@@ -19,24 +19,19 @@ import ph.edu.dlsu.chimera.core.SocketPair;
  */
 public abstract class UtilsPacket {
 
-    public static SocketPair getSocketPair(PcapPacket pkt) {
+    public static TcpSocketPair getSocketPair(PcapPacket pkt) {
         try {
             if (pkt.hasHeader(new Ip4())) {
                 try {
                     Ip4 ip = pkt.getHeader(new Ip4());
                     if (pkt.hasHeader(new Tcp())) {
                         Tcp tcp = pkt.getHeader(new Tcp());
-                        return new SocketPair(ip, tcp);
-                    }
-                    if (pkt.hasHeader(new Udp())) {
-                        Udp udp = pkt.getHeader(new Udp());
-                        return new SocketPair(ip, udp);
+                        return new TcpSocketPair(ip, tcp);
                     }
                 } catch (UnknownHostException ex) {
                 }
             }
         } catch (Exception ex) {
-
         }
         return null;
     }
@@ -55,7 +50,6 @@ public abstract class UtilsPacket {
                 }
             }
         } catch (Exception ex) {
-
         }
         return null;
     }

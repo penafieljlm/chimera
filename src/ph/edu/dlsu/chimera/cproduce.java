@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +23,7 @@ import ph.edu.dlsu.chimera.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.components.ComponentStatisticsTracker;
 import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Connection;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
@@ -99,6 +100,7 @@ public class cproduce {
             if (_args.containsKey("-syslog")) {
                 syslog = _args.get("-syslog");
             }
+            InetAddress syslogServ = (syslog != null) ? InetAddress.getByName(syslog) : null;
 
             //gather access flag
             boolean active = false;
@@ -116,8 +118,8 @@ public class cproduce {
 
             //shared resources
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
-            ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
-            List<CriteriaInstance> rulesMap = Collections.synchronizedList(Collections.EMPTY_LIST);
+            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<>();
+            List<Object> rulesMap = (active) ? Collections.synchronizedList(Collections.EMPTY_LIST) : null;
 
             //component holder
             HashMap<String, Component> components = new HashMap<>();
@@ -130,7 +132,7 @@ public class cproduce {
             components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, true, Direction.OUT));
             components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
             components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-            components.put("in.gather.decision", new ComponentDecision(exGatherStateOut, modelLive, rulesMap));
+            components.put("in.gather.decision", new ComponentDecision(exGatherStateOut, modelLive, rulesMap, syslogServ));
 
             //egress path
             components.put("eg.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, false, Direction.IN));

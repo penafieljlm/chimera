@@ -28,7 +28,6 @@ import org.jnetpcap.protocol.tcpip.Udp;
  */
 public final class PacketField {
 
-    public static final byte[] MASK_BYTE_32 = {(byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF};
     public final Class headerClass;
     public final String fieldName;
     private final Constructor headerConstructor;
@@ -130,11 +129,11 @@ public final class PacketField {
                     switch (this.fieldName) {
                         case "source":
                             rule.setSource(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
-                            rule.setSourceMask(InetAddress.getByAddress(PacketField.MASK_BYTE_32));
+                            rule.setSourceMask(InetAddress.getByName("255.255.255.255"));
                             return true;
                         case "destination":
                             rule.setDestination(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
-                            rule.setDestinationMask(InetAddress.getByAddress(PacketField.MASK_BYTE_32));
+                            rule.setDestinationMask(InetAddress.getByName("255.255.255.255"));
                             return true;
                     }
                 } else if (this.headerClass == Icmp.class) {

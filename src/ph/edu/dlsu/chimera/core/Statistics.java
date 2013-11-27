@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera.core;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import ph.edu.dlsu.chimera.pdu.Pdu;
@@ -13,7 +14,7 @@ import ph.edu.dlsu.chimera.util.UtilsTime;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class Statistics implements IDiagnosable {
+public class Statistics implements IDiagnosable, Serializable {
 
     public final long timeCreatedNanos;
     protected long totalEncounters;
