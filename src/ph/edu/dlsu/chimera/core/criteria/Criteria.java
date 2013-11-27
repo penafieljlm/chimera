@@ -4,11 +4,13 @@
  */
 package ph.edu.dlsu.chimera.core.criteria;
 
+import de.tbsol.iptablesjava.rules.IpRule;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,6 +81,14 @@ public final class Criteria {
             }
         }
         return new CriteriaInstance(cId, this);
+    }
+
+    public IpRule[] getRules(PcapPacket pkt) {
+        ArrayList<IpRule> rules = new ArrayList<>();
+        for (PacketField f : this.subjects) {
+            rules.add(f.createRule(pkt));
+        }
+        return rules.toArray(new IpRule[0]);
     }
 
     public static Criteria[] loadCriterias() throws Exception {

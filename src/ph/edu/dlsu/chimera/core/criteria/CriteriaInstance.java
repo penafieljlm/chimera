@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.core.criteria;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
-import ph.edu.dlsu.chimera.core.iptables.IpTablesChain;
 
 /**
  *
@@ -70,10 +69,5 @@ public final class CriteriaInstance {
             id.append(o).append(".");
         }
         return CriteriaInstance.CHAIN_PREFIX + id.substring(0, id.length() - 1) + CriteriaInstance.CHAIN_SUFFIX;
-    }
-
-    public IpTablesChain getChain() {
-        //TODO: implement
-        return null;
     }
 }
