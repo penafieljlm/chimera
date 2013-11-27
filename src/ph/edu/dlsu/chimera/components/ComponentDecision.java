@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
+import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsArray;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
@@ -26,20 +27,15 @@ public class ComponentDecision extends ComponentActive {
     public static final String CHIMERA_CHAIN = "CHIMERA";
     public static final String FORWARD_CHAIN = "FORWARD";
     public final ModelLive model;
-    public final ConcurrentLinkedQueue<PduAtomic> inQueue;
-    public final ConcurrentLinkedQueue<PduAtomic> outQueue;
+    public final IntermodulePipe<PduAtomic> inQueue;
     public final List<CriteriaInstance> rulesMap;
     private long processed;
 
-    public ComponentDecision(ModelLive model,
-            ConcurrentLinkedQueue<PduAtomic> inQueue,
-            ConcurrentLinkedQueue<PduAtomic> outQueue,
-            List<CriteriaInstance> rulesMap,
-            IpTables iptable,
-            String chain) {
+    public ComponentDecision(IntermodulePipe<PduAtomic> inQueue,
+            ModelLive model,
+            List<CriteriaInstance> rulesMap) {
         this.model = model;
         this.inQueue = inQueue;
-        this.outQueue = outQueue;
         this.rulesMap = rulesMap;
         this.processed = 0;
     }

@@ -15,15 +15,18 @@ import weka.classifiers.trees.J48;
  */
 public class ModelSerializable implements Serializable {
 
+    public final String protectedInterface;
     public final J48 connectionTree;
     public final HashMap<String, J48> criteriaTrees;
 
-    public ModelSerializable(J48 connectionTree, HashMap<String, J48> criteriaTrees) {
+    public ModelSerializable(String protectedInterface, J48 connectionTree, HashMap<String, J48> criteriaTrees) {
+        this.protectedInterface = protectedInterface;
         this.connectionTree = connectionTree;
         this.criteriaTrees = criteriaTrees;
     }
 
     public ModelSerializable(ModelLive live) {
+        this.protectedInterface = live.protectedInterface;
         this.connectionTree = live.connectionTree;
         HashMap<String, J48> _criteriaTrees = new HashMap<>();
         for (Criteria crt : live.criteriaTrees.keySet()) {

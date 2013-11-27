@@ -34,7 +34,7 @@ public class cdiag {
             //help
             if (args.length == 1) {
                 if (args[0].equals("/help")) {
-                    System.out.println(cgather.USAGE);
+                    System.out.println(USAGE);
                     return;
                 }
             }
