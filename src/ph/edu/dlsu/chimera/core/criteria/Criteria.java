@@ -10,7 +10,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,12 +82,15 @@ public final class Criteria {
         return new CriteriaInstance(cId, this);
     }
 
-    public IpRule[] getRules(PcapPacket pkt) {
-        ArrayList<IpRule> rules = new ArrayList<>();
+    public IpRule createRule(PcapPacket pkt) {
+        IpRule rule = new IpRule();
+        rule.setProtocol(IpRule.IpProto.IPPROTO_ALL);
         for (PacketField f : this.subjects) {
-            rules.add(f.createRule(pkt));
+            if (!f.applyRule(rule, pkt)) {
+                return null;
+            }
         }
-        return rules.toArray(new IpRule[0]);
+        return rule;
     }
 
     public static Criteria[] loadCriterias() throws Exception {

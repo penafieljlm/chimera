@@ -114,31 +114,28 @@ public final class PacketField {
         return null;
     }
 
-    public IpRule createRule(PcapPacket pkt) {
+    public boolean applyRule(IpRule rule, PcapPacket pkt) {
         try {
-            IpRule rule = new IpRule();
             JHeader type = (JHeader) this.headerConstructor.newInstance();
             if (pkt.hasHeader(type)) {
                 if (this.headerClass == Ethernet.class) {
                     ModMac mac = new ModMac();
-                    rule.setProtocol(IpRule.IpProto.IPPROTO_ALL);
                     switch (this.fieldName) {
                         case "source":
                             mac.setSrcaddr(this.getFieldValue(pkt).toByteArray());
                             rule.addModule(mac);
-                            return rule;
+                            return true;
                     }
                 } else if (this.headerClass == Ip4.class) {
-                    rule.setProtocol(IpRule.IpProto.IPPROTO_ALL);
                     switch (this.fieldName) {
                         case "source":
                             rule.setSource(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
                             rule.setSourceMask(InetAddress.getByAddress(PacketField.MASK_BYTE_32));
-                            return rule;
+                            return true;
                         case "destination":
                             rule.setDestination(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
                             rule.setDestinationMask(InetAddress.getByAddress(PacketField.MASK_BYTE_32));
-                            return rule;
+                            return true;
                     }
                 } else if (this.headerClass == Icmp.class) {
                     rule.setProtocol(IpRule.IpProto.IPPROTO_ICMP);
@@ -150,17 +147,17 @@ public final class PacketField {
                             tcp.setSourcePortStart(this.getFieldValue(pkt).intValue());
                             tcp.setSourcePortEnd(this.getFieldValue(pkt).intValue());
                             rule.addModule(tcp);
-                            return rule;
+                            return true;
                         case "destination":
                             tcp.setDestinationPortStart(this.getFieldValue(pkt).intValue());
                             tcp.setDestinationPortEnd(this.getFieldValue(pkt).intValue());
                             rule.addModule(tcp);
-                            return rule;
+                            return true;
                         case "flags":
                             tcp.setFlagCompare(this.getFieldValue(pkt).byteValue());
                             tcp.setFlagMask((byte) 0xFF);
                             rule.addModule(tcp);
-                            return rule;
+                            return true;
                     }
                 } else if (this.headerClass == Udp.class) {
                     ModUdp udp = new ModUdp();
@@ -170,18 +167,18 @@ public final class PacketField {
                             udp.setSourcePortStart(this.getFieldValue(pkt).intValue());
                             udp.setSourcePortEnd(this.getFieldValue(pkt).intValue());
                             rule.addModule(udp);
-                            return rule;
+                            return true;
                         case "destination":
                             udp.setDestinationPortStart(this.getFieldValue(pkt).intValue());
                             udp.setDestinationPortEnd(this.getFieldValue(pkt).intValue());
                             rule.addModule(udp);
-                            return rule;
+                            return true;
                     }
                 }
             }
         } catch (Exception ex) {
         }
-        return null;
+        return false;
     }
 
     public boolean equals(Object obj) {
