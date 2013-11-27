@@ -14,7 +14,7 @@ import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.components.Component;
@@ -200,7 +200,7 @@ public class cgather {
 
             //shared resources
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
-            ConcurrentHashMap<SocketPair, Connection> stateTable = new ConcurrentHashMap<>();
+            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<>();
 
             //component holder
             HashMap<String, Component> components = new HashMap<>();

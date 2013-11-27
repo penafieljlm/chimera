@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
-import ph.edu.dlsu.chimera.core.SocketPair;
+import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.assembler.AssemblerUdp;
@@ -24,18 +24,18 @@ public final class ComponentAssembler extends ComponentActive {
 
     public final IntermodulePipe<PduAtomic> inQueue;
     public final IntermodulePipe<PduAtomic> outQueue;
-    public final ConcurrentHashMap<SocketPair, AssemblerTcp> tcpAssemblerTable;
+    public final ConcurrentHashMap<TcpSocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
-    public final ConcurrentHashMap<SocketPair, AssemblerUdp> udpAssemblerTable;
+    public final ConcurrentHashMap<TcpSocketPair, AssemblerUdp> udpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup;
-    public final ConcurrentHashMap<SocketPair, Connection> stateTable;
+    public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
     private long processed;
 
     public ComponentAssembler(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
-            ConcurrentHashMap<SocketPair, Connection> stateTable) {
+            ConcurrentHashMap<TcpSocketPair, Connection> stateTable) {
         this.setPriority(Thread.NORM_PRIORITY);
         this.inQueue = inQueue;
         this.outQueue = outQueue;
@@ -94,7 +94,7 @@ public final class ComponentAssembler extends ComponentActive {
     private void handleTcp(PduAtomic pkt) throws Exception {
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
-                SocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
+                TcpSocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
                 if (!this.tcpAssemblerTable.contains(socks)) {
                     //create assembler
                     AssemblerTcp asm = this.tcpPortProtocolLookup.get(socks.destinationPort);
