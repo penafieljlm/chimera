@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.util;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -186,11 +185,11 @@ public abstract class UtilsTraining {
             criterias[i] = new Criteria(_criterias[i]);
         }
         //create training subsets files
-        File connectionDataSet = File.createTempFile("connection", ".csv");
+        File connectionDataSet = File.createTempFile("connection", ".trntmpcsv");
         HashMap<Criteria, File> criteriaDataSet = new HashMap<>();
         int ct = 0;
         for (Criteria crt : criterias) {
-            criteriaDataSet.put(crt, File.createTempFile("crt[" + ct + "]", ".csv"));
+            criteriaDataSet.put(crt, File.createTempFile("crt[" + ct + "]", ".trntmpcsv"));
             ct++;
         }
         //open writers and write headers
@@ -263,7 +262,7 @@ public abstract class UtilsTraining {
             criteriaInstance.put(crt, criteriaSource.get(crt).getDataSet());
         }
         //set class attributes
-        if (connInstance.numAttributes() < 2) {
+        if (connInstance.numAttributes() > 2) {
             if (connInstance.classIndex() == -1) {
                 connInstance.setClassIndex(connInstance.numAttributes() - 1);
             }
@@ -271,12 +270,20 @@ public abstract class UtilsTraining {
             throw new Exception("Connection data set must have at least one custom attribute, and one class attribute.");
         }
         for (Criteria crt : criterias) {
-            if (criteriaInstance.get(crt).numAttributes() < 2) {
+            if (criteriaInstance.get(crt).numAttributes() > 2) {
                 if (criteriaInstance.get(crt).classIndex() == -1) {
                     criteriaInstance.get(crt).setClassIndex(criteriaInstance.get(crt).numAttributes() - 1);
                 }
             } else {
                 throw new Exception("Criteria data set must have at least one custom attribute, and one class attribute.");
+            }
+        }
+        if (connInstance.classAttribute().numValues() == 1) {
+            throw new Exception("Connection data set must have at least two variations of values for the class attribute.");
+        }
+        for (Criteria crt : criterias) {
+            if (criteriaInstance.get(crt).numAttributes() == 1) {
+                throw new Exception("Criteria data set must have at least two variations of values for the class attribute.");
             }
         }
         //set classifier options
