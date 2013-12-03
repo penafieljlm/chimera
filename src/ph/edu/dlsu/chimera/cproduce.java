@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jnetpcap.Pcap.Direction;
+import org.jnetpcap.Pcap;
 import ph.edu.dlsu.chimera.components.Component;
 import ph.edu.dlsu.chimera.components.ComponentActive;
 import ph.edu.dlsu.chimera.components.ComponentController;
@@ -129,13 +129,13 @@ public class cproduce {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, true, Direction.OUT));
+            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, true, Pcap.OUT));
             components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
             components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
             components.put("in.gather.decision", new ComponentDecision(exGatherStateOut, modelLive, rulesMap, syslogServ));
 
             //egress path
-            components.put("eg.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, false, Direction.IN));
+            components.put("eg.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, false, Pcap.IN));
             components.put("eg.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
 
             //controller

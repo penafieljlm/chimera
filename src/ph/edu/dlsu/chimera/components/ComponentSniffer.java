@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
 import org.jnetpcap.Pcap;
+import org.jnetpcap.Pcap.Direction;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
@@ -25,7 +26,7 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public final PacketFilter accessFilter;
     public final boolean allowFiltered;
     public final boolean ingress;
-    public final Pcap.Direction direction;
+    public final int direction;
     private long received;
 
     public ComponentSniffer(IntermodulePipe<PduAtomic> outQueue,
@@ -33,7 +34,7 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
             PacketFilter accessFilter,
             boolean allowFiltered,
             boolean ingress,
-            Pcap.Direction direction) {
+            int direction) {
         this.setPriority(Thread.MAX_PRIORITY);
         this.inPcapIf = inPcapIf;
         this.outQueue = outQueue;
@@ -50,27 +51,45 @@ public final class ComponentSniffer extends ComponentActive implements PcapPacke
     public ComponentSniffer(IntermodulePipe<PduAtomic> outQueue,
             String inPcapIf,
             boolean ingress,
-            Pcap.Direction direction) {
+            int direction) {
         this(outQueue, inPcapIf, null, true, ingress, direction);
     }
 
     @Override
     public void componentRun() throws Exception {
+        if(!Pcap.isPcap100Loaded()) {
+            throw new Exception("Error: [Sniffer] libpcap 1.0.0 must be supported.");
+        }
         if (this.inPcapIf == null) {
             throw new Exception("Error: [Sniffer] Unable to access capture device.");
         }
         StringBuilder errBuff = new StringBuilder();
         Pcap pcap;
         try {
-            pcap = Pcap.openLive(this.inPcapIf, 64 * 1024, Pcap.MODE_PROMISCUOUS, 1, errBuff);
+            pcap = Pcap.create(this.inPcapIf, errBuff);
+            if (pcap == null) {
+                throw new Exception("Error: [Sniffer] Unable to open interface '" + this.inPcapIf + "'.");
+            }
         } catch (Exception ex) {
             throw new Exception("Error: [Sniffer] Unable to open interface '" + this.inPcapIf + "'.");
         }
-        if (pcap == null) {
-            throw new Exception("Error: [Sniffer] Unable to open interface '" + this.inPcapIf + "'.");
+        if (pcap.setSnaplen(64 * 1024) != Pcap.OK) {
+            throw new Exception("Error: [Sniffer] Unable to set snaplen.");
+        }
+        if (pcap.setPromisc(Pcap.MODE_PROMISCUOUS) != Pcap.OK) {
+            throw new Exception("Error: [Sniffer] Unable to set promisc.");
+        }
+        if (pcap.setTimeout(10 * 1000) != Pcap.OK) {
+            throw new Exception("Error: [Sniffer] Unable to set timeout.");
+        }
+        if (pcap.setBufferSize(128 * 1024 * 1024) != Pcap.OK) {
+            throw new Exception("Error: [Sniffer] Unable to set buffer size.");
         }
         if (pcap.setDirection(this.direction) == Pcap.ERROR) {
             throw new Exception("Error: [Sniffer] Unable to set direction.");
+        }
+        if (pcap.activate() != Pcap.OK) {
+            throw new Exception("Error: [Sniffer] Unable to activate.");
         }
         switch (pcap.loop(-1, this, pcap)) {
             case Pcap.OK:

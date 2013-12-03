@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import org.jnetpcap.Pcap.Direction;
+import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Connection;
@@ -210,13 +210,13 @@ public class cgather {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, ifProtected, accessFilter, allowFiltered, true, Direction.OUT));
+            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, ifProtected, accessFilter, allowFiltered, true, Pcap.OUT));
             components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
             components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
             components.put("in.gather.dumper", new ComponentDumper(exGatherStateOut, ifProtected, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
 
             //egress path
-            components.put("eg.gather.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, false, Direction.IN));
+            components.put("eg.gather.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, false, Pcap.IN));
             components.put("eg.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
 
             //controller

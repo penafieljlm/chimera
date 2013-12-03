@@ -85,8 +85,8 @@ public class ctrain {
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
+            ex.printStackTrace();
             System.out.println("Type 'ctrain /help' to see usage.");
-            return;
         }
     }
 }

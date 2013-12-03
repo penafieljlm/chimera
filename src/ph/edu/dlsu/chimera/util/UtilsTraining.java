@@ -24,6 +24,7 @@ import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
+import weka.core.converters.CSVLoader;
 import weka.core.converters.ConverterUtils.DataSource;
 
 /**
@@ -121,7 +122,7 @@ public abstract class UtilsTraining {
             return null;
         }
         String[] _headers = UtilsTraining.getCriteriaHeaders(criteria);
-        String[] subinst = new String[headers.length];
+        String[] subinst = new String[_headers.length];
         for (int hCounter = 0; hCounter < _headers.length; hCounter++) {
             String _header = _headers[hCounter];
             String _value = null;
@@ -185,10 +186,12 @@ public abstract class UtilsTraining {
             criterias[i] = new Criteria(_criterias[i]);
         }
         //create training subsets files
-        File connectionDataSet = File.createTempFile("connection", ".trntmpcsv");
+        File connectionDataSet = File.createTempFile("connection", ".csv");
         HashMap<Criteria, File> criteriaDataSet = new HashMap<>();
+        int ct = 0;
         for (Criteria crt : criterias) {
-            criteriaDataSet.put(crt, File.createTempFile("exp(" + crt.expression.replaceAll(" ", "") + ")", ".trntmpcsv"));
+            criteriaDataSet.put(crt, File.createTempFile("crt[" + ct + "]", ".csv"));
+            ct++;
         }
         //open writers and write headers
         String[] attackHeader = {UtilsTraining.ATTK_HEADER};
@@ -234,11 +237,25 @@ public abstract class UtilsTraining {
             criteriaDataSetWriter.get(crt).close();
         }
         //create subset data sources
-        DataSource connSource = new DataSource(new FileInputStream(connectionDataSet));
+        CSVLoader connCsvLoader = new CSVLoader();
+        connCsvLoader.setSource(connectionDataSet);
+        DataSource connSource = new DataSource(connCsvLoader);
         HashMap<Criteria, DataSource> criteriaSource = new HashMap<>();
         for (Criteria crt : criterias) {
-            criteriaSource.put(crt, new DataSource(new FileInputStream(criteriaDataSet.get(crt))));
+            CSVLoader crtCsvLoader = new CSVLoader();
+            crtCsvLoader.setSource(criteriaDataSet.get(crt));
+            criteriaSource.put(crt, new DataSource(crtCsvLoader));
         }
+        // -- test --
+        File tConnFile = new File("__conn.csv");
+        UtilsFile.copyFile(connectionDataSet, tConnFile);
+        ct = 0;
+        for (Criteria crt : criteriaDataSet.keySet()) {
+            File tCrtFile = new File("__crt[" + ct + "].csv");
+            UtilsFile.copyFile(criteriaDataSet.get(crt), tCrtFile);
+            ct++;
+        }
+        // -- test --
         //create subset instances
         Instances connInstance = connSource.getDataSet();
         HashMap<Criteria, Instances> criteriaInstance = new HashMap<>();
