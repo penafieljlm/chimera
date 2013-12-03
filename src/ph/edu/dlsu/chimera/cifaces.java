@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera;
 
+import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.nic.NicData;
 import ph.edu.dlsu.chimera.core.nic.NicDataAddress;

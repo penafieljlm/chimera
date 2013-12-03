@@ -22,9 +22,16 @@ public class CommandDiagnose implements Command {
         this.component = component;
     }
 
+    @Override
     public Response handleMessage(Session session, HashMap<String, Component> assembly) throws Exception {
         if (assembly == null) {
             throw new Exception("A deployment phase is not being executed!");
+        }
+        if (assembly.get(this.component) == null) {
+            throw new Exception("No such component '" + this.component + "'.");
+        }
+        if (assembly.get(this.component).getDiagnostics() == null) {
+            throw new Exception("Unable to get diagnostics component '" + this.component + "'.");
         }
         return new ResponseDiagnose(this.component, assembly.get(this.component).getDiagnostics());
     }

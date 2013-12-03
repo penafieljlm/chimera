@@ -27,6 +27,8 @@ public final class Criteria {
     public static final String EXP_FILTER = "filter[(]((([^,()]+)([,]))*([^,()]+))[)]";
     public static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
     public final String expression;
+    public final String expressionSubjects;
+    public final String expressionFilter;
     public final PacketField[] subjects;
     public final PacketFilter filter;
 
@@ -46,6 +48,7 @@ public final class Criteria {
                     _subjects[i] = new PacketField(sexps[i].trim());
                 }
                 this.subjects = _subjects;
+                this.expressionSubjects = subjectexp;
             } else {
                 throw new Exception("Parse Error: Criteria subjects are missing in the expression '" + expression + "'");
             }
@@ -57,8 +60,10 @@ public final class Criteria {
                 filterexp = filterexp.substring(1, filterexp.length() - 1);
                 filterexp = filterexp.trim();
                 this.filter = PacketFilter.parseExpression(filterexp);
+                this.expressionFilter = filterexp;
             } else {
                 this.filter = null;
+                this.expressionFilter = null;
             }
             this.expression = expression;
         } else {
