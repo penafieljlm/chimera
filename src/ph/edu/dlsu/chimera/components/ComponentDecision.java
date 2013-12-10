@@ -150,37 +150,45 @@ public class ComponentDecision extends ComponentActive {
     }
 
     protected boolean evaluateAgainstConnection(PduAtomic pkt) {
-        String[] coreInst = UtilsTraining.getCoreInstance(pkt);
+        boolean allow = true;
         String[] connInst = UtilsTraining.getConnectionInstance(pkt);
-        String[] inst = UtilsArray.concat(coreInst, connInst);
-        Instance _inst = new Instance(inst.length);
-        for (int i = 0; i < inst.length; i++) {
-            _inst.setValue(i, inst[i]);
-        }
-        double evalResult = 0.0;
-        try {
-            evalResult = this.model.connectionTree.classifyInstance(_inst);
-        } catch (Exception ex) {
-        }
-        return evalResult == 1.0;
-    }
-
-    protected HashMap<Criteria, Boolean> evaluateAgainstCriterias(PduAtomic pkt) {
-        HashMap<Criteria, Boolean> report = new HashMap<>();
-        String[] coreInst = UtilsTraining.getCoreInstance(pkt);
-        for (Criteria crt : this.model.criteriaTrees.keySet()) {
-            String[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt);
-            String[] inst = UtilsArray.concat(coreInst, crtInst);
+        if (!UtilsTraining.instanceIsNull(connInst)) {
+            String[] coreInst = UtilsTraining.getCoreInstance(pkt);
+            String[] inst = UtilsArray.concat(coreInst, connInst);
             Instance _inst = new Instance(inst.length);
             for (int i = 0; i < inst.length; i++) {
                 _inst.setValue(i, inst[i]);
             }
             double evalResult = 0.0;
             try {
-                evalResult = this.model.criteriaTrees.get(crt).classifyInstance(_inst);
+                evalResult = this.model.connectionTree.classifyInstance(_inst);
             } catch (Exception ex) {
             }
-            report.put(crt, evalResult == 1.0);
+            allow = evalResult == 1.0;
+        }
+        return allow;
+    }
+
+    protected HashMap<Criteria, Boolean> evaluateAgainstCriterias(PduAtomic pkt) {
+        HashMap<Criteria, Boolean> report = new HashMap<>();
+        String[] coreInst = UtilsTraining.getCoreInstance(pkt);
+        for (Criteria crt : this.model.criteriaTrees.keySet()) {
+            boolean allow = true;
+            String[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt);
+            if (!UtilsTraining.instanceIsNull(crtInst)) {
+                String[] inst = UtilsArray.concat(coreInst, crtInst);
+                Instance _inst = new Instance(inst.length);
+                for (int i = 0; i < inst.length; i++) {
+                    _inst.setValue(i, inst[i]);
+                }
+                double evalResult = 0.0;
+                try {
+                    evalResult = this.model.criteriaTrees.get(crt).classifyInstance(_inst);
+                } catch (Exception ex) {
+                }
+                allow = evalResult == 1.0;
+            }
+            report.put(crt, allow);
         }
         return report;
     }
