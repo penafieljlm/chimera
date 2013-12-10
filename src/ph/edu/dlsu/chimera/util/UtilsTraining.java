@@ -7,11 +7,14 @@ package ph.edu.dlsu.chimera.util;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
@@ -60,9 +63,9 @@ public abstract class UtilsTraining {
         instance.add("" + Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
         instance.add("" + ((Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 3600) + (Calendar.getInstance().get(Calendar.MINUTE) * 60) + (Calendar.getInstance().get(Calendar.SECOND) * 1)));
         instance.add("" + packet.packet.size());
-        instance.add("" + ((tcp == null) ? null : tcp.destination()));
-        instance.add("" + ((udp == null) ? null : udp.destination()));
-        instance.add("" + ((tcp == null) ? null : tcp.flags()));
+        instance.add("" + ((tcp == null) ? -1 : tcp.destination()));
+        instance.add("" + ((udp == null) ? -1 : udp.destination()));
+        instance.add("" + ((tcp == null) ? -1 : tcp.flags()));
         return instance.toArray(new String[0]);
     }
 
@@ -75,16 +78,16 @@ public abstract class UtilsTraining {
     public static String[] getConnectionInstance(PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
         Connection conn = packet.getConnection();
-        instance.add("" + ((conn == null) ? null : conn.ingressLastEncounterDeltaNs()));
-        instance.add("" + ((conn == null) ? null : conn.egressLastEncounterDeltaNs()));
-        instance.add("" + ((conn == null) ? null : conn.ingressEncounters()));
-        instance.add("" + ((conn == null) ? null : conn.egressEncounters()));
-        instance.add("" + ((conn == null) ? null : conn.ingressTotalSize()));
-        instance.add("" + ((conn == null) ? null : conn.egressTotalSize()));
-        instance.add("" + ((conn == null) ? null : conn.ingressAverageSize()));
-        instance.add("" + ((conn == null) ? null : conn.egressAverageSize()));
-        instance.add("" + ((conn == null) ? null : conn.ingressRatePerSec()));
-        instance.add("" + ((conn == null) ? null : conn.egressRatePerSec()));
+        instance.add("" + ((conn == null) ? -1 : conn.ingressLastEncounterDeltaNs()));
+        instance.add("" + ((conn == null) ? -1 : conn.egressLastEncounterDeltaNs()));
+        instance.add("" + ((conn == null) ? -1 : conn.ingressEncounters()));
+        instance.add("" + ((conn == null) ? -1 : conn.egressEncounters()));
+        instance.add("" + ((conn == null) ? -1 : conn.ingressTotalSize()));
+        instance.add("" + ((conn == null) ? -1 : conn.egressTotalSize()));
+        instance.add("" + ((conn == null) ? -1 : conn.ingressAverageSize()));
+        instance.add("" + ((conn == null) ? -1 : conn.egressAverageSize()));
+        instance.add("" + ((conn == null) ? -1 : conn.ingressRatePerSec()));
+        instance.add("" + ((conn == null) ? -1 : conn.egressRatePerSec()));
         return instance.toArray(new String[0]);
     }
 
@@ -108,11 +111,11 @@ public abstract class UtilsTraining {
     public static String[] getCriteriaInstance(Criteria criteria, PduAtomic packet) {
         ArrayList<String> instance = new ArrayList<>();
         Statistics crtstats = packet.getStatistics(criteria);
-        instance.add("" + ((crtstats == null) ? null : crtstats.getLastEncounterDeltaNs()));
-        instance.add("" + ((crtstats == null) ? null : crtstats.getTotalEncounters()));
-        instance.add("" + ((crtstats == null) ? null : crtstats.getTotalSize()));
-        instance.add("" + ((crtstats == null) ? null : crtstats.getAverageSize()));
-        instance.add("" + ((crtstats == null) ? null : crtstats.getTrafficRatePerSec()));
+        instance.add("" + ((crtstats == null) ? -1 : crtstats.getLastEncounterDeltaNs()));
+        instance.add("" + ((crtstats == null) ? -1 : crtstats.getTotalEncounters()));
+        instance.add("" + ((crtstats == null) ? -1 : crtstats.getTotalSize()));
+        instance.add("" + ((crtstats == null) ? -1 : crtstats.getAverageSize()));
+        instance.add("" + ((crtstats == null) ? -1 : crtstats.getTrafficRatePerSec()));
         return instance.toArray(new String[0]);
     }
 
@@ -194,45 +197,42 @@ public abstract class UtilsTraining {
         }
         //open writers and write headers
         String[] attackHeader = {UtilsTraining.ATTK_HEADER};
-        CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet));
-        connDataSetWriter.writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.CONN_HEADERS, attackHeader));
-        HashMap<Criteria, CSVWriter> criteriaDataSetWriter = new HashMap<>();
-        for (Criteria crt : criterias) {
-            criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
-            criteriaDataSetWriter.get(crt).writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader));
-        }
-        //get header
-        String[] headers = reader.readNext();
-        if (headers == null) {
-            throw new Exception("Missing headers.");
-        }
-        //per instance
-        String[] instance = null;
-        while ((instance = reader.readNext()) != null) {
-            //get subinstances
-            String[] core = UtilsTraining.getCoreInstance(instance);
-            String[] conn = UtilsTraining.getConnectionInstance(instance);
-            HashMap<Criteria, String[]> crts = new HashMap<>();
-            for (Criteria crt : criterias) {
-                crts.put(crt, UtilsTraining.getCriteriaInstance(crt, headers, instance));
+        HashMap<Criteria, CSVWriter> criteriaDataSetWriter;
+        try (CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet))) {
+            connDataSetWriter.writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.CONN_HEADERS, attackHeader));
+            criteriaDataSetWriter = new HashMap<>();
+            for (Criteria crt : criteriaDataSet.keySet()) {
+                criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
+                criteriaDataSetWriter.get(crt).writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader));
             }
-            String[] attack = {instance[instance.length - 1]};
-            //place core and attack header to subinstances
-            conn = UtilsArray.concat(core, conn, attack);
-            for (Criteria crt : criterias) {
-                crts.put(crt, UtilsArray.concat(core, crts.get(crt), attack));
+            String[] headers = reader.readNext();
+            if (headers == null) {
+                throw new Exception("Missing headers.");
             }
-            //write subinstances
-            connDataSetWriter.writeNext(conn);
-            connDataSetWriter.flush();
-            for (Criteria crt : criterias) {
-                criteriaDataSetWriter.get(crt).writeNext(crts.get(crt));
-                criteriaDataSetWriter.get(crt).flush();
+            String[] instance;
+            while ((instance = reader.readNext()) != null) {
+                //core
+                String[] core = UtilsTraining.getCoreInstance(instance);
+                String[] attack = {instance[instance.length - 1]};
+                //connection
+                String[] conn_inst = UtilsTraining.getConnectionInstance(instance);
+                if (!UtilsTraining.instanceIsNull(conn_inst)) {
+                    conn_inst = UtilsArray.concat(core, conn_inst, attack);
+                    connDataSetWriter.writeNext(conn_inst);
+                    connDataSetWriter.flush();
+                }
+                //criteria
+                for (Criteria crt : criterias) {
+                    String[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
+                    if (!UtilsTraining.instanceIsNull(crt_inst)) {
+                        crt_inst = UtilsArray.concat(core, crt_inst, attack);
+                        criteriaDataSetWriter.get(crt).writeNext(crt_inst);
+                        criteriaDataSetWriter.get(crt).flush();
+                    }
+                }
             }
         }
-        //close writers
-        connDataSetWriter.close();
-        for (Criteria crt : criterias) {
+        for (Criteria crt : criteriaDataSetWriter.keySet()) {
             criteriaDataSetWriter.get(crt).close();
         }
         //create subset data sources
@@ -240,7 +240,7 @@ public abstract class UtilsTraining {
         connCsvLoader.setSource(connectionDataSet);
         DataSource connSource = new DataSource(connCsvLoader);
         HashMap<Criteria, DataSource> criteriaSource = new HashMap<>();
-        for (Criteria crt : criterias) {
+        for (Criteria crt : criteriaDataSet.keySet()) {
             CSVLoader crtCsvLoader = new CSVLoader();
             crtCsvLoader.setSource(criteriaDataSet.get(crt));
             criteriaSource.put(crt, new DataSource(crtCsvLoader));
@@ -258,7 +258,7 @@ public abstract class UtilsTraining {
         //create subset instances
         Instances connInstance = connSource.getDataSet();
         HashMap<Criteria, Instances> criteriaInstance = new HashMap<>();
-        for (Criteria crt : criterias) {
+        for (Criteria crt : criteriaSource.keySet()) {
             criteriaInstance.put(crt, criteriaSource.get(crt).getDataSet());
         }
         //set class attributes
@@ -269,7 +269,7 @@ public abstract class UtilsTraining {
         } else {
             throw new Exception("Connection data set must have at least one custom attribute, and one class attribute.");
         }
-        for (Criteria crt : criterias) {
+        for (Criteria crt : criteriaInstance.keySet()) {
             if (criteriaInstance.get(crt).numAttributes() > 2) {
                 if (criteriaInstance.get(crt).classIndex() == -1) {
                     criteriaInstance.get(crt).setClassIndex(criteriaInstance.get(crt).numAttributes() - 1);
@@ -281,7 +281,7 @@ public abstract class UtilsTraining {
         if (connInstance.classAttribute().numValues() == 1) {
             throw new Exception("Connection data set must have at least two variations of values for the class attribute.");
         }
-        for (Criteria crt : criterias) {
+        for (Criteria crt : criteriaInstance.keySet()) {
             if (criteriaInstance.get(crt).numAttributes() == 1) {
                 throw new Exception("Criteria data set must have at least two variations of values for the class attribute.");
             }
@@ -302,18 +302,29 @@ public abstract class UtilsTraining {
             _criteriaTree.setOptions(options);
             criteriaTree.put(crt, _criteriaTree);
         }
-        //build trees
-        try {
-            connTree.buildClassifier(connInstance);
-        } catch (Exception ex) {
-            throw new Exception("Cannot build classifier for connection tree.");
-        }
-        for (Criteria crt : criterias) {
+        //criteria trees
+        ct = 0;
+        for (Criteria crt : criteriaTree.keySet()) {
             try {
+                ObjectOutputStream _oos = new ObjectOutputStream(new FileOutputStream("--crt[" + ct + "].tree"));
                 criteriaTree.get(crt).buildClassifier(criteriaInstance.get(crt));
+                _oos.writeObject(criteriaTree.get(crt));
+                _oos.flush();
+                _oos.close();
+                ct++;
             } catch (Exception ex) {
                 throw new Exception("Cannot build classifier for criteria tree.");
             }
+        }
+        //build trees
+        try {
+            ObjectOutputStream _oos = new ObjectOutputStream(new FileOutputStream("--conn.tree"));
+            connTree.buildClassifier(connInstance);
+            _oos.writeObject(connTree);
+            _oos.flush();
+            _oos.close();
+        } catch (Exception ex) {
+            throw new Exception("Cannot build classifier for connection tree.");
         }
         //return model
         return new ModelLive(ifaces[0], connTree, criteriaTree);
@@ -342,5 +353,14 @@ public abstract class UtilsTraining {
         System.out.println("ONE: " + oneCount);
         System.out.println("ZERO: " + zeroCount);
         System.out.println(tree.graph());
+    }
+
+    public static boolean instanceIsNull(String[] instance) {
+        for (String i : instance) {
+            if (!i.equals("" + -1)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
