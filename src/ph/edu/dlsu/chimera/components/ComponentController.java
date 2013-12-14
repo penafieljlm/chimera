@@ -29,6 +29,7 @@ public class ComponentController extends ComponentActive {
 
     /**
      * Listens for incoming connections.
+     * @throws java.lang.Exception
      */
     @Override
     public void componentRun() throws Exception {

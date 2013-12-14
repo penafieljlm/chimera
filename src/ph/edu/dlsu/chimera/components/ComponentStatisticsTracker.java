@@ -17,81 +17,51 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsTracker extends ComponentActive {
+public class ComponentStatisticsTracker extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
-    public final IntermodulePipe<PduAtomic> inQueue;
-    public final IntermodulePipe<PduAtomic> outQueue;
     public final Criteria[] criterias;
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
-    private long processed;
 
     public ComponentStatisticsTracker(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable) {
+        super(inQueue, outQueue);
         this.setPriority(Thread.NORM_PRIORITY);
-        this.inQueue = inQueue;
-        this.outQueue = outQueue;
-        if (this.inQueue != null) {
-            this.inQueue.setReader(this);
-        }
-        if (this.outQueue != null) {
-            this.outQueue.setWriter(this);
-        }
         this.criterias = criterias;
         this.statsTable = statsTable;
-        this.processed = 0;
     }
 
     @Override
-    protected void componentRun() throws Exception {
-        while (super.running) {
-            if (this.inQueue != null) {
-                if (this.inQueue.isEmpty()) {
-                    synchronized (this) {
-                        this.wait();
-                    }
-                }
-                while (!this.inQueue.isEmpty()) {
-                    synchronized (this.statsTable) {
-                        PduAtomic pkt = this.inQueue.poll();
-                        synchronized (pkt) {
-                            if (pkt.ingress) {
-                                //create / update criterias
-                                for (Criteria crt : this.criterias) {
-                                    CriteriaInstance pktcrt = crt.createInstance(pkt.packet);
-                                    if (pktcrt != null) {
-                                        if (this.statsTable != null) {
-                                            if (!this.statsTable.containsKey(pktcrt)) {
-                                                //create criteria
-                                                this.statsTable.put(pktcrt, new Statistics(pkt.timestampInNanos));
-                                            }
-                                            if (this.statsTable.containsKey(pktcrt)) {
-                                                //update criteria statsTable
-                                                this.statsTable.get(pktcrt).commitEncounter(pkt);
-                                            }
-                                            //associate criteria to packet
-                                            pkt.addStatistics(crt, this.statsTable.get(pktcrt));
-                                        } else {
-                                            throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
-                                        }
-                                    } else {
-                                        pkt.addStatistics(crt, null);
-                                    }
-                                }
-                                this.processed++;
-                                //forward packet
-                                if (this.outQueue != null) {
-                                    this.outQueue.add(pkt);
-                                }
-                            } else {
-                                throw new Exception("Error: [Statistics Tracker] Encountered egress packet.");
+    protected PduAtomic process(PduAtomic input) throws Exception {
+        synchronized (this.statsTable) {
+            if (input.ingress) {
+                //create / update criterias
+                for (Criteria crt : this.criterias) {
+                    CriteriaInstance pktcrt = crt.createInstance(input.packet);
+                    if (pktcrt != null) {
+                        if (this.statsTable != null) {
+                            if (!this.statsTable.containsKey(pktcrt)) {
+                                //create criteria
+                                this.statsTable.put(pktcrt, new Statistics(input.timestampInNanos));
                             }
+                            if (this.statsTable.containsKey(pktcrt)) {
+                                //update criteria statsTable
+                                this.statsTable.get(pktcrt).commitEncounter(input);
+                            }
+                            //associate criteria to packet
+                            input.addStatistics(crt, this.statsTable.get(pktcrt));
+                        } else {
+                            throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
                         }
+                    } else {
+                        input.addStatistics(crt, null);
                     }
                 }
+                //forward packet
+                return input;
             } else {
-                throw new Exception("Error: [Statistics Tracker] inQueue is null.");
+                throw new Exception("Error: [Statistics Tracker] Encountered egress packet.");
             }
         }
     }
@@ -114,7 +84,6 @@ public class ComponentStatisticsTracker extends ComponentActive {
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
-        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }

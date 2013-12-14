@@ -38,7 +38,15 @@ public class ctrain {
             + "\n        DESCRIPTION"
             + "\n            The output file name of the model to be produced."
             + "\n            Automatically ends with '.cmodel'."
-            + "\n        REQUIRED........ Yes";
+            + "\n        REQUIRED........ Yes"
+            + "\n    /verbose"
+            + "\n        DESCRIPTION"
+            + "\n            If set, the following apply:"
+            + "\n                Output messages are printed on the screen."
+            + "\n            If not set, the following apply:"
+            + "\n                Output messages are not printed on the screen."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A";
 
     public static void main(String[] args) {
         try {
@@ -52,6 +60,15 @@ public class ctrain {
 
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
+
+            //verbose
+            boolean verbose = false;
+            if (_args.containsKey("/verbose")) {
+                verbose = Boolean.parseBoolean(_args.get("/verbose"));
+            }
+            if (!verbose) {
+                System.out.close();
+            }
 
             //load training file
             if (!_args.containsKey("-input")) {
@@ -85,7 +102,6 @@ public class ctrain {
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
-            ex.printStackTrace();
             System.out.println("Type 'ctrain /help' to see usage.");
         }
     }

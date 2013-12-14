@@ -66,6 +66,14 @@ public class cproduce {
             + "\n            If not set, the following apply:"
             + "\n                Linux kernel firewall rules are not created to block detected DoS attacks."
             + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    /verbose"
+            + "\n        DESCRIPTION"
+            + "\n            If set, the following apply:"
+            + "\n                Output messages are printed on the screen."
+            + "\n            If not set, the following apply:"
+            + "\n                Output messages are not printed on the screen."
+            + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A";
 
     public static void main(String[] args) throws Exception {
@@ -86,6 +94,15 @@ public class cproduce {
 
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
+
+            //verbose
+            boolean verbose = false;
+            if (_args.containsKey("/verbose")) {
+                verbose = Boolean.parseBoolean(_args.get("/verbose"));
+            }
+            if (!verbose) {
+                System.out.close();
+            }
 
             //load model file
             if (!_args.containsKey("-input")) {
@@ -109,12 +126,12 @@ public class cproduce {
             }
 
             //ingress queues
-            IntermodulePipe<PduAtomic> exGatherSniffOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> exGatherStatsOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> exGatherStateOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inProduceSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inProduceStatsOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inProduceStateOut = new IntermodulePipe<>();
 
             //egress queues
-            IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> egProduceSniffOut = new IntermodulePipe<>();
 
             //shared resources
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
@@ -129,14 +146,22 @@ public class cproduce {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, true, Pcap.OUT));
-            components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
-            components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-            components.put("in.gather.decision", new ComponentDecision(exGatherStateOut, modelLive, rulesMap, syslogServ));
+            components.put("produce.in.sniff", new ComponentSniffer(inProduceSniffOut, modelLive.protectedInterface, true, Pcap.OUT));
+            components.put("produce.in.stats", new ComponentStatisticsTracker(inProduceSniffOut, inProduceStatsOut, criterias, statsTableAtomic));
+            components.put("produce.in.states", new ComponentStateTracker(inProduceStatsOut, inProduceStateOut, stateTable));
+            components.put("produce.in.decision", new ComponentDecision(inProduceStateOut, modelLive, rulesMap, syslogServ));
+            inProduceSniffOut.setWriter((ComponentActive) components.get("produce.in.sniff"));
+            inProduceSniffOut.setReader((ComponentActive) components.get("produce.in.stats"));
+            inProduceStatsOut.setWriter((ComponentActive) components.get("produce.in.stats"));
+            inProduceStatsOut.setReader((ComponentActive) components.get("produce.in.states"));
+            inProduceStateOut.setWriter((ComponentActive) components.get("produce.in.states"));
+            inProduceStateOut.setReader((ComponentActive) components.get("produce.in.decision"));
 
             //egress path
-            components.put("eg.gather.sniff", new ComponentSniffer(exGatherSniffOut, modelLive.protectedInterface, false, Pcap.IN));
-            components.put("eg.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
+            components.put("produce.eg.sniff", new ComponentSniffer(egProduceSniffOut, modelLive.protectedInterface, false, Pcap.IN));
+            components.put("produce.eg.states", new ComponentStateTracker(egProduceSniffOut, null, stateTable));
+            egProduceSniffOut.setWriter((ComponentActive) components.get("produce.eg.sniff"));
+            egProduceSniffOut.setReader((ComponentActive) components.get("produce.eg.states"));
 
             //controller
             ComponentController controller = new ComponentController(components, config.controlPort);
@@ -150,6 +175,11 @@ public class cproduce {
             }
             controller.start();
 
+            //print dump count if verbose
+            if (verbose) {
+
+            }
+
             //join threads
             for (String c : components.keySet()) {
                 Component _c = components.get(c);
@@ -161,7 +191,6 @@ public class cproduce {
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
-            return;
         }
     }
 }

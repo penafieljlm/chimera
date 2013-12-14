@@ -14,7 +14,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.HashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
@@ -302,29 +301,19 @@ public abstract class UtilsTraining {
             _criteriaTree.setOptions(options);
             criteriaTree.put(crt, _criteriaTree);
         }
+        //build trees
+        try {
+            connTree.buildClassifier(connInstance);
+        } catch (Exception ex) {
+            throw new Exception("Cannot build classifier for connection tree.");
+        }
         //criteria trees
-        ct = 0;
         for (Criteria crt : criteriaTree.keySet()) {
             try {
-                ObjectOutputStream _oos = new ObjectOutputStream(new FileOutputStream("--crt[" + ct + "].tree"));
                 criteriaTree.get(crt).buildClassifier(criteriaInstance.get(crt));
-                _oos.writeObject(criteriaTree.get(crt));
-                _oos.flush();
-                _oos.close();
-                ct++;
             } catch (Exception ex) {
                 throw new Exception("Cannot build classifier for criteria tree.");
             }
-        }
-        //build trees
-        try {
-            ObjectOutputStream _oos = new ObjectOutputStream(new FileOutputStream("--conn.tree"));
-            connTree.buildClassifier(connInstance);
-            _oos.writeObject(connTree);
-            _oos.flush();
-            _oos.close();
-        } catch (Exception ex) {
-            throw new Exception("Cannot build classifier for connection tree.");
         }
         //return model
         return new ModelLive(ifaces[0], connTree, criteriaTree);

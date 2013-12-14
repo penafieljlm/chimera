@@ -19,83 +19,51 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentStateTracker extends ComponentActive {
+public final class ComponentStateTracker extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
     public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
-    public final IntermodulePipe<PduAtomic> inQueue;
-    public final IntermodulePipe<PduAtomic> outQueue;
-    private long processed;
 
     public ComponentStateTracker(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<TcpSocketPair, Connection> stateTable) {
+        super(inQueue, outQueue);
         this.setPriority(Thread.NORM_PRIORITY);
         this.stateTable = stateTable;
-        this.inQueue = inQueue;
-        this.outQueue = outQueue;
-        if (this.inQueue != null) {
-            this.inQueue.setReader(this);
-        }
-        if (this.outQueue != null) {
-            this.outQueue.setWriter(this);
-        }
-        this.processed = 0;
     }
 
     @Override
-    protected void componentRun() throws Exception {
-        while (super.running) {
-            if (this.inQueue != null) {
-                if (this.inQueue.isEmpty()) {
-                    synchronized (this) {
-                        this.wait();
-                    }
-                }
-                if (this.stateTable != null) {
-                    while (!this.inQueue.isEmpty()) {
-                        synchronized (this.stateTable) {
-                            //poll packet
-                            PduAtomic pkt = this.inQueue.poll();
-                            synchronized (pkt) {
-                                try {
-                                    if (pkt.packet.hasHeader(new Tcp())) {
-                                        //tcp packets
-                                        TcpSocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
-                                        Tcp tcp = pkt.packet.getHeader(new Tcp());
-                                        //create state
-                                        if (!this.stateTable.containsKey(socks)) {
-                                            if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                                this.stateTable.put(socks, new Connection(socks, pkt.packet.getCaptureHeader().timestampInNanos(), pkt.ingress));
-                                            }
-                                        }
-                                        if (this.stateTable.containsKey(socks)) {
-                                            Connection connection = this.stateTable.get(socks);
-                                            pkt.setConnection(connection);
-                                            //update state
-                                            connection.update(pkt);
-                                            //attempt to delete state
-                                            if (connection.isDone()) {
-                                                this.stateTable.remove(socks);
-                                            }
-                                        }
-                                    }
-                                } catch (Exception ex) {
-                                    ex.printStackTrace();
-                                }
-                                this.processed++;
-                                //forward
-                                if (this.outQueue != null) {
-                                    this.outQueue.add(pkt);
-                                }
+    protected PduAtomic process(PduAtomic input) throws Exception {
+        if (this.stateTable != null) {
+            synchronized (this.stateTable) {
+                try {
+                    if (input.packet.hasHeader(new Tcp())) {
+                        //tcp packets
+                        TcpSocketPair socks = UtilsPacket.getSocketPair(input.packet);
+                        Tcp tcp = input.packet.getHeader(new Tcp());
+                        //create state
+                        if (!this.stateTable.containsKey(socks)) {
+                            if (tcp.flags_SYN() && !tcp.flags_ACK()) {
+                                this.stateTable.put(socks, new Connection(socks, input.packet.getCaptureHeader().timestampInNanos(), input.ingress));
+                            }
+                        }
+                        if (this.stateTable.containsKey(socks)) {
+                            Connection connection = this.stateTable.get(socks);
+                            input.setConnection(connection);
+                            //update state
+                            connection.update(input);
+                            //attempt to delete state
+                            if (connection.isDone()) {
+                                this.stateTable.remove(socks);
                             }
                         }
                     }
-                } else {
-                    throw new Exception("Error: [State Tracker] stateTable is null.");
+                } catch (Exception ex) {
                 }
-            } else {
-                throw new Exception("Error: [State Tracker] inQueue is null.");
+                //forward
+                return input;
             }
+        } else {
+            throw new Exception("Error: [State Tracker] stateTable is null.");
         }
     }
 
@@ -117,7 +85,6 @@ public final class ComponentStateTracker extends ComponentActive {
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
-        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }
