@@ -78,16 +78,16 @@ public class cgather {
             + "\n        DESCRIPTION"
             + "\n            If set, the following apply:"
             + "\n                If -access is provided, the following apply:"
-            + "\n                    Packets matching -access are flagged as attacks."
-            + "\n                    Packets not matching -access are flagged as normal."
+            + "\n                    Packets matching -access are included in the training set."
+            + "\n                    Packets not matching -access are not included in the training set."
             + "\n                If -access is not provided, the following apply:"
-            + "\n                    All packets are flagged as attacks."
+            + "\n                    All packets are included in the training set."
             + "\n            If not set, the following apply:"
             + "\n                If -access is provided, the following apply:"
-            + "\n                    Packets matching -access are flagged as normal."
-            + "\n                    Packets not matching -access are flagged as attacks."
+            + "\n                    Packets matching -access are not included in the training set."
+            + "\n                    Packets not matching -access are included in the training set."
             + "\n                If -access is not provided, the following apply:"
-            + "\n                    All packets are flagged as normal."
+            + "\n                    All packets are not included in the training set."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n    -training"
@@ -122,6 +122,14 @@ public class cgather {
             + "\n                If -training is not provided, the following apply:"
             + "\n                    All packets are flagged as normal."
             + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    /verbose"
+            + "\n        DESCRIPTION"
+            + "\n            If set, the following apply:"
+            + "\n                Output messages are printed on the screen."
+            + "\n            If not set, the following apply:"
+            + "\n                Output messages are not printed on the screen."
+            + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A";
 
     public static void main(String[] args) {
@@ -142,6 +150,15 @@ public class cgather {
 
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
+
+            //verbose
+            boolean verbose = false;
+            if (_args.containsKey("/verbose")) {
+                verbose = Boolean.parseBoolean(_args.get("/verbose"));
+            }
+            if (!verbose) {
+                System.out.close();
+            }
 
             //load dump file
             if (!_args.containsKey("-output")) {
@@ -191,12 +208,12 @@ public class cgather {
             }
 
             //ingress queues
-            IntermodulePipe<PduAtomic> exGatherSniffOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> exGatherStatsOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> exGatherStateOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inGatherStatsOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inGatherStateOut = new IntermodulePipe<>();
 
             //egress queues
-            IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> egGatherSniffOut = new IntermodulePipe<>();
 
             //shared resources
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
@@ -210,14 +227,22 @@ public class cgather {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("in.gather.sniff", new ComponentSniffer(exGatherSniffOut, ifProtected, accessFilter, allowFiltered, true, Pcap.OUT));
-            components.put("in.gather.stats", new ComponentStatisticsTracker(exGatherSniffOut, exGatherStatsOut, criterias, statsTableAtomic));
-            components.put("in.gather.states", new ComponentStateTracker(exGatherStatsOut, exGatherStateOut, stateTable));
-            components.put("in.gather.dumper", new ComponentDumper(exGatherStateOut, ifProtected, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
+            components.put("gather.in.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, true, Pcap.OUT));
+            components.put("gather.in.stats", new ComponentStatisticsTracker(inGatherSniffOut, inGatherStatsOut, criterias, statsTableAtomic));
+            components.put("gather.in.states", new ComponentStateTracker(inGatherStatsOut, inGatherStateOut, stateTable));
+            components.put("gather.in.dumper", new ComponentDumper(inGatherStateOut, ifProtected, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
+            inGatherSniffOut.setWriter((ComponentActive) components.get("gather.in.sniff"));
+            inGatherSniffOut.setReader((ComponentActive) components.get("gather.in.stats"));
+            inGatherStatsOut.setWriter((ComponentActive) components.get("gather.in.stats"));
+            inGatherStatsOut.setReader((ComponentActive) components.get("gather.in.states"));
+            inGatherStateOut.setWriter((ComponentActive) components.get("gather.in.states"));
+            inGatherStateOut.setReader((ComponentActive) components.get("gather.in.dumper"));
 
             //egress path
-            components.put("eg.gather.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, false, Pcap.IN));
-            components.put("eg.gather.states", new ComponentStateTracker(inGatherSniffOut, null, stateTable));
+            components.put("gather.eg.sniff", new ComponentSniffer(egGatherSniffOut, ifProtected, accessFilter, allowFiltered, false, Pcap.IN));
+            components.put("gather.eg.states", new ComponentStateTracker(egGatherSniffOut, null, stateTable));
+            egGatherSniffOut.setWriter((ComponentActive) components.get("gather.eg.sniff"));
+            egGatherSniffOut.setReader((ComponentActive) components.get("gather.eg.states"));
 
             //controller
             ComponentController controller = new ComponentController(components, config.controlPort);
@@ -231,6 +256,15 @@ public class cgather {
             }
             controller.start();
 
+            //print dump count if verbose
+            if (verbose) {
+                ComponentDumper dumper = (ComponentDumper) components.get("in.gather.dumper");
+                while (dumper.isAlive()) {
+                    Thread.sleep(100);
+                    System.out.print("Training Data Instances Gathered: " + dumper.getProcessed() + "\r");
+                }
+            }
+
             //join threads
             for (String c : components.keySet()) {
                 Component _c = components.get(c);
@@ -242,7 +276,6 @@ public class cgather {
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
-            return;
         }
     }
 }

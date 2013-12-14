@@ -15,7 +15,7 @@ public class ResponseException implements Response {
 
     /**
      * Constructs a new ResponseException object.
-     * @param exceptions - the content of the new MessageObject to be created.
+     * @param exception - the content of the new MessageObject to be created.
      */
     public ResponseException(Exception exception) {
         this.exceptions = exception;
@@ -26,8 +26,8 @@ public class ResponseException implements Response {
      * @param outStream - the output stream where to print reports.
      * @return the appropriate response Command object.
      */
+    @Override
     public Command handleShellMessage(PrintStream outStream) {
-        this.exceptions.printStackTrace();
         outStream.println(this.exceptions.getMessage());
         return new MessageFinished();
     }

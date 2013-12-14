@@ -20,74 +20,40 @@ import ph.edu.dlsu.chimera.util.UtilsPacket;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentAssembler extends ComponentActive {
+public final class ComponentAssembler extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
-    public final IntermodulePipe<PduAtomic> inQueue;
-    public final IntermodulePipe<PduAtomic> outQueue;
     public final ConcurrentHashMap<TcpSocketPair, AssemblerTcp> tcpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup;
     public final ConcurrentHashMap<TcpSocketPair, AssemblerUdp> udpAssemblerTable;
     public final ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup;
     public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
-    private long processed;
 
     public ComponentAssembler(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<Integer, AssemblerTcp> tcpPortProtocolLookup,
             ConcurrentHashMap<Integer, AssemblerUdp> udpPortProtocolLookup,
             ConcurrentHashMap<TcpSocketPair, Connection> stateTable) {
+        super(inQueue, outQueue);
         this.setPriority(Thread.NORM_PRIORITY);
-        this.inQueue = inQueue;
-        this.outQueue = outQueue;
-        if (this.inQueue != null) {
-            this.inQueue.setReader(this);
-        }
-        if (this.outQueue != null) {
-            this.outQueue.setWriter(this);
-        }
         this.tcpAssemblerTable = new ConcurrentHashMap<>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
         this.udpAssemblerTable = new ConcurrentHashMap<>();
         this.udpPortProtocolLookup = udpPortProtocolLookup;
         this.stateTable = stateTable;
-        this.processed = 0;
     }
 
     @Override
-    protected void componentRun() throws Exception {
-        while (super.running) {
-            if (this.inQueue != null) {
-                if (this.inQueue.isEmpty()) {
-                    synchronized (this) {
-                        this.wait();
-                    }
+    protected PduAtomic process(PduAtomic input) throws Exception {
+        if (input.ingress) {
+            try {
+                if (input.packet.hasHeader(new Tcp())) {
+                    this.handleTcp(input);
                 }
-                while (!this.inQueue.isEmpty()) {
-                    //poll packet
-                    PduAtomic pkt = this.inQueue.poll();
-                    synchronized (pkt) {
-                        if (pkt.ingress) {
-                            //tcp forward
-                            try {
-                                if (pkt.packet.hasHeader(new Tcp())) {
-                                    this.handleTcp(pkt);
-                                }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            this.processed++;
-                            //forward
-                            if (this.outQueue != null) {
-                                this.outQueue.add(pkt);
-                            }
-                        } else {
-                            throw new Exception("Error: [Assembler] Encountered egress packet.");
-                        }
-                    }
-                }
-            } else {
-                throw new Exception("Error: [Assembler] inQueue is null.");
+            } catch (Exception ex) {
             }
+            return input;
+        } else {
+            throw new Exception("Error: [Assembler] Encountered egress packet.");
         }
     }
 
@@ -145,7 +111,6 @@ public final class ComponentAssembler extends ComponentActive {
         } else {
             diag.add(new Diagnostic("outqueue", "Outbound Queued Packets", "N/A"));
         }
-        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }

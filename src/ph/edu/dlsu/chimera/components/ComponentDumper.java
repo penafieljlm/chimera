@@ -8,7 +8,6 @@ import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
@@ -20,15 +19,15 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentDumper extends ComponentActive {
+public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
     public final String inPcapIf;
-    public final IntermodulePipe<PduAtomic> inQueue;
     public final Criteria[] criterias;
     public final File trainingFile;
     public final PacketFilter trainingFilter;
     public final boolean tagFilteredAsAttack;
-    private long processed;
+    private CSVWriter writer;
+    private String[] headers;
 
     public ComponentDumper(IntermodulePipe<PduAtomic> inQueue,
             String inPcapIf,
@@ -36,67 +35,68 @@ public class ComponentDumper extends ComponentActive {
             File trainingFile,
             PacketFilter trainingFilter,
             boolean tagFilteredAsAttack) {
+        super(inQueue, null);
         this.inPcapIf = inPcapIf;
-        this.inQueue = inQueue;
-        if (this.inQueue != null) {
-            this.inQueue.setReader(this);
-        }
         this.criterias = criterias;
         this.trainingFile = trainingFile;
         this.trainingFilter = trainingFilter;
         this.tagFilteredAsAttack = tagFilteredAsAttack;
-        this.processed = 0;
     }
 
     @Override
-    protected void componentRun() throws Exception {
-        if (this.trainingFile != null) {
-            CSVWriter writer = new CSVWriter(new FileWriter(this.trainingFile));
-            String[] iface = {this.inPcapIf};
-            String[] headers = UtilsTraining.getHeaders(this.criterias);
-            String[] _criterias = new String[this.criterias.length];
-            for (int i = 0; i < this.criterias.length; i++) {
-                _criterias[i] = this.criterias[i].expression;
-            }
-            writer.writeNext(iface);
-            writer.writeNext(_criterias);
-            writer.writeNext(headers);
-            writer.flush();
-            while (super.running) {
-                if (this.inQueue != null) {
-                    if (this.inQueue.isEmpty()) {
-                        synchronized (this) {
-                            this.wait();
-                        }
-                    }
-                    while (!this.inQueue.isEmpty()) {
-                        PduAtomic pkt = this.inQueue.poll();
-                        synchronized (pkt) {
-                            if (pkt.ingress) {
-                                boolean attack = this.tagFilteredAsAttack;
-                                if (this.trainingFilter != null) {
-                                    attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
-                                }
-                                String[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack);
-                                if (headers.length != instance.length) {
-                                    throw new Exception("Error: [Dumper] Headers do not match data.");
-                                }
-                                writer.writeNext(instance);
-                                writer.flush();
-                                this.processed++;
-                            } else {
-                                throw new Exception("Error: [Dumper] Encountered egress packet.");
-                            }
-                        }
-                    }
-                } else {
-                    throw new Exception("Error: [Dumper] inQueue is null.");
-                }
-            }
-            writer.close();
-        } else {
+    protected void preLoop() throws Exception {
+        if (this.trainingFile == null) {
             throw new Exception("Error: [Dumper] trainingFile is null.");
         }
+        this.writer = new CSVWriter(new FileWriter(this.trainingFile));
+        String[] iface = {this.inPcapIf};
+        this.headers = UtilsTraining.getHeaders(this.criterias);
+        String[] _criterias = new String[this.criterias.length];
+        for (int i = 0; i < this.criterias.length; i++) {
+            _criterias[i] = this.criterias[i].expression;
+        }
+        this.writer.writeNext(iface);
+        this.writer.writeNext(_criterias);
+        this.writer.writeNext(this.headers);
+        this.writer.flush();
+    }
+
+    @Override
+    protected PduAtomic process(PduAtomic input) throws Exception {
+        if (this.inQueue != null) {
+            if (this.inQueue.isEmpty()) {
+                synchronized (this) {
+                    this.wait();
+                }
+            }
+            while (!this.inQueue.isEmpty()) {
+                PduAtomic pkt = this.inQueue.poll();
+                synchronized (pkt) {
+                    if (pkt.ingress) {
+                        boolean attack = this.tagFilteredAsAttack;
+                        if (this.trainingFilter != null) {
+                            attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
+                        }
+                        String[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack);
+                        if (this.headers.length != instance.length) {
+                            throw new Exception("Error: [Dumper] Headers do not match data.");
+                        }
+                        this.writer.writeNext(instance);
+                        this.writer.flush();
+                    } else {
+                        throw new Exception("Error: [Dumper] Encountered egress packet.");
+                    }
+                }
+            }
+        } else {
+            throw new Exception("Error: [Dumper] inQueue is null.");
+        }
+        return null;
+    }
+
+    @Override
+    protected void postLoop() throws Exception {
+        this.writer.close();
     }
 
     @Override
@@ -107,7 +107,6 @@ public class ComponentDumper extends ComponentActive {
         } else {
             diag.add(new Diagnostic("inqueue", "Inbound Queued Packets", "N/A"));
         }
-        diag.add(new Diagnostic("processed", "Packets Processed", this.processed));
         return diag;
     }
 }

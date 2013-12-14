@@ -28,125 +28,122 @@ import weka.core.Instance;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentDecision extends ComponentActive {
+public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
     public static final String CHIMERA_CHAIN = "CHIMERA";
     public static final String FORWARD_CHAIN = "FORWARD";
     public final ModelLive model;
-    public final IntermodulePipe<PduAtomic> inQueue;
     public final List<Object> rulesMap;
     public final InetAddress syslogServer;
-    private long processed;
+    private IpTables iptable;
 
     public ComponentDecision(IntermodulePipe<PduAtomic> inQueue,
             ModelLive model,
             List<Object> rulesMap,
             InetAddress syslogServer) {
+        super(inQueue, null);
         this.model = model;
-        this.inQueue = inQueue;
         this.rulesMap = rulesMap;
         this.syslogServer = syslogServer;
-        this.processed = 0;
     }
 
     @Override
-    protected void componentRun() throws Exception {
-        IpTables iptable = new IpTables("filter");
+    protected void preLoop() throws Exception {
+        this.iptable = new IpTables("filter");
         //clean up
-        for (String ch : iptable.getAllChains()) {
+        for (String ch : this.iptable.getAllChains()) {
             if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
-                iptable.deleteChain(ch);
+                this.iptable.deleteChain(ch);
             }
         }
-        iptable.commit();
+        this.iptable.commit();
         //create master chain
-        iptable.createChain(ComponentDecision.CHIMERA_CHAIN);
-        iptable.commit();
-        while (super.running) {
-            if (this.inQueue != null) {
-                while (!this.inQueue.isEmpty()) {
-                    PduAtomic pkt = this.inQueue.poll();
-                    if (pkt.ingress) {
-                        //integrity check
-                        if (this.rulesMap != null) {
-                            if (iptable.getAllRules(ComponentDecision.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
-                                throw new Exception("Error: [Decision] The CHIMERA iptables chain has been tampered with.");
-                            }
+        this.iptable.createChain(ComponentDecision.CHIMERA_CHAIN);
+        this.iptable.commit();
+    }
+
+    @Override
+    protected PduAtomic process(PduAtomic input) throws Exception {
+        if (input.ingress) {
+            //integrity check
+            if (this.rulesMap != null) {
+                if (this.iptable.getAllRules(ComponentDecision.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
+                    throw new Exception("Error: [Decision] The CHIMERA iptables chain has been tampered with.");
+                }
+            }
+            //connection evaluation
+            if (this.evaluateAgainstConnection(input)) {
+                //attack
+                this.logConnectionViolation(input);
+                if (this.rulesMap != null) {
+                    //add rules
+                    if (!this.rulesMap.contains(input.getConnection().sockets)) {
+                        IpRule rule = input.getConnection().sockets.createRule();
+                        if (rule != null) {
+                            this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
+                            this.iptable.commit();
                         }
-                        //connection evaluation
-                        if (this.evaluateAgainstConnection(pkt)) {
-                            //attack
-                            this.logConnectionViolation(pkt);
-                            if (this.rulesMap != null) {
-                                //add rules
-                                if (!this.rulesMap.contains(pkt.getConnection().sockets)) {
-                                    IpRule rule = pkt.getConnection().sockets.createRule();
-                                    if (rule != null) {
-                                        iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
-                                        iptable.commit();
-                                    }
-                                    this.rulesMap.add(pkt.getConnection().sockets);
-                                }
-                            }
-                        } else {
-                            //normal
-                            if (this.rulesMap != null) {
-                                //remove rules
-                                if (this.rulesMap.contains(pkt.getConnection().sockets)) {
-                                    int idx = this.rulesMap.indexOf(pkt.getConnection().sockets);
-                                    iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
-                                    iptable.commit();
-                                    this.rulesMap.remove(pkt.getConnection().sockets);
-                                }
-                            }
-                        }
-                        //criteria evaluation
-                        HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(pkt);
-                        for (Criteria crt : crtEval.keySet()) {
-                            CriteriaInstance inst = crt.createInstance(pkt.packet);
-                            if (crtEval.get(crt)) {
-                                //attack
-                                this.logCriteriaViolation(pkt, crt, pkt.getConnection());
-                                if (this.rulesMap != null) {
-                                    //create rules
-                                    if (!this.rulesMap.contains(inst)) {
-                                        IpRule rule = inst.criteria.createRule(pkt.packet);
-                                        if (rule != null) {
-                                            iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
-                                            iptable.commit();
-                                        }
-                                        this.rulesMap.add(inst);
-                                    }
-                                }
-                            } else {
-                                //normal
-                                if (this.rulesMap != null) {
-                                    //remove rules
-                                    if (this.rulesMap.contains(inst)) {
-                                        int idx = this.rulesMap.indexOf(inst);
-                                        iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
-                                        iptable.commit();
-                                        this.rulesMap.remove(inst);
-                                    }
-                                }
-                            }
-                        }
-                        this.processed++;
-                    } else {
-                        throw new Exception("Error: [Decision] Encountered egress packet.");
+                        this.rulesMap.add(input.getConnection().sockets);
                     }
                 }
             } else {
-                throw new Exception("Error: [Decision] inQueue is null.");
+                //normal
+                if (this.rulesMap != null) {
+                    //remove rules
+                    if (this.rulesMap.contains(input.getConnection().sockets)) {
+                        int idx = this.rulesMap.indexOf(input.getConnection().sockets);
+                        this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
+                        this.iptable.commit();
+                        this.rulesMap.remove(input.getConnection().sockets);
+                    }
+                }
             }
+            //criteria evaluation
+            HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(input);
+            for (Criteria crt : crtEval.keySet()) {
+                CriteriaInstance inst = crt.createInstance(input.packet);
+                if (crtEval.get(crt)) {
+                    //attack
+                    this.logCriteriaViolation(input, crt, input.getConnection());
+                    if (this.rulesMap != null) {
+                        //create rules
+                        if (!this.rulesMap.contains(inst)) {
+                            IpRule rule = inst.criteria.createRule(input.packet);
+                            if (rule != null) {
+                                this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
+                                this.iptable.commit();
+                            }
+                            this.rulesMap.add(inst);
+                        }
+                    }
+                } else {
+                    //normal
+                    if (this.rulesMap != null) {
+                        //remove rules
+                        if (this.rulesMap.contains(inst)) {
+                            int idx = this.rulesMap.indexOf(inst);
+                            this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
+                            this.iptable.commit();
+                            this.rulesMap.remove(inst);
+                        }
+                    }
+                }
+            }
+        } else {
+            throw new Exception("Error: [Decision] Encountered egress packet.");
         }
+        return null;
+    }
+
+    @Override
+    protected void postLoop() throws Exception {
         //clean up
-        for (String ch : iptable.getAllChains()) {
+        for (String ch : this.iptable.getAllChains()) {
             if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
-                iptable.deleteChain(ch);
+                this.iptable.deleteChain(ch);
             }
         }
-        iptable.commit();
+        this.iptable.commit();
     }
 
     protected boolean evaluateAgainstConnection(PduAtomic pkt) {
