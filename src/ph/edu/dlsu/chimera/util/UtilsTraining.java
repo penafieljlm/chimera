@@ -192,6 +192,12 @@ public abstract class UtilsTraining {
             criteriaDataSet.put(crt, File.createTempFile("crt[" + ct + "]", ".trntmpcsv"));
             ct++;
         }
+        //instance count per training set
+        long connectionInstancesCount = 0;
+        HashMap<Criteria, Long> criteriaInstancesCount = new HashMap<>();
+        for (Criteria crt : criterias) {
+            criteriaInstancesCount.put(crt, new Long(0));
+        }
         //open writers and write headers
         String[] attackHeader = {UtilsTraining.ATTK_HEADER};
         HashMap<Criteria, CSVWriter> criteriaDataSetWriter;
@@ -214,6 +220,7 @@ public abstract class UtilsTraining {
                 //connection
                 String[] conn_inst = UtilsTraining.getConnectionInstance(instance);
                 if (!UtilsTraining.instanceIsNull(conn_inst)) {
+                    connectionInstancesCount++;
                     conn_inst = UtilsArray.concat(core, conn_inst, attack);
                     connDataSetWriter.writeNext(conn_inst);
                     connDataSetWriter.flush();
@@ -222,6 +229,7 @@ public abstract class UtilsTraining {
                 for (Criteria crt : criterias) {
                     String[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
                     if (!UtilsTraining.instanceIsNull(crt_inst)) {
+                        criteriaInstancesCount.put(crt, criteriaInstancesCount.get(crt) + 1);
                         crt_inst = UtilsArray.concat(core, crt_inst, attack);
                         criteriaDataSetWriter.get(crt).writeNext(crt_inst);
                         criteriaDataSetWriter.get(crt).flush();
@@ -233,28 +241,42 @@ public abstract class UtilsTraining {
             criteriaDataSetWriter.get(crt).close();
         }
         //create subset data sources
-        CSVLoader connCsvLoader = new CSVLoader();
-        connCsvLoader.setSource(connectionDataSet);
-        DataSource connSource = new DataSource(connCsvLoader);
+        CSVLoader connCsvLoader = (connectionInstancesCount > 0) ? new CSVLoader() : null;
+        if (connCsvLoader != null) {
+            connCsvLoader.setSource(connectionDataSet);
+        }
+        DataSource connSource = (connCsvLoader != null) ? new DataSource(connCsvLoader) : null;
         HashMap<Criteria, DataSource> criteriaSource = new HashMap<>();
         for (Criteria crt : criteriaDataSet.keySet()) {
             CSVLoader crtCsvLoader = new CSVLoader();
             crtCsvLoader.setSource(criteriaDataSet.get(crt));
-            criteriaSource.put(crt, new DataSource(crtCsvLoader));
+            if (criteriaInstancesCount.get(crt) > 0) {
+                criteriaSource.put(crt, new DataSource(crtCsvLoader));
+            }
+        }
+        File tConnFile = new File("__conn.csv");
+        UtilsFile.copyFile(connectionDataSet, tConnFile);
+        ct = 0;
+        for (Criteria crt : criteriaDataSet.keySet()) {
+            File tCrtFile = new File("__crt[" + ct + "].csv");
+            UtilsFile.copyFile(criteriaDataSet.get(crt), tCrtFile);
+            ct++;
         }
         //create subset instances
-        Instances connInstance = connSource.getDataSet();
+        Instances connInstance = (connSource != null) ? connSource.getDataSet() : null;
         HashMap<Criteria, Instances> criteriaInstance = new HashMap<>();
         for (Criteria crt : criteriaSource.keySet()) {
             criteriaInstance.put(crt, criteriaSource.get(crt).getDataSet());
         }
         //set class attributes
-        if (connInstance.numAttributes() > 2) {
-            if (connInstance.classIndex() == -1) {
-                connInstance.setClassIndex(connInstance.numAttributes() - 1);
+        if (connInstance != null) {
+            if (connInstance.numAttributes() > 2) {
+                if (connInstance.classIndex() == -1) {
+                    connInstance.setClassIndex(connInstance.numAttributes() - 1);
+                }
+            } else {
+                throw new Exception("Connection data set must have at least one custom attribute, and one class attribute.");
             }
-        } else {
-            throw new Exception("Connection data set must have at least one custom attribute, and one class attribute.");
         }
         for (Criteria crt : criteriaInstance.keySet()) {
             if (criteriaInstance.get(crt).numAttributes() > 2) {
@@ -265,8 +287,10 @@ public abstract class UtilsTraining {
                 throw new Exception("Criteria data set must have at least one custom attribute, and one class attribute.");
             }
         }
-        if (connInstance.classAttribute().numValues() == 1) {
-            throw new Exception("Connection data set must have at least two variations of values for the class attribute.");
+        if (connInstance != null) {
+            if (connInstance.classAttribute().numValues() == 1) {
+                throw new Exception("Connection data set must have at least two variations of values for the class attribute.");
+            }
         }
         for (Criteria crt : criteriaInstance.keySet()) {
             if (criteriaInstance.get(crt).numAttributes() == 1) {
@@ -281,19 +305,23 @@ public abstract class UtilsTraining {
             throw new Exception("Classifier options corrupted.");
         }
         //create trees
-        J48 connTree = new J48();
-        connTree.setOptions(options);
+        J48 connTree = (connInstance != null) ? new J48() : null;
+        if (connTree != null) {
+            connTree.setOptions(options);
+        }
         HashMap<Criteria, J48> criteriaTree = new HashMap<>();
-        for (Criteria crt : criterias) {
+        for (Criteria crt : criteriaInstance.keySet()) {
             J48 _criteriaTree = new J48();
             _criteriaTree.setOptions(options);
             criteriaTree.put(crt, _criteriaTree);
         }
         //build trees
-        try {
-            connTree.buildClassifier(connInstance);
-        } catch (Exception ex) {
-            throw new Exception("Cannot build classifier for connection tree.");
+        if (connTree != null) {
+            try {
+                connTree.buildClassifier(connInstance);
+            } catch (Exception ex) {
+                throw new Exception("Cannot build classifier for connection tree.");
+            }
         }
         //criteria trees
         for (Criteria crt : criteriaTree.keySet()) {
@@ -303,7 +331,9 @@ public abstract class UtilsTraining {
                 throw new Exception("Cannot build classifier for criteria tree.");
             }
         }
-        UtilsTraining.debugTree("connection", connTree, connInstance);
+        if (connTree != null) {
+            UtilsTraining.debugTree("connection", connTree, connInstance);
+        }
         for (Criteria crt : criteriaTree.keySet()) {
             UtilsTraining.debugTree(crt.expression, criteriaTree.get(crt), criteriaInstance.get(crt));
         }
@@ -328,11 +358,11 @@ public abstract class UtilsTraining {
                 zeroCount++;
             }
         }
-        System.out.println("        ONE..................... " + oneCount);
-        System.out.println("        ZERO.................... " + zeroCount);
-        System.out.println(eval.toSummaryString("    Evaluation on Training Set..", false));
+        System.out.println("        Normal (1.0)............ " + oneCount);
+        System.out.println("        Attack (0.0)............ " + zeroCount);
+        System.out.print(eval.toSummaryString("    Summary of Training Set.....", false).replaceAll("\n", "\n        "));
         System.out.println("    Graph....................... ");
-        System.out.println(tree.graph());
+        System.out.println("        " + tree.graph().replaceAll("\n", "\n        "));
     }
 
     public static boolean instanceIsNull(String[] instance) {

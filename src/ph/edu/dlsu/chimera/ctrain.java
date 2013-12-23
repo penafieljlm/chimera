@@ -101,6 +101,7 @@ public class ctrain {
             oos.close();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'ctrain /help' to see usage.");
         }
