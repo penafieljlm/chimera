@@ -156,7 +156,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
             for (int i = 0; i < inst.length; i++) {
                 _inst.setValue(i, inst[i]);
             }
-            double evalResult = 0.0;
+            double evalResult = 1.0;
             try {
                 evalResult = this.model.connectionTree.classifyInstance(_inst);
             } catch (Exception ex) {
@@ -178,7 +178,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                 for (int i = 0; i < inst.length; i++) {
                     _inst.setValue(i, inst[i]);
                 }
-                double evalResult = 0.0;
+                double evalResult = 1.0;
                 try {
                     evalResult = this.model.criteriaTrees.get(crt).classifyInstance(_inst);
                 } catch (Exception ex) {
