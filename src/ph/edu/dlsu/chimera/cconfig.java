@@ -136,7 +136,6 @@ public class cconfig {
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cconfig /help' to see usage.");
-            return;
         }
     }
 }
