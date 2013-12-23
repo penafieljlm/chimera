@@ -7,10 +7,8 @@ package ph.edu.dlsu.chimera.util;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -244,16 +242,6 @@ public abstract class UtilsTraining {
             crtCsvLoader.setSource(criteriaDataSet.get(crt));
             criteriaSource.put(crt, new DataSource(crtCsvLoader));
         }
-        // -- test --
-        File tConnFile = new File("__conn.csv");
-        UtilsFile.copyFile(connectionDataSet, tConnFile);
-        ct = 0;
-        for (Criteria crt : criteriaDataSet.keySet()) {
-            File tCrtFile = new File("__crt[" + ct + "].csv");
-            UtilsFile.copyFile(criteriaDataSet.get(crt), tCrtFile);
-            ct++;
-        }
-        // -- test --
         //create subset instances
         Instances connInstance = connSource.getDataSet();
         HashMap<Criteria, Instances> criteriaInstance = new HashMap<>();
@@ -315,19 +303,21 @@ public abstract class UtilsTraining {
                 throw new Exception("Cannot build classifier for criteria tree.");
             }
         }
+        UtilsTraining.debugTree("connection", connTree, connInstance);
+        for (Criteria crt : criteriaTree.keySet()) {
+            UtilsTraining.debugTree(crt.expression, criteriaTree.get(crt), criteriaInstance.get(crt));
+        }
         //return model
         return new ModelLive(ifaces[0], connTree, criteriaTree);
     }
 
-    public static void testClassifier(J48 tree, Instances data) throws Exception {
-        System.out.println("\nNumber of Leaves: " + tree.measureNumLeaves());
-        System.out.println("\nSize of the Tree: " + tree.measureTreeSize());
-        //decision start
+    public static void debugTree(String name, J48 tree, Instances data) throws Exception {
+        System.out.println("Tree............................ '" + name + "'");
+        System.out.println("    Number of Leaves............ " + tree.measureNumLeaves());
+        System.out.println("    Size of the Tree............ " + tree.measureTreeSize());
         Evaluation eval = new Evaluation(data);
         double x[] = eval.evaluateModel(tree, data);
-        System.out.println(eval.toSummaryString("\n== Evaluation on Training Set ==\n", false));
-
-        System.out.println("Eval result");
+        System.out.println("    Evaluation Result........... ");
         int oneCount = 0;
         int zeroCount = 0;
         for (double d : x) {
@@ -337,10 +327,11 @@ public abstract class UtilsTraining {
             if (d == 0.0) {
                 zeroCount++;
             }
-            System.out.println(d);
         }
-        System.out.println("ONE: " + oneCount);
-        System.out.println("ZERO: " + zeroCount);
+        System.out.println("        ONE..................... " + oneCount);
+        System.out.println("        ZERO.................... " + zeroCount);
+        System.out.println(eval.toSummaryString("    Evaluation on Training Set..", false));
+        System.out.println("    Graph....................... ");
         System.out.println(tree.graph());
     }
 

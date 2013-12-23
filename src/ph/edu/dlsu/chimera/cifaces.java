@@ -52,7 +52,6 @@ public class cifaces {
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cifaces /help' to see usage.");
-            return;
         }
     }
 }

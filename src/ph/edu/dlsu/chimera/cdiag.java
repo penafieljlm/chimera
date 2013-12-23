@@ -55,7 +55,6 @@ public class cdiag {
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cdiag /help' to see usage.");
-            return;
         }
     }
 }

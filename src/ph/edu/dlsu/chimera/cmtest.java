@@ -11,14 +11,20 @@ package ph.edu.dlsu.chimera;
  */
 public class cmtest {
 
+    public static final String USAGE = ""
+            + "\nCHIMERA Model Test Command (cdiag)"
+            + "\nDescription:"
+            + "\n    The cdiag command prints the state of a specified component."
+            + "\n    The command will only work if there is an ongoing phase."
+            + "\nSyntax:"
+            + "\n    cdiag (((-<varname> <value>) | (/<flag>))[ ])*(((-<varname> <value>) | (/<flag>)))"
+            + "\nParameters"
+            + "\n    -component"
+            + "\n        DESCRIPTION"
+            + "\n            The name of the component to be diagnosed."
+            + "\n        REQUIRED.. Yes";
+
     public static void main(String[] args) throws InterruptedException {
-        String chars = "|/-\\";
-        int idx = 0;
-        for (int i = 0; i < 100; i++) {
-            System.out.print("\b \b" + chars.charAt(idx));
-            Thread.sleep(50);
-            idx = ++idx % chars.length();
-        }
-        System.out.print("\b \bX");
+        
     }
 }
