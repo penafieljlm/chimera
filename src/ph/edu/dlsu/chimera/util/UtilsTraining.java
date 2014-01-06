@@ -342,7 +342,7 @@ public abstract class UtilsTraining {
     }
 
     public static void debugTree(String name, J48 tree, Instances data) throws Exception {
-        System.out.println("Tree............................ '" + name + "'");
+        System.out.println("Tree............................ " + name);
         System.out.println("    Number of Leaves............ " + tree.measureNumLeaves());
         System.out.println("    Size of the Tree............ " + tree.measureTreeSize());
         Evaluation eval = new Evaluation(data);
@@ -361,7 +361,7 @@ public abstract class UtilsTraining {
         System.out.println("        Normal (1.0)............ " + oneCount);
         System.out.println("        Attack (0.0)............ " + zeroCount);
         System.out.print(eval.toSummaryString("    Summary of Training Set.....", false).replaceAll("\n", "\n        "));
-        System.out.println("    Graph....................... ");
+        System.out.println("\b\b\b\bGraph....................... ");
         System.out.println("        " + tree.graph().replaceAll("\n", "\n        "));
     }
 

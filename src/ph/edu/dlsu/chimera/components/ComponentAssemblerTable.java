@@ -17,9 +17,12 @@ import ph.edu.dlsu.chimera.core.TcpSocketPair;
 public class ComponentAssemblerTable extends ComponentActive {
 
     public final ConcurrentHashMap<TcpSocketPair, Assembler> assemblertable;
+    public final long assemblerTimeoutMs;
 
-    public ComponentAssemblerTable(ConcurrentHashMap<TcpSocketPair, Assembler> assemblertable) {
+    public ComponentAssemblerTable(ConcurrentHashMap<TcpSocketPair, Assembler> assemblertable,
+            long assemblerTimeoutMs) {
         this.assemblertable = assemblertable;
+        this.assemblerTimeoutMs = assemblerTimeoutMs;
     }
 
     @Override
@@ -28,8 +31,8 @@ public class ComponentAssemblerTable extends ComponentActive {
             if (this.assemblertable != null) {
                 synchronized (this.assemblertable) {
                     for (TcpSocketPair socks : this.assemblertable.keySet()) {
-                        if (this.assemblertable.get(socks).isAttackDetected()) {
-                            //attack detected
+                        if (this.assemblertable.get(socks).getTimeSinceLastEncounterMs() > this.assemblerTimeoutMs) {
+                            //assembler timed out
                             this.assemblertable.remove(socks);
                         }
                     }
@@ -40,6 +43,7 @@ public class ComponentAssemblerTable extends ComponentActive {
         }
     }
 
+    @Override
     public ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
         if (this.assemblertable != null) {

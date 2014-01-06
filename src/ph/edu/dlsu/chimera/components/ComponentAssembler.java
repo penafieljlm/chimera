@@ -61,7 +61,7 @@ public final class ComponentAssembler extends ComponentActiveProcessor<PduAtomic
         if (this.tcpAssemblerTable != null) {
             if (this.tcpPortProtocolLookup != null) {
                 TcpSocketPair socks = UtilsPacket.getSocketPair(pkt.packet);
-                if (!this.tcpAssemblerTable.contains(socks)) {
+                if (!this.tcpAssemblerTable.containsKey(socks)) {
                     //create assembler
                     AssemblerTcp asm = this.tcpPortProtocolLookup.get(socks.destinationPort);
                     if (asm != null) {
@@ -71,12 +71,12 @@ public final class ComponentAssembler extends ComponentActiveProcessor<PduAtomic
                         }
                     }
                 }
-                if (this.tcpAssemblerTable.contains(socks)) {
+                if (this.tcpAssemblerTable.containsKey(socks)) {
                     AssemblerTcp asm = this.tcpAssemblerTable.get(socks);
                     //append packet
                     asm.append(pkt);
                     //attempt delete
-                    if (!this.stateTable.contains(socks)) {
+                    if (!this.stateTable.containsKey(socks)) {
                         this.tcpAssemblerTable.remove(socks);
                     }
                 }

@@ -85,10 +85,4 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
         super.outputPDU(http);
         this.resetSmtp();
     }
-
-    @Override
-    public boolean isAttackDetected() {
-        //TODO : implement
-        return false;
-    }
 }
