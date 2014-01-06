@@ -4,11 +4,14 @@
  */
 package ph.edu.dlsu.chimera.assembler;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.pdu.PduCompositeTcpHttp;
+import ph.edu.dlsu.chimera.util.UtilsTime;
 
 /**
  *
@@ -22,9 +25,9 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     public static String TOKEN_HEADER_END = AssemblerTcpHttp.TOKEN_DIV + AssemblerTcpHttp.TOKEN_DIV;
     private StringBuilder headerBuilder;
     private StringBuilder bodyBuilder;
-    private boolean headerOk;
     private boolean keepAlive;
-    private int bodyLength;
+    private long bodyLength;
+    private long headerOkTimeNs;
 
     public AssemblerTcpHttp() {
         this(-1, null);
@@ -38,11 +41,11 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     @Override
     protected void appendTCP(Tcp tcp, PduAtomic pkt) {
         String data = new String(tcp.getPayload());
-        if (!this.headerOk) {
+        if (!this.headerIsAssembled()) {
             //build header
             if (data.contains(AssemblerTcpHttp.TOKEN_HEADER_END)) {
                 //end header and append body
-                this.headerOk = true;
+                this.headerOkTimeNs = UtilsTime.nowNs();
                 int dataStart = data.indexOf(AssemblerTcpHttp.TOKEN_HEADER_END) + AssemblerTcpHttp.TOKEN_HEADER_END.length();
                 String header = data.substring(0, dataStart);
                 String body = data.substring(dataStart);
@@ -102,9 +105,9 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
     private void resetHttp() {
         this.headerBuilder = new StringBuilder();
         this.bodyBuilder = new StringBuilder();
-        this.headerOk = false;
         this.keepAlive = false;
         this.bodyLength = -1;
+        this.headerOkTimeNs = -1;
     }
 
     private void finishHttp(boolean ingress, long timestampInNanos) {
@@ -118,9 +121,28 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
         this.resetHttp();
     }
 
+    public boolean headerIsAssembled() {
+        return this.headerOkTimeNs != -1;
+    }
+
+    public long getTimeHeaderIsNotAssembledMs() {
+        return (this.headerIsAssembled()) ? -1 : this.getOngoingConstructionTimeMs();
+    }
+
+    public long getTimeHeaderIsAssembledMs() {
+        return (!this.headerIsAssembled()) ? -1 : UtilsTime.nowMs() - UtilsTime.nsToMs(this.headerOkTimeNs);
+    }
+
     @Override
-    public boolean isAttackDetected() {
-        //TODO : implement
-        return false;
+    public synchronized ArrayList<Diagnostic> getDiagnostics() {
+        ArrayList<Diagnostic> diag = super.getDiagnostics();
+        Date hasmcomplete = (!this.headerIsAssembled()) ? null : new java.sql.Date(UtilsTime.nsToMs(this.headerOkTimeNs));
+        diag.add(new Diagnostic("headeroktime", "Header Assembly Completed Timestamp", (!this.headerIsAssembled()) ? "N/A" : hasmcomplete.toLocaleString()));
+        if (!this.headerIsAssembled()) {
+            diag.add(new Diagnostic("headertimeunasm", "Amount of Time Header Is Still Unassembled", (this.headerIsAssembled()) ? "N/A" : this.getTimeHeaderIsNotAssembledMs() + "ms"));
+        } else {
+            diag.add(new Diagnostic("headertimeasmed", "Amount of Time Header Has Been Assembled", (!this.headerIsAssembled()) ? "N/A" : this.getTimeHeaderIsAssembledMs() + "ms"));
+        }
+        return diag;
     }
 }

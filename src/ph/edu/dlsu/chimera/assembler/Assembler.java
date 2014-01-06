@@ -18,8 +18,8 @@ import ph.edu.dlsu.chimera.util.UtilsTime;
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class Assembler extends Statistics {
-    
-    private ConcurrentLinkedQueue<PduComposite> queue;
+
+    private final ConcurrentLinkedQueue<PduComposite> queue;
     private long currentConstructionStartedMs;
 
     public Assembler(long timeCreatedNanos) {
@@ -63,6 +63,4 @@ public abstract class Assembler extends Statistics {
         diag.add(new Diagnostic("curconsttime", "Ongoing Construction Time", this.getOngoingConstructionTimeMs() + "ms"));
         return diag;
     }
-
-    public abstract boolean isAttackDetected();
 }
