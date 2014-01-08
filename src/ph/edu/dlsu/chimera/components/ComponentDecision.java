@@ -23,6 +23,7 @@ import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsArray;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 import weka.core.Instance;
+import weka.core.Instances;
 
 /**
  *
@@ -35,66 +36,81 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     public final ModelLive model;
     public final List<Object> rulesMap;
     public final InetAddress syslogServer;
+    public final boolean active;
     private IpTables iptable;
+    private Instances connDataInstances;
+    private HashMap<Criteria, Instances> criteriaDataInstances;
 
     public ComponentDecision(IntermodulePipe<PduAtomic> inQueue,
             ModelLive model,
             List<Object> rulesMap,
-            InetAddress syslogServer) {
+            InetAddress syslogServer,
+            boolean active) {
         super(inQueue, null);
         this.model = model;
         this.rulesMap = rulesMap;
         this.syslogServer = syslogServer;
+        this.active = active;
     }
 
     @Override
     protected void preLoop() throws Exception {
-        this.iptable = new IpTables("filter");
-        //clean up
-        for (String ch : this.iptable.getAllChains()) {
-            if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
-                this.iptable.deleteChain(ch);
+        if (this.active) {
+            this.iptable = new IpTables("filter");
+            //clean up
+            for (String ch : this.iptable.getAllChains()) {
+                if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
+                    this.iptable.deleteChain(ch);
+                }
             }
+            this.iptable.commit();
+            //create master chain
+            this.iptable.createChain(ComponentDecision.CHIMERA_CHAIN);
+            this.iptable.commit();
         }
-        this.iptable.commit();
-        //create master chain
-        this.iptable.createChain(ComponentDecision.CHIMERA_CHAIN);
-        this.iptable.commit();
     }
 
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
         if (input.ingress) {
             //integrity check
-            if (this.rulesMap != null) {
-                if (this.iptable.getAllRules(ComponentDecision.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
-                    throw new Exception("Error: [Decision] The CHIMERA iptables chain has been tampered with.");
+            if (this.active) {
+                if (this.rulesMap != null) {
+                    if (this.iptable.getAllRules(ComponentDecision.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
+                        throw new Exception("Error: [Decision] The CHIMERA iptables chain has been tampered with.");
+                    }
                 }
             }
             //connection evaluation
             if (this.evaluateAgainstConnection(input)) {
                 //attack
                 this.logConnectionViolation(input);
-                if (this.rulesMap != null) {
-                    //add rules
-                    if (!this.rulesMap.contains(input.getConnection().sockets)) {
-                        IpRule rule = input.getConnection().sockets.createRule();
-                        if (rule != null) {
-                            this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
-                            this.iptable.commit();
+                if (this.active) {
+                    if (this.rulesMap != null) {
+                        //add rules
+                        if (!this.rulesMap.contains(input.getConnection().sockets)) {
+                            IpRule rule = input.getConnection().sockets.createRule();
+                            if (rule != null) {
+                                this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
+                                this.iptable.commit();
+                            }
+                            this.rulesMap.add(input.getConnection().sockets);
                         }
-                        this.rulesMap.add(input.getConnection().sockets);
                     }
                 }
             } else {
                 //normal
-                if (this.rulesMap != null) {
-                    //remove rules
-                    if (this.rulesMap.contains(input.getConnection().sockets)) {
-                        int idx = this.rulesMap.indexOf(input.getConnection().sockets);
-                        this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
-                        this.iptable.commit();
-                        this.rulesMap.remove(input.getConnection().sockets);
+                if (this.active) {
+                    if (this.rulesMap != null) {
+                        //remove rules
+                        if (this.rulesMap.contains(input.getConnection().sockets)) {
+                            if (this.active) {
+                                int idx = this.rulesMap.indexOf(input.getConnection().sockets);
+                                this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
+                                this.iptable.commit();
+                                this.rulesMap.remove(input.getConnection().sockets);
+                            }
+                        }
                     }
                 }
             }
@@ -105,26 +121,30 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                 if (crtEval.get(crt)) {
                     //attack
                     this.logCriteriaViolation(input, crt, input.getConnection());
-                    if (this.rulesMap != null) {
-                        //create rules
-                        if (!this.rulesMap.contains(inst)) {
-                            IpRule rule = inst.criteria.createRule(input.packet);
-                            if (rule != null) {
-                                this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
-                                this.iptable.commit();
+                    if (this.active) {
+                        if (this.rulesMap != null) {
+                            //create rules
+                            if (!this.rulesMap.contains(inst)) {
+                                IpRule rule = inst.criteria.createRule(input.packet);
+                                if (rule != null) {
+                                    this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
+                                    this.iptable.commit();
+                                }
+                                this.rulesMap.add(inst);
                             }
-                            this.rulesMap.add(inst);
                         }
                     }
                 } else {
                     //normal
-                    if (this.rulesMap != null) {
-                        //remove rules
-                        if (this.rulesMap.contains(inst)) {
-                            int idx = this.rulesMap.indexOf(inst);
-                            this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
-                            this.iptable.commit();
-                            this.rulesMap.remove(inst);
+                    if (this.active) {
+                        if (this.rulesMap != null) {
+                            //remove rules
+                            if (this.rulesMap.contains(inst)) {
+                                int idx = this.rulesMap.indexOf(inst);
+                                this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
+                                this.iptable.commit();
+                                this.rulesMap.remove(inst);
+                            }
                         }
                     }
                 }
@@ -138,12 +158,14 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     @Override
     protected void postLoop() throws Exception {
         //clean up
-        for (String ch : this.iptable.getAllChains()) {
-            if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
-                this.iptable.deleteChain(ch);
+        if (this.active) {
+            for (String ch : this.iptable.getAllChains()) {
+                if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
+                    this.iptable.deleteChain(ch);
+                }
             }
+            this.iptable.commit();
         }
-        this.iptable.commit();
     }
 
     protected boolean evaluateAgainstConnection(PduAtomic pkt) {
@@ -191,6 +213,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     }
 
     protected void logConnectionViolation(PduAtomic pkt) {
+        System.out.println("Attack Logged (Connection Tree)");
         if (this.syslogServer != null) {
             LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
             Syslog.warning(this.syslogServer, "CHIMERA:AttackLogged", JsonWriter.toJson(log));
@@ -198,6 +221,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     }
 
     protected void logCriteriaViolation(PduAtomic pkt, Criteria criteria, Statistics statistics) {
+        System.out.println("Attack Logged (Criteria Tree)");
         if (this.syslogServer != null) {
             LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
             Syslog.warning(this.syslogServer, "CHIMERA:AttackLogged", JsonWriter.toJson(log));

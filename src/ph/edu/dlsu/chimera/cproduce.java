@@ -149,7 +149,7 @@ public class cproduce {
             components.put("produce.in.sniff", new ComponentSniffer(inProduceSniffOut, modelLive.protectedInterface, true, Pcap.OUT));
             components.put("produce.in.stats", new ComponentStatisticsTracker(inProduceSniffOut, inProduceStatsOut, criterias, statsTableAtomic));
             components.put("produce.in.states", new ComponentStateTracker(inProduceStatsOut, inProduceStateOut, stateTable));
-            components.put("produce.in.decision", new ComponentDecision(inProduceStateOut, modelLive, rulesMap, syslogServ));
+            components.put("produce.in.decision", new ComponentDecision(inProduceStateOut, modelLive, rulesMap, syslogServ, active));
             inProduceSniffOut.setWriter((ComponentActive) components.get("produce.in.sniff"));
             inProduceSniffOut.setReader((ComponentActive) components.get("produce.in.stats"));
             inProduceStatsOut.setWriter((ComponentActive) components.get("produce.in.stats"));
@@ -177,7 +177,6 @@ public class cproduce {
 
             //print dump count if verbose
             if (verbose) {
-
             }
 
             //join threads

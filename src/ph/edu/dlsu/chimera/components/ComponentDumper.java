@@ -49,13 +49,21 @@ public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtom
             throw new Exception("Error: [Dumper] trainingFile is null.");
         }
         this.writer = new CSVWriter(new FileWriter(this.trainingFile));
-        String[] iface = {this.inPcapIf};
+        String[] _iface = this.inPcapIf.split("[\\\\]");
+        ArrayList<String> iface = new ArrayList();
+        for (int i = 0; i < _iface.length; i++) {
+            if (_iface[i] != null) {
+                if (!_iface[i].isEmpty()) {
+                    iface.add(_iface[i]);
+                }
+            }
+        }
         this.headers = UtilsTraining.getHeaders(this.criterias);
         String[] _criterias = new String[this.criterias.length];
         for (int i = 0; i < this.criterias.length; i++) {
             _criterias[i] = this.criterias[i].expression;
         }
-        this.writer.writeNext(iface);
+        this.writer.writeNext(iface.toArray(new String[0]));
         this.writer.writeNext(_criterias);
         this.writer.writeNext(this.headers);
         this.writer.flush();
