@@ -258,7 +258,7 @@ public class cgather {
 
             //print dump count if verbose
             if (verbose) {
-                ComponentDumper dumper = (ComponentDumper) components.get("in.gather.dumper");
+                ComponentDumper dumper = (ComponentDumper) components.get("gather.in.dumper");
                 while (dumper.isAlive()) {
                     Thread.sleep(100);
                     System.out.print("Training Data Instances Gathered: " + dumper.getProcessed() + "\r");
@@ -274,6 +274,7 @@ public class cgather {
             }
             controller.join();
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
         }

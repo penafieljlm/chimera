@@ -22,6 +22,7 @@ import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
+import weka.core.FastVector;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -331,6 +332,12 @@ public abstract class UtilsTraining {
                 throw new Exception("Cannot build classifier for criteria tree.");
             }
         }
+        //derive iface name
+        StringBuilder iface = new StringBuilder();
+        for (int i = 0; i < ifaces.length; i++) {
+            iface = iface.append("\\").append(ifaces[i]);
+        }
+        System.out.println("Interface....................... " + iface);
         if (connTree != null) {
             UtilsTraining.debugTree("connection", connTree, connInstance);
         }
@@ -338,7 +345,7 @@ public abstract class UtilsTraining {
             UtilsTraining.debugTree(crt.expression, criteriaTree.get(crt), criteriaInstance.get(crt));
         }
         //return model
-        return new ModelLive(ifaces[0], connTree, criteriaTree);
+        return new ModelLive(iface.toString(), connTree, criteriaTree);
     }
 
     public static void debugTree(String name, J48 tree, Instances data) throws Exception {
@@ -362,7 +369,11 @@ public abstract class UtilsTraining {
         System.out.println("        Attack (0.0)............ " + zeroCount);
         System.out.print(eval.toSummaryString("    Summary of Training Set.....", false).replaceAll("\n", "\n        "));
         System.out.println("\b\b\b\bGraph....................... ");
-        System.out.println("        " + tree.graph().replaceAll("\n", "\n        "));
+        StringBuilder graphBuilder = new StringBuilder("        " + tree.graph().replaceAll("\n", "\n        "));
+        for (int i = 0; i < 9; i++) {
+            graphBuilder = graphBuilder.deleteCharAt(graphBuilder.length() - 1);
+        }
+        System.out.println(graphBuilder);
     }
 
     public static boolean instanceIsNull(String[] instance) {
