@@ -14,6 +14,7 @@ import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
+import ph.edu.dlsu.chimera.util.UtilsArray;
 
 /**
  *
@@ -85,11 +86,11 @@ public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtom
                         if (this.trainingFilter != null) {
                             attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
                         }
-                        String[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack);
+                        Object[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack);
                         if (this.headers.length != instance.length) {
                             throw new Exception("Error: [Dumper] Headers do not match data.");
                         }
-                        this.writer.writeNext(instance);
+                        this.writer.writeNext(UtilsArray.toCsv(instance));
                         this.writer.flush();
                     } else {
                         throw new Exception("Error: [Dumper] Encountered egress packet.");

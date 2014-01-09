@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.HashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
@@ -19,9 +20,11 @@ import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.model.SubModel;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
+import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
@@ -53,44 +56,44 @@ public abstract class UtilsTraining {
         "conn.ou_rateps"};
     public static final String ATTK_HEADER = "attack";
 
-    public static String[] getCoreInstance(PduAtomic packet) {
-        ArrayList<String> instance = new ArrayList<>();
+    public static Object[] getCoreInstance(PduAtomic packet) {
+        ArrayList<Object> instance = new ArrayList<>();
         Tcp tcp = packet.packet.getHeader(new Tcp());
         Udp udp = packet.packet.getHeader(new Udp());
-        instance.add("" + packet.getProtocolName());
-        instance.add("" + Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
-        instance.add("" + ((Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 3600) + (Calendar.getInstance().get(Calendar.MINUTE) * 60) + (Calendar.getInstance().get(Calendar.SECOND) * 1)));
-        instance.add("" + packet.packet.size());
-        instance.add("" + ((tcp == null) ? -1 : tcp.destination()));
-        instance.add("" + ((udp == null) ? -1 : udp.destination()));
-        instance.add("" + ((tcp == null) ? -1 : tcp.flags()));
-        return instance.toArray(new String[0]);
+        instance.add(packet.getProtocolName());
+        instance.add(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+        instance.add(((Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 3600) + (Calendar.getInstance().get(Calendar.MINUTE) * 60) + (Calendar.getInstance().get(Calendar.SECOND) * 1)));
+        instance.add(packet.packet.size());
+        instance.add(((tcp == null) ? -1 : tcp.destination()));
+        instance.add(((udp == null) ? -1 : udp.destination()));
+        instance.add(((tcp == null) ? -1 : tcp.flags()));
+        return instance.toArray(new Object[0]);
     }
 
-    public static String[] getCoreInstance(String[] instance) {
-        String[] subinst = new String[UtilsTraining.CORE_HEADERS.length];
+    public static Object[] getCoreInstance(Object[] instance) {
+        Object[] subinst = new Object[UtilsTraining.CORE_HEADERS.length];
         System.arraycopy(instance, 0, subinst, 0, subinst.length);
         return subinst;
     }
 
-    public static String[] getConnectionInstance(PduAtomic packet) {
-        ArrayList<String> instance = new ArrayList<>();
+    public static Object[] getConnectionInstance(PduAtomic packet) {
+        ArrayList<Object> instance = new ArrayList<>();
         Connection conn = packet.getConnection();
-        instance.add("" + ((conn == null) ? -1 : conn.ingressLastEncounterDeltaNs()));
-        instance.add("" + ((conn == null) ? -1 : conn.egressLastEncounterDeltaNs()));
-        instance.add("" + ((conn == null) ? -1 : conn.ingressEncounters()));
-        instance.add("" + ((conn == null) ? -1 : conn.egressEncounters()));
-        instance.add("" + ((conn == null) ? -1 : conn.ingressTotalSize()));
-        instance.add("" + ((conn == null) ? -1 : conn.egressTotalSize()));
-        instance.add("" + ((conn == null) ? -1 : conn.ingressAverageSize()));
-        instance.add("" + ((conn == null) ? -1 : conn.egressAverageSize()));
-        instance.add("" + ((conn == null) ? -1 : conn.ingressRatePerSec()));
-        instance.add("" + ((conn == null) ? -1 : conn.egressRatePerSec()));
-        return instance.toArray(new String[0]);
+        instance.add(((conn == null) ? -1 : conn.ingressLastEncounterDeltaNs()));
+        instance.add(((conn == null) ? -1 : conn.egressLastEncounterDeltaNs()));
+        instance.add(((conn == null) ? -1 : conn.ingressEncounters()));
+        instance.add(((conn == null) ? -1 : conn.egressEncounters()));
+        instance.add(((conn == null) ? -1 : conn.ingressTotalSize()));
+        instance.add(((conn == null) ? -1 : conn.egressTotalSize()));
+        instance.add(((conn == null) ? -1 : conn.ingressAverageSize()));
+        instance.add(((conn == null) ? -1 : conn.egressAverageSize()));
+        instance.add(((conn == null) ? -1 : conn.ingressRatePerSec()));
+        instance.add(((conn == null) ? -1 : conn.egressRatePerSec()));
+        return instance.toArray(new Object[0]);
     }
 
-    public static String[] getConnectionInstance(String[] instance) {
-        String[] subinst = new String[UtilsTraining.CONN_HEADERS.length];
+    public static Object[] getConnectionInstance(Object[] instance) {
+        Object[] subinst = new Object[UtilsTraining.CONN_HEADERS.length];
         System.arraycopy(instance, UtilsTraining.CORE_HEADERS.length, subinst, 0, subinst.length);
         return subinst;
     }
@@ -106,26 +109,26 @@ public abstract class UtilsTraining {
         return headers.toArray(new String[0]);
     }
 
-    public static String[] getCriteriaInstance(Criteria criteria, PduAtomic packet) {
-        ArrayList<String> instance = new ArrayList<>();
+    public static Object[] getCriteriaInstance(Criteria criteria, PduAtomic packet) {
+        ArrayList<Object> instance = new ArrayList<>();
         Statistics crtstats = packet.getStatistics(criteria);
-        instance.add("" + ((crtstats == null) ? -1 : crtstats.getLastEncounterDeltaNs()));
-        instance.add("" + ((crtstats == null) ? -1 : crtstats.getTotalEncounters()));
-        instance.add("" + ((crtstats == null) ? -1 : crtstats.getTotalSize()));
-        instance.add("" + ((crtstats == null) ? -1 : crtstats.getAverageSize()));
-        instance.add("" + ((crtstats == null) ? -1 : crtstats.getTrafficRatePerSec()));
-        return instance.toArray(new String[0]);
+        instance.add(((crtstats == null) ? -1 : crtstats.getLastEncounterDeltaNs()));
+        instance.add(((crtstats == null) ? -1 : crtstats.getTotalEncounters()));
+        instance.add(((crtstats == null) ? -1 : crtstats.getTotalSize()));
+        instance.add(((crtstats == null) ? -1 : crtstats.getAverageSize()));
+        instance.add(((crtstats == null) ? -1 : crtstats.getTrafficRatePerSec()));
+        return instance.toArray(new Object[0]);
     }
 
-    public static String[] getCriteriaInstance(Criteria criteria, String[] headers, String[] instance) {
+    public static Object[] getCriteriaInstance(Criteria criteria, Object[] headers, Object[] instance) {
         if (headers.length != instance.length) {
             return null;
         }
-        String[] _headers = UtilsTraining.getCriteriaHeaders(criteria);
-        String[] subinst = new String[_headers.length];
+        Object[] _headers = UtilsTraining.getCriteriaHeaders(criteria);
+        Object[] subinst = new Object[_headers.length];
         for (int hCounter = 0; hCounter < _headers.length; hCounter++) {
-            String _header = _headers[hCounter];
-            String _value = null;
+            Object _header = _headers[hCounter];
+            Object _value = null;
             for (int locCounter = 0; locCounter < headers.length; locCounter++) {
                 if (_header.equals(headers[locCounter])) {
                     _value = instance[locCounter];
@@ -144,12 +147,12 @@ public abstract class UtilsTraining {
         return headers.toArray(new String[0]);
     }
 
-    public static String[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet) {
-        ArrayList<String> instance = new ArrayList<>();
+    public static Object[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet) {
+        ArrayList<Object> instance = new ArrayList<>();
         for (Criteria crt : criterias) {
             instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet)));
         }
-        return instance.toArray(new String[0]);
+        return instance.toArray(new Object[0]);
     }
 
     public static String[] getHeaders(Criteria[] criterias) {
@@ -163,15 +166,15 @@ public abstract class UtilsTraining {
         return headers.toArray(new String[0]);
     }
 
-    public static String[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack) {
-        ArrayList<String> instance = new ArrayList<>();
+    public static Object[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack) {
+        ArrayList<Object> instance = new ArrayList<>();
         instance.addAll(Arrays.asList(UtilsTraining.getCoreInstance(packet)));
         instance.addAll(Arrays.asList(UtilsTraining.getConnectionInstance(packet)));
         for (Criteria crt : criterias) {
             instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet)));
         }
         instance.add("" + tagAsAttack);
-        return instance.toArray(new String[0]);
+        return instance.toArray(new Object[0]);
     }
 
     public static ModelLive createModel(File trainingFile) throws Exception {
@@ -207,7 +210,7 @@ public abstract class UtilsTraining {
             criteriaDataSetWriter = new HashMap<>();
             for (Criteria crt : criteriaDataSet.keySet()) {
                 criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
-                criteriaDataSetWriter.get(crt).writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader));
+                criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader)));
             }
             String[] headers = reader.readNext();
             if (headers == null) {
@@ -216,23 +219,23 @@ public abstract class UtilsTraining {
             String[] instance;
             while ((instance = reader.readNext()) != null) {
                 //core
-                String[] core = UtilsTraining.getCoreInstance(instance);
-                String[] attack = {instance[instance.length - 1]};
+                Object[] core = UtilsTraining.getCoreInstance(instance);
+                Object[] attack = {instance[instance.length - 1]};
                 //connection
-                String[] conn_inst = UtilsTraining.getConnectionInstance(instance);
+                Object[] conn_inst = UtilsTraining.getConnectionInstance(instance);
                 if (!UtilsTraining.instanceIsNull(conn_inst)) {
                     connectionInstancesCount++;
                     conn_inst = UtilsArray.concat(core, conn_inst, attack);
-                    connDataSetWriter.writeNext(conn_inst);
+                    connDataSetWriter.writeNext(UtilsArray.toCsv(conn_inst));
                     connDataSetWriter.flush();
                 }
                 //criteria
                 for (Criteria crt : criterias) {
-                    String[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
+                    Object[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
                     if (!UtilsTraining.instanceIsNull(crt_inst)) {
                         criteriaInstancesCount.put(crt, criteriaInstancesCount.get(crt) + 1);
                         crt_inst = UtilsArray.concat(core, crt_inst, attack);
-                        criteriaDataSetWriter.get(crt).writeNext(crt_inst);
+                        criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(crt_inst));
                         criteriaDataSetWriter.get(crt).flush();
                     }
                 }
@@ -334,8 +337,8 @@ public abstract class UtilsTraining {
         }
         //derive iface name
         StringBuilder iface = new StringBuilder();
-        for (int i = 0; i < ifaces.length; i++) {
-            iface = iface.append("\\").append(ifaces[i]);
+        for (String iface1 : ifaces) {
+            iface = iface.append("\\").append(iface1);
         }
         System.out.println("Interface....................... " + iface);
         if (connTree != null) {
@@ -344,8 +347,28 @@ public abstract class UtilsTraining {
         for (Criteria crt : criteriaTree.keySet()) {
             UtilsTraining.debugTree(crt.expression, criteriaTree.get(crt), criteriaInstance.get(crt));
         }
+        //create submodels
+        SubModel connSubModel = null;
+        if (connInstance != null) {
+            FastVector connAttrs = new FastVector();
+            Enumeration _connAttrs = connInstance.enumerateAttributes();
+            while (_connAttrs.hasMoreElements()) {
+                connAttrs.addElement(_connAttrs.nextElement());
+            }
+            connSubModel = new SubModel(connTree, connAttrs);
+        }
+        HashMap<Criteria, SubModel> criteriaSubModels = new HashMap<>();
+        for (Criteria crt : criteriaTree.keySet()) {
+            FastVector attrs = new FastVector();
+            Enumeration _attrs = criteriaInstance.get(crt).enumerateAttributes();
+            while (_attrs.hasMoreElements()) {
+                attrs.addElement(_attrs.nextElement());
+            }
+            SubModel sm = new SubModel(criteriaTree.get(crt), attrs);
+            criteriaSubModels.put(crt, sm);
+        }
         //return model
-        return new ModelLive(iface.toString(), connTree, criteriaTree);
+        return new ModelLive(iface.toString(), connSubModel, criteriaSubModels);
     }
 
     public static void debugTree(String name, J48 tree, Instances data) throws Exception {
@@ -376,10 +399,16 @@ public abstract class UtilsTraining {
         System.out.println(graphBuilder);
     }
 
-    public static boolean instanceIsNull(String[] instance) {
-        for (String i : instance) {
-            if (!i.equals("" + -1)) {
-                return false;
+    public static boolean instanceIsNull(Object[] instance) {
+        for (Object i : instance) {
+            if (i instanceof Number) {
+                if (((Number) (i)).doubleValue() != -1) {
+                    return false;
+                }
+            } else {
+                if (!i.equals("" + null)) {
+                    return false;
+                }
             }
         }
         return true;

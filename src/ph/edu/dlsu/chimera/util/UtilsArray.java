@@ -29,7 +29,8 @@ public abstract class UtilsArray {
         return result;
     }
 
-    public static byte[] concat(byte[] left, byte[]... right) {
+    public static byte[] concat(byte[] left, byte[]  
+        ... right) {
         byte[] result = left;
         for (byte[] a : right) {
             result = UtilsArray.concat(result, a);
@@ -44,7 +45,8 @@ public abstract class UtilsArray {
         return result;
     }
 
-    public static <T> T[] concat(T[] left, T[]... right) {
+    public static <T> T[] concat(T[] left, T[]  
+        ... right) {
         T[] result = left;
         for (T[] a : right) {
             result = UtilsArray.concat(result, a);
@@ -64,5 +66,13 @@ public abstract class UtilsArray {
             ta = UtilsArray.append(ta, t);
         }
         return ta;
+    }
+
+    public static String[] toCsv(Object[] a) {
+        String[] _a = new String[a.length];
+        for (int i = 0; i < a.length; i++) {
+            _a[i] = "" + a[i];
+        }
+        return _a;
     }
 }

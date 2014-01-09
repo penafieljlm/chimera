@@ -36,10 +36,10 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     public final ModelLive model;
     public final List<Object> rulesMap;
     public final InetAddress syslogServer;
+    public final Instances connDataInstances;
+    public final HashMap<Criteria, Instances> criteriaDataInstances;
     public final boolean active;
     private IpTables iptable;
-    private Instances connDataInstances;
-    private HashMap<Criteria, Instances> criteriaDataInstances;
 
     public ComponentDecision(IntermodulePipe<PduAtomic> inQueue,
             ModelLive model,
@@ -50,6 +50,11 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
         this.model = model;
         this.rulesMap = rulesMap;
         this.syslogServer = syslogServer;
+        this.connDataInstances = new Instances("connection", this.model.connectionSubModel.attributes, 0);
+        this.criteriaDataInstances = new HashMap<>();
+        for (Criteria crt : this.model.criteriaSubModels.keySet()) {
+            this.criteriaDataInstances.put(crt, new Instances(crt.expression, this.model.criteriaSubModels.get(crt).attributes, 0));
+        }
         this.active = active;
     }
 
@@ -170,17 +175,22 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
 
     protected boolean evaluateAgainstConnection(PduAtomic pkt) {
         boolean allow = true;
-        String[] connInst = UtilsTraining.getConnectionInstance(pkt);
+        Object[] connInst = UtilsTraining.getConnectionInstance(pkt);
         if (!UtilsTraining.instanceIsNull(connInst)) {
-            String[] coreInst = UtilsTraining.getCoreInstance(pkt);
-            String[] inst = UtilsArray.concat(coreInst, connInst);
+            Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
+            Object[] inst = UtilsArray.concat(coreInst, connInst);
             Instance _inst = new Instance(inst.length);
+            _inst.setDataset(this.connDataInstances);
             for (int i = 0; i < inst.length; i++) {
-                _inst.setValue(i, inst[i]);
+                if (inst[i] instanceof Number) {
+                    _inst.setValue(i, ((Number) inst[i]).doubleValue());
+                } else {
+                    _inst.setValue(i, (String) inst[i]);
+                }
             }
             double evalResult = 1.0;
             try {
-                evalResult = this.model.connectionTree.classifyInstance(_inst);
+                evalResult = this.model.connectionSubModel.tree.classifyInstance(_inst);
             } catch (Exception ex) {
             }
             allow = evalResult == 1.0;
@@ -190,19 +200,24 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
 
     protected HashMap<Criteria, Boolean> evaluateAgainstCriterias(PduAtomic pkt) {
         HashMap<Criteria, Boolean> report = new HashMap<>();
-        String[] coreInst = UtilsTraining.getCoreInstance(pkt);
-        for (Criteria crt : this.model.criteriaTrees.keySet()) {
+        Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
+        for (Criteria crt : this.model.criteriaSubModels.keySet()) {
             boolean allow = true;
-            String[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt);
+            Object[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt);
             if (!UtilsTraining.instanceIsNull(crtInst)) {
-                String[] inst = UtilsArray.concat(coreInst, crtInst);
+                Object[] inst = UtilsArray.concat(coreInst, crtInst);
                 Instance _inst = new Instance(inst.length);
+                _inst.setDataset(this.criteriaDataInstances.get(crt));
                 for (int i = 0; i < inst.length; i++) {
-                    _inst.setValue(i, inst[i]);
+                    if (inst[i] instanceof Number) {
+                        _inst.setValue(i, ((Number) inst[i]).doubleValue());
+                    } else {
+                        _inst.setValue(i, (String) inst[i]);
+                    }
                 }
                 double evalResult = 1.0;
                 try {
-                    evalResult = this.model.criteriaTrees.get(crt).classifyInstance(_inst);
+                    evalResult = this.model.criteriaSubModels.get(crt).tree.classifyInstance(_inst);
                 } catch (Exception ex) {
                 }
                 allow = evalResult == 1.0;
