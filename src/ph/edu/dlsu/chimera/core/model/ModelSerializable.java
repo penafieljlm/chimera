@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.core.model;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import java.io.Serializable;
 import java.util.HashMap;
-import weka.classifiers.trees.J48;
 
 /**
  *
@@ -16,22 +15,22 @@ import weka.classifiers.trees.J48;
 public class ModelSerializable implements Serializable {
 
     public final String protectedInterface;
-    public final J48 connectionTree;
-    public final HashMap<String, J48> criteriaTrees;
+    public final SubModel connectionSubModel;
+    public final HashMap<String, SubModel> criteriaSubModels;
 
-    public ModelSerializable(String protectedInterface, J48 connectionTree, HashMap<String, J48> criteriaTrees) {
+    public ModelSerializable(String protectedInterface, SubModel connectionSubModel, HashMap<String, SubModel> criteriaSubModels) {
         this.protectedInterface = protectedInterface;
-        this.connectionTree = connectionTree;
-        this.criteriaTrees = criteriaTrees;
+        this.connectionSubModel = connectionSubModel;
+        this.criteriaSubModels = criteriaSubModels;
     }
 
     public ModelSerializable(ModelLive live) {
         this.protectedInterface = live.protectedInterface;
-        this.connectionTree = live.connectionTree;
-        HashMap<String, J48> _criteriaTrees = new HashMap<>();
-        for (Criteria crt : live.criteriaTrees.keySet()) {
-            _criteriaTrees.put(crt.expression, live.criteriaTrees.get(crt));
+        this.connectionSubModel = live.connectionSubModel;
+        HashMap<String, SubModel> _criteriaTrees = new HashMap<>();
+        for (Criteria crt : live.criteriaSubModels.keySet()) {
+            _criteriaTrees.put(crt.expression, live.criteriaSubModels.get(crt));
         }
-        this.criteriaTrees = _criteriaTrees;
+        this.criteriaSubModels = _criteriaTrees;
     }
 }
