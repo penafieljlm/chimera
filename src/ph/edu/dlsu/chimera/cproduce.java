@@ -40,7 +40,7 @@ import ph.edu.dlsu.chimera.util.UtilsParse;
 public class cproduce {
 
     public static final String USAGE = ""
-            + "\nCHIMERA Training Command Usage (ctrain)"
+            + "\nCHIMERA Produce Command Usage (ctrain)"
             + "\nDescription:"
             + "\n    The cproduce command starts the CHIMERA's Production phase."
             + "\n    The 'normal' model produced in the Training Phase is used in this phase."

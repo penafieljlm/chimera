@@ -20,7 +20,7 @@ public class cifaces {
             + "\nCHIMERA Interfaces Command Usage (cifaces)"
             + "\nDescription:"
             + "\n    The cifaces command prints the configuration of all detected interfaces."
-            + "\n    The index of an interface is indicated by ."
+            + "\n    The index of an interface is indicated by its position in the output list."
             + "\nSyntax:"
             + "\n    cifaces";
 
