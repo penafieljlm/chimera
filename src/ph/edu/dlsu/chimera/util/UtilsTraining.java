@@ -20,9 +20,9 @@ import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.TrainingResult;
 import ph.edu.dlsu.chimera.core.model.SubModel;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
-import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -177,7 +177,7 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
-    public static ModelLive createModel(File trainingFile) throws Exception {
+    public static TrainingResult train(File trainingFile, String filter, boolean exclude) throws Exception {
         //open training set file
         CSVReader reader = new CSVReader(new FileReader(trainingFile));
         //read interface
@@ -320,8 +320,24 @@ public abstract class UtilsTraining {
             criteriaTree.put(crt, _criteriaTree);
         }
         //build trees
-        if (connTree != null) {
+        if (connTree != null && connInstance != null) {
             try {
+                boolean _exclude;
+                do {
+                    _exclude = false;
+                    Enumeration attrs = connInstance.enumerateAttributes();
+                    while (attrs.hasMoreElements()) {
+                        Attribute attr = (Attribute) attrs.nextElement();
+                        _exclude = exclude;
+                        if (filter != null) {
+                            _exclude = !(attr.name().matches(filter) ^ _exclude);
+                        }
+                        if (_exclude) {
+                            connInstance.deleteAttributeAt(attr.index());
+                            break;
+                        }
+                    }
+                } while (_exclude);
                 connTree.buildClassifier(connInstance);
             } catch (Exception ex) {
                 throw new Exception("Cannot build classifier for connection tree.");
@@ -330,6 +346,22 @@ public abstract class UtilsTraining {
         //criteria trees
         for (Criteria crt : criteriaTree.keySet()) {
             try {
+                boolean _exclude;
+                do {
+                    _exclude = false;
+                    Enumeration attrs = criteriaInstance.get(crt).enumerateAttributes();
+                    while (attrs.hasMoreElements()) {
+                        Attribute attr = (Attribute) attrs.nextElement();
+                        _exclude = exclude;
+                        if (filter != null) {
+                            _exclude = !(attr.name().matches(filter) ^ _exclude);
+                        }
+                        if (_exclude) {
+                            criteriaInstance.get(crt).deleteAttributeAt(attr.index());
+                            break;
+                        }
+                    }
+                } while (_exclude);
                 criteriaTree.get(crt).buildClassifier(criteriaInstance.get(crt));
             } catch (Exception ex) {
                 throw new Exception("Cannot build classifier for criteria tree.");
@@ -339,13 +371,6 @@ public abstract class UtilsTraining {
         StringBuilder iface = new StringBuilder();
         for (String iface1 : ifaces) {
             iface = iface.append("\\").append(iface1);
-        }
-        System.out.println("Interface....................... " + iface);
-        if (connTree != null) {
-            UtilsTraining.debugTree("connection", connTree, connInstance);
-        }
-        for (Criteria crt : criteriaTree.keySet()) {
-            UtilsTraining.debugTree(crt.expression, criteriaTree.get(crt), criteriaInstance.get(crt));
         }
         //create submodels
         SubModel connSubModel = null;
@@ -368,35 +393,7 @@ public abstract class UtilsTraining {
             criteriaSubModels.put(crt, sm);
         }
         //return model
-        return new ModelLive(iface.toString(), connSubModel, criteriaSubModels);
-    }
-
-    public static void debugTree(String name, J48 tree, Instances data) throws Exception {
-        System.out.println("Tree............................ " + name);
-        System.out.println("    Number of Leaves............ " + tree.measureNumLeaves());
-        System.out.println("    Size of the Tree............ " + tree.measureTreeSize());
-        Evaluation eval = new Evaluation(data);
-        double x[] = eval.evaluateModel(tree, data);
-        System.out.println("    Evaluation Result........... ");
-        int oneCount = 0;
-        int zeroCount = 0;
-        for (double d : x) {
-            if (d == 1.0) {
-                oneCount++;
-            }
-            if (d == 0.0) {
-                zeroCount++;
-            }
-        }
-        System.out.println("        Normal (1.0)............ " + oneCount);
-        System.out.println("        Attack (0.0)............ " + zeroCount);
-        System.out.print(eval.toSummaryString("    Summary of Training Set.....", false).replaceAll("\n", "\n        "));
-        System.out.println("\b\b\b\bGraph....................... ");
-        StringBuilder graphBuilder = new StringBuilder("        " + tree.graph().replaceAll("\n", "\n        "));
-        for (int i = 0; i < 9; i++) {
-            graphBuilder = graphBuilder.deleteCharAt(graphBuilder.length() - 1);
-        }
-        System.out.println(graphBuilder);
+        return new TrainingResult(new ModelLive(iface.toString(), connSubModel, criteriaSubModels), connInstance, criteriaInstance);
     }
 
     public static boolean instanceIsNull(Object[] instance) {

@@ -8,9 +8,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import ph.edu.dlsu.chimera.core.TrainingResult;
 import ph.edu.dlsu.chimera.core.model.ModelSerializable;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.util.UtilsParse;
+import ph.edu.dlsu.chimera.util.UtilsPrinting;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 
 /**
@@ -39,6 +41,40 @@ public class ctrain {
             + "\n            The output file name of the model to be produced."
             + "\n            Automatically ends with '.cmodel'."
             + "\n        REQUIRED........ Yes"
+            + "\n    -filter"
+            + "\n        DESCRIPTION"
+            + "\n            Attribute filter regular expression."
+            + "\n            May be used to exclude certain attributesd from the training set."
+            + "\n            If provided, the following apply:"
+            + "\n                If the /exclude flag is set, the following apply:"
+            + "\n                    Matching attributes are excluded."
+            + "\n                    Non matching attributes are included."
+            + "\n                If the /exclude flag is not set, the following apply:"
+            + "\n                    Matching attributes are not included."
+            + "\n                    Non matching attrbitues are excluded."
+            + "\n            If not provided, the following apply:"
+            + "\n                If the /exclude flag is set, the following apply:"
+            + "\n                    All attributes are excluded."
+            + "\n                If the /exclude flag is not set, the following apply:"
+            + "\n                    All attributes are included."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n    /exclude"
+            + "\n        DESCRIPTION"
+            + "\n            If set, the following apply:"
+            + "\n                If -filter is provided, the following apply:"
+            + "\n                    Attributes matching -filter are excluded."
+            + "\n                    Attributes not matching -filter are included."
+            + "\n                If -filter is not provided, the following apply:"
+            + "\n                    All attributes are excluded."
+            + "\n            If not set, the following apply:"
+            + "\n                If -filter is provided, the following apply:"
+            + "\n                    Attributes matching -filter are included."
+            + "\n                    Attributes not matching -filter are excluded."
+            + "\n                If -filter is not provided, the following apply:"
+            + "\n                    All attributes are included."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
             + "\n    /verbose"
             + "\n        DESCRIPTION"
             + "\n            If set, the following apply:"
@@ -82,11 +118,23 @@ public class ctrain {
             }
             File modelFile = new File(_args.get("-output") + ".cmodel");
 
+            //filter
+            String filter = "";
+            if (_args.containsKey("-filter")) {
+                filter = _args.get("-filter");
+            }
+
+            //exclude
+            boolean include = false;
+            if (_args.containsKey("/exclude")) {
+                include = Boolean.parseBoolean(_args.get("/exclude"));
+            }
+
             //create model
-            ModelLive model = UtilsTraining.createModel(trainingFile);
+            TrainingResult result = UtilsTraining.train(trainingFile, filter, include);
 
             //wrap into serializable model
-            ModelSerializable modelSerializable = new ModelSerializable(model);
+            ModelSerializable modelSerializable = new ModelSerializable(result.model);
 
             //open output stream
             ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
@@ -99,6 +147,9 @@ public class ctrain {
 
             //close
             oos.close();
+
+            //print results
+            UtilsPrinting.printTrainingResult(result);
 
         } catch (Exception ex) {
             ex.printStackTrace();
