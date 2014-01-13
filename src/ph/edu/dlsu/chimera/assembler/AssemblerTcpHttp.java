@@ -9,6 +9,7 @@ import java.util.Date;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.pdu.PduCompositeTcpHttp;
 import ph.edu.dlsu.chimera.util.UtilsTime;
@@ -70,7 +71,7 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
                         this.bodyBuilder.append(body);
                     }
                     if (this.bodyLength == 0) {
-                        this.finishHttp(pkt.ingress, pkt.timestampInNanos);
+                        this.finishHttp(pkt.direction, pkt.timestampInNanos);
                     }
                 }
             } else {
@@ -83,12 +84,12 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
             if (this.keepAlive) {
                 //wait until body length reached
                 if (this.bodyBuilder.toString().length() >= this.bodyLength) {
-                    this.finishHttp(pkt.ingress, pkt.timestampInNanos);
+                    this.finishHttp(pkt.direction, pkt.timestampInNanos);
                 }
             } else {
                 //wait until fin flag
                 if (tcp.flags_FIN()) {
-                    this.finishHttp(pkt.ingress, pkt.timestampInNanos);
+                    this.finishHttp(pkt.direction, pkt.timestampInNanos);
                 }
             }
         }
@@ -110,12 +111,12 @@ public final class AssemblerTcpHttp extends AssemblerTcp {
         this.headerOkTimeNs = -1;
     }
 
-    private void finishHttp(boolean ingress, long timestampInNanos) {
+    private void finishHttp(TrafficDirection direction, long timestampInNanos) {
         PduCompositeTcpHttp http = new PduCompositeTcpHttp(super.connection,
                 this,
                 this.headerBuilder.toString(),
                 this.bodyBuilder.toString(),
-                ingress,
+                direction,
                 timestampInNanos);
         super.outputPDU(http);
         this.resetHttp();

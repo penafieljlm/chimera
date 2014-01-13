@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
@@ -81,7 +82,7 @@ public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtom
             while (!this.inQueue.isEmpty()) {
                 PduAtomic pkt = this.inQueue.poll();
                 synchronized (pkt) {
-                    if (pkt.ingress) {
+                    if (pkt.direction == TrafficDirection.Ingress) {
                         boolean attack = this.tagFilteredAsAttack;
                         if (this.trainingFilter != null) {
                             attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);

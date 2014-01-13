@@ -7,6 +7,7 @@ package ph.edu.dlsu.chimera.core.tools;
 import java.util.Collections;
 import java.util.List;
 import org.jnetpcap.protocol.tcpip.Tcp;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 
 /**
@@ -27,7 +28,7 @@ public final class TcpQueue {
         try {
             if (packet.packet.hasHeader(new Tcp())) {
                 Tcp tcp = packet.packet.getHeader(new Tcp());
-                if (packet.ingress) {
+                if (packet.direction == TrafficDirection.Ingress) {
                     if (tcp.getPayloadLength() > 0 && this.inNextSequenceNo <= tcp.seq()) {
                         if (!this.contains(tcp)) {
                             return this.inQueue.add(packet);

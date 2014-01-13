@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
@@ -35,7 +36,7 @@ public class ComponentStatisticsTracker extends ComponentActiveProcessor<PduAtom
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
         synchronized (this.statsTable) {
-            if (input.ingress) {
+            if (input.direction == TrafficDirection.Ingress) {
                 //create / update criterias
                 for (Criteria crt : this.criterias) {
                     CriteriaInstance pktcrt = crt.createInstance(input.packet);

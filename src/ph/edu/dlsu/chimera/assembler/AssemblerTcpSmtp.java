@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera.assembler;
 
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.pdu.PduCompositeTcpSmtp;
 
@@ -38,7 +39,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
             this.messageBuilder.append(data);
             if (data.endsWith(AssemblerTcpSmtp.TOKEN_DAT_END)) {
                 //data segment ends
-                this.finishSmtp(pkt.ingress, pkt.timestampInNanos);
+                this.finishSmtp(pkt.direction, pkt.timestampInNanos);
             }
         } else {
             StringBuilder tdata = new StringBuilder(data);
@@ -48,7 +49,7 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
                 tdata = tdata.delete(0, msgend);
                 this.messageBuilder = this.messageBuilder.append(msgstr);
                 String msg = this.messageBuilder.toString();
-                this.finishSmtp(pkt.ingress, pkt.timestampInNanos);
+                this.finishSmtp(pkt.direction, pkt.timestampInNanos);
                 if (msg.toUpperCase().startsWith(AssemblerTcpSmtp.TOKEN_CMD_DATA)) {
                     //data clause received
                     this.dataOpen = true;
@@ -75,12 +76,12 @@ public final class AssemblerTcpSmtp extends AssemblerTcp {
         this.expectingCmd = false;
     }
 
-    private void finishSmtp(boolean ingress, long timestampInNanos) {
+    private void finishSmtp(TrafficDirection direction, long timestampInNanos) {
         PduCompositeTcpSmtp http = new PduCompositeTcpSmtp(super.connection,
                 this,
                 this.messageBuilder.toString(),
                 !this.dataOpen,
-                ingress,
+                direction,
                 timestampInNanos);
         super.outputPDU(http);
         this.resetSmtp();

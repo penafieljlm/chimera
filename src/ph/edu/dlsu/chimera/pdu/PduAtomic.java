@@ -9,6 +9,7 @@ import org.jnetpcap.packet.JHeaderPool;
 import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 
 /**
  *
@@ -20,7 +21,7 @@ public class PduAtomic extends Pdu {
     private Connection connection;
 
     public PduAtomic(PcapPacket packet,
-            boolean ingress) {
+            TrafficDirection ingress) {
         super(ingress, packet.getCaptureHeader().timestampInNanos());
         this.packet = packet;
         this.connection = null;

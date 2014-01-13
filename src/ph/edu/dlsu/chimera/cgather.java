@@ -26,6 +26,7 @@ import ph.edu.dlsu.chimera.components.ComponentStateTable;
 import ph.edu.dlsu.chimera.components.ComponentStateTracker;
 import ph.edu.dlsu.chimera.components.ComponentStatisticsTable;
 import ph.edu.dlsu.chimera.components.ComponentStatisticsTracker;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
@@ -227,7 +228,7 @@ public class cgather {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("gather.in.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, true, Pcap.OUT));
+            components.put("gather.in.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, allowFiltered, TrafficDirection.Egress, TrafficDirection.Ingress));
             components.put("gather.in.stats", new ComponentStatisticsTracker(inGatherSniffOut, inGatherStatsOut, criterias, statsTableAtomic));
             components.put("gather.in.states", new ComponentStateTracker(inGatherStatsOut, inGatherStateOut, stateTable));
             components.put("gather.in.dumper", new ComponentDumper(inGatherStateOut, ifProtected, criterias, trainingDumpFile, trainingFilter, tagFilteredAsAttacks));
@@ -239,7 +240,7 @@ public class cgather {
             inGatherStateOut.setReader((ComponentActive) components.get("gather.in.dumper"));
 
             //egress path
-            components.put("gather.eg.sniff", new ComponentSniffer(egGatherSniffOut, ifProtected, accessFilter, allowFiltered, false, Pcap.IN));
+            components.put("gather.eg.sniff", new ComponentSniffer(egGatherSniffOut, ifProtected, accessFilter, allowFiltered, TrafficDirection.Ingress, TrafficDirection.Egress));
             components.put("gather.eg.states", new ComponentStateTracker(egGatherSniffOut, null, stateTable));
             egGatherSniffOut.setWriter((ComponentActive) components.get("gather.eg.sniff"));
             egGatherSniffOut.setReader((ComponentActive) components.get("gather.eg.states"));
