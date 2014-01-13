@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 
 /**
  *
@@ -56,7 +57,7 @@ public final class ComponentStateTable extends ComponentActive {
                     int insprt;
                     String ext;
                     int extprt;
-                    if (connection.ingress) {
+                    if (connection.direction == TrafficDirection.Ingress) {
                         ins = socks.destination.getHostAddress();
                         insprt = socks.destinationPort;
                         ext = socks.source.getHostAddress();

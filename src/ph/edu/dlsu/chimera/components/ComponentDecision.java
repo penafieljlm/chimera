@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 import ph.edu.dlsu.chimera.core.logs.LogAttackConnection;
@@ -77,7 +78,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
 
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
-        if (input.ingress) {
+        if (input.direction == TrafficDirection.Ingress) {
             //integrity check
             if (this.active) {
                 if (this.rulesMap != null) {

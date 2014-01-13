@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package ph.edu.dlsu.chimera.pdu;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 
 /**
@@ -15,12 +15,12 @@ import ph.edu.dlsu.chimera.core.criteria.Criteria;
  */
 public abstract class Pdu {
 
-    public final boolean ingress;
+    public final TrafficDirection direction;
     public final long timestampInNanos;
     private final HashMap<Criteria, Statistics> statistics; //type, statistics
 
-    public Pdu(boolean ingress, long timestampInNanos) {
-        this.ingress = ingress;
+    public Pdu(TrafficDirection ingress, long timestampInNanos) {
+        this.direction = ingress;
         this.timestampInNanos = timestampInNanos;
         this.statistics = new HashMap<>();
     }

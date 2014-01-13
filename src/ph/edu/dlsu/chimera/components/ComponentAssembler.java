@@ -13,6 +13,7 @@ import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.assembler.AssemblerTcp;
 import ph.edu.dlsu.chimera.assembler.AssemblerUdp;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.util.UtilsPacket;
 
@@ -44,7 +45,7 @@ public final class ComponentAssembler extends ComponentActiveProcessor<PduAtomic
 
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
-        if (input.ingress) {
+        if (input.direction == TrafficDirection.Ingress) {
             try {
                 if (input.packet.hasHeader(new Tcp())) {
                     this.handleTcp(input);

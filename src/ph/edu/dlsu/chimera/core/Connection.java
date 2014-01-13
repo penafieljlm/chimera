@@ -18,7 +18,7 @@ import ph.edu.dlsu.chimera.util.UtilsTime;
 public final class Connection extends Statistics implements Serializable {
 
     public final TcpSocketPair sockets;
-    public final boolean ingress;
+    public final TrafficDirection direction;
     private long ingressEncounters;
     private long egressEncounters;
     private long ingressTotalSize;
@@ -31,15 +31,15 @@ public final class Connection extends Statistics implements Serializable {
     private byte inFin; //0 - none; 1 - fin,ack; 2 - ack
     private byte egFin; //0 - none; 1 - fin,ack; 2 - ack
 
-    public Connection(TcpSocketPair sockets, long timeCreatedNanos, boolean ingress) {
+    public Connection(TcpSocketPair sockets, long timeCreatedNanos, TrafficDirection direction) {
         super(timeCreatedNanos);
         this.sockets = sockets;
-        this.ingress = ingress;
+        this.direction = direction;
         this.ingressEncounters = 0;
         this.egressEncounters = 0;
         this.ingressTotalSize = 0;
         this.egressTotalSize = 0;
-        if (ingress) {
+        if (direction == TrafficDirection.Ingress) {
             this.ingressLastEncounterNanos = timeCreatedNanos;
             this.ingressLastLastEncounterNanos = -1;
             this.egressLastEncounterNanos = -1;
@@ -72,7 +72,8 @@ public final class Connection extends Statistics implements Serializable {
     }
 
     /**
-     * @return the ingress rate of this Connection measured as packet per second.
+     * @return the ingress rate of this Connection measured as packet per
+     * second.
      */
     public synchronized double ingressRatePerSec() {
         double sec = this.getTimeExistedMs() / 1000;
@@ -127,13 +128,14 @@ public final class Connection extends Statistics implements Serializable {
 
     /**
      * Updates the connection data based on the received packet.
+     *
      * @param pkt - the received packet.
      */
     public synchronized void update(PduAtomic pkt) {
         if (!this.done) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
             super.commitEncounter(pkt);
-            if (pkt.ingress) {
+            if (pkt.direction == TrafficDirection.Ingress) {
                 this.ingressEncounters++;
                 this.ingressTotalSize += pkt.packet.size();
                 this.ingressLastLastEncounterNanos = this.ingressLastEncounterNanos;
@@ -171,7 +173,7 @@ public final class Connection extends Statistics implements Serializable {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
         Date inencounter = (this.ingressLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.ingressLastEncounterNanos));
         Date egencounter = (this.egressLastEncounterNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.egressLastEncounterNanos));
-        diag.add(new Diagnostic("direction", "Direction", (this.ingress) ? "ingress" : "egress"));
+        diag.add(new Diagnostic("direction", "Direction", (this.direction == TrafficDirection.Ingress) ? "ingress" : "egress"));
         diag.add(new Diagnostic("ingressct", "Ingress Packets Encountered", this.ingressEncounters));
         diag.add(new Diagnostic("egressct", "Egress Packets Encountered", this.egressEncounters));
         diag.add(new Diagnostic("ingresssize", "Ingress Traffic Total Size", this.ingressTotalSize));

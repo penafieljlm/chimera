@@ -25,6 +25,7 @@ import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Statistics;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
@@ -146,7 +147,7 @@ public class cproduce {
             components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
             //ingress path
-            components.put("produce.in.sniff", new ComponentSniffer(inProduceSniffOut, modelLive.protectedInterface, true, Pcap.OUT));
+            components.put("produce.in.sniff", new ComponentSniffer(inProduceStateOut, modelLive.protectedInterface, TrafficDirection.Egress, TrafficDirection.Ingress));
             components.put("produce.in.stats", new ComponentStatisticsTracker(inProduceSniffOut, inProduceStatsOut, criterias, statsTableAtomic));
             components.put("produce.in.states", new ComponentStateTracker(inProduceStatsOut, inProduceStateOut, stateTable));
             components.put("produce.in.decision", new ComponentDecision(inProduceStateOut, modelLive, rulesMap, syslogServ, active));
@@ -158,7 +159,7 @@ public class cproduce {
             inProduceStateOut.setReader((ComponentActive) components.get("produce.in.decision"));
 
             //egress path
-            components.put("produce.eg.sniff", new ComponentSniffer(egProduceSniffOut, modelLive.protectedInterface, false, Pcap.IN));
+            components.put("produce.eg.sniff", new ComponentSniffer(egProduceSniffOut, modelLive.protectedInterface, TrafficDirection.Ingress, TrafficDirection.Egress));
             components.put("produce.eg.states", new ComponentStateTracker(egProduceSniffOut, null, stateTable));
             egProduceSniffOut.setWriter((ComponentActive) components.get("produce.eg.sniff"));
             egProduceSniffOut.setReader((ComponentActive) components.get("produce.eg.states"));

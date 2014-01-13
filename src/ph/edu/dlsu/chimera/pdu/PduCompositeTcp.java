@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera.pdu;
 
 import ph.edu.dlsu.chimera.assembler.Assembler;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 
 /**
  *
@@ -15,8 +16,8 @@ public abstract class PduCompositeTcp extends PduComposite {
 
     public PduCompositeTcp(Connection connection,
             Assembler assembler,
-            boolean ingress,
+            TrafficDirection direction,
             long timestampInNanos) {
-        super(connection, assembler, ingress, timestampInNanos);
+        super(connection, assembler, direction, timestampInNanos);
     }
 }

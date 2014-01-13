@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera.pdu;
 
 import ph.edu.dlsu.chimera.assembler.Assembler;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 
 /**
  *
@@ -20,7 +21,7 @@ public class PduCompositeTcpSmtp extends PduCompositeTcp {
             Assembler assembler,
             String smtp,
             boolean isCommand,
-            boolean ingress,
+            TrafficDirection ingress,
             long timestampInNanos) {
         super(connection, assembler, ingress, timestampInNanos);
         this.isCommand = isCommand;

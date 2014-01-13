@@ -43,7 +43,7 @@ public final class ComponentStateTracker extends ComponentActiveProcessor<PduAto
                         //create state
                         if (!this.stateTable.containsKey(socks)) {
                             if (tcp.flags_SYN() && !tcp.flags_ACK()) {
-                                this.stateTable.put(socks, new Connection(socks, input.packet.getCaptureHeader().timestampInNanos(), input.ingress));
+                                this.stateTable.put(socks, new Connection(socks, input.packet.getCaptureHeader().timestampInNanos(), input.direction));
                             }
                         }
                         if (this.stateTable.containsKey(socks)) {
