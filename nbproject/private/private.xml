@@ -4,17 +4,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/util/UtilsTraining.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/core/model/ModelLive.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/util/UtilsFile.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/util/UtilsTime.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/core/model/SubModel.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/components/ComponentDecision.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/cconfig.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/ctrain.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/core/TrainingResult.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/util/UtilsPrinting.java</file>
-            <file>file:/C:/Users/AMD/Documents/NetBeansProjects/CHIMERA/CHIMERA/src/ph/edu/dlsu/chimera/components/ComponentSniffer.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/components/ComponentSniffer.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/cproduce.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/util/UtilsPrinting.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/core/TrainingResult.java</file>
+            <file>file:/C:/Users/User/Documents/NetBeansProjects/dlsu-chimera/src/ph/edu/dlsu/chimera/util/UtilsTraining.java</file>
         </group>
     </open-files>
 </project-private>

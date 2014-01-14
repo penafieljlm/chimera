@@ -370,7 +370,9 @@ public abstract class UtilsTraining {
         //derive iface name
         StringBuilder iface = new StringBuilder();
         for (String iface1 : ifaces) {
-            iface = iface.append("\\").append(iface1);
+            if (!iface1.isEmpty()) {
+                iface = iface.append("\\").append(iface1);
+            }
         }
         //create submodels
         SubModel connSubModel = null;
