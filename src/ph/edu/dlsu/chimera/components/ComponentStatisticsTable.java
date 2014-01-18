@@ -53,9 +53,9 @@ public class ComponentStatisticsTable extends ComponentActive {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
         if (this.statsTable != null) {
             synchronized (this.statsTable) {
-                ArrayList<Diagnostic> _criterias = new ArrayList<>();
+                ArrayList<Diagnostic> _criterias = new ArrayList<Diagnostic>();
                 for (Criteria crt : this.criterias) {
-                    ArrayList<Diagnostic> instances = new ArrayList<>();
+                    ArrayList<Diagnostic> instances = new ArrayList<Diagnostic>();
                     for (CriteriaInstance crtinst : this.statsTable.keySet()) {
                         if (crtinst.criteria.equals(crt)) {
                             instances.add(new Diagnostic(crtinst.getStringId(), crtinst.getStringId(), this.statsTable.get(crtinst).getDiagnostics()));

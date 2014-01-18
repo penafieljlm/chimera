@@ -32,7 +32,7 @@ public final class PacketFilterExpression extends PacketFilter {
         ops = _ops;
         Pattern eptrn = Pattern.compile("[ ]*(([^!&|\\^()]+)|(\\(.+\\)))[ ]*");
         Matcher emtch = eptrn.matcher(exp);
-        ArrayList<String> _exps = new ArrayList<>();
+        ArrayList<String> _exps = new ArrayList<String>();
         while (emtch.find()) {
             _exps.add(emtch.group().trim());
         }
@@ -43,27 +43,21 @@ public final class PacketFilterExpression extends PacketFilter {
             }
             OperationsBoolean[] _operations = new OperationsBoolean[ops.length];
             for (int i = 0; i < ops.length; i++) {
-                switch (ops[i].trim()) {
-                    case "&&":
-                        _operations[i] = OperationsBoolean.And;
-                        break;
-                    case "||":
-                        _operations[i] = OperationsBoolean.Or;
-                        break;
-                    case "^^":
-                        _operations[i] = OperationsBoolean.Xor;
-                        break;
-                    case "!&":
-                        _operations[i] = OperationsBoolean.Nand;
-                        break;
-                    case "!|":
-                        _operations[i] = OperationsBoolean.Nor;
-                        break;
-                    case "!^":
-                        _operations[i] = OperationsBoolean.Xnor;
-                        break;
-                    default:
-                        throw new Exception("Parse Error: Unknown operator '" + ops[i] + "'");
+                String op = ops[i].trim();
+                if (op.equals("&&")) {
+                    _operations[i] = OperationsBoolean.And;
+                } else if (op.equals("||")) {
+                    _operations[i] = OperationsBoolean.Or;
+                } else if (op.equals("^^")) {
+                    _operations[i] = OperationsBoolean.Xor;
+                } else if (op.equals("!&")) {
+                    _operations[i] = OperationsBoolean.Nand;
+                } else if (op.equals("!|")) {
+                    _operations[i] = OperationsBoolean.Nor;
+                } else if (op.equals("!^")) {
+                    _operations[i] = OperationsBoolean.Xnor;
+                } else {
+                    throw new Exception("Parse Error: Unknown operator '" + ops[i] + "'");
                 }
             }
             PacketFilter[] _filters = new PacketFilter[exps.length];

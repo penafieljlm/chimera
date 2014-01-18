@@ -100,7 +100,7 @@ public final class Criteria {
 
     public static Criteria[] loadCriterias() throws Exception {
         File criteriasFile = new File("criterias.config");
-        ArrayList<String> expressions = new ArrayList<>();
+        ArrayList<String> expressions = new ArrayList<String>();
         if (!criteriasFile.exists()) {
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source)");
             expressions.add("subject(org.jnetpcap.protocol.network.Ip4.source, org.jnetpcap.protocol.tcpip.Tcp.source)");

@@ -9,9 +9,14 @@ import com.protomatter.syslog.Syslog;
 import de.tbsol.iptablesjava.IpTables;
 import de.tbsol.iptablesjava.rules.IpRule;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jnetpcap.protocol.lan.Ethernet;
+import org.jnetpcap.protocol.network.Ip4;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
@@ -52,7 +57,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
         this.rulesMap = rulesMap;
         this.syslogServer = syslogServer;
         this.connDataInstances = new Instances("connection", this.model.connectionSubModel.attributes, 0);
-        this.criteriaDataInstances = new HashMap<>();
+        this.criteriaDataInstances = new HashMap<Criteria, Instances>();
         for (Criteria crt : this.model.criteriaSubModels.keySet()) {
             this.criteriaDataInstances.put(crt, new Instances(crt.expression, this.model.criteriaSubModels.get(crt).attributes, 0));
         }
@@ -200,7 +205,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     }
 
     protected HashMap<Criteria, Boolean> evaluateAgainstCriterias(PduAtomic pkt) {
-        HashMap<Criteria, Boolean> report = new HashMap<>();
+        HashMap<Criteria, Boolean> report = new HashMap<Criteria, Boolean>();
         Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
         for (Criteria crt : this.model.criteriaSubModels.keySet()) {
             boolean allow = true;
@@ -230,6 +235,29 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
 
     protected void logConnectionViolation(PduAtomic pkt) {
         System.out.println("Attack Logged (Connection Tree)");
+        if (pkt.packet.hasHeader(new Ethernet())) {
+            Ethernet eth = pkt.packet.getHeader(new Ethernet());
+            try {
+                StringBuilder sb = new StringBuilder();
+                for (byte b : eth.source()) {
+                    sb = sb.append(String.format("%02x:", b));
+                }
+                System.out.println("    " + sb.toString());
+                sb = new StringBuilder();
+                for (byte b : eth.destination()) {
+                    sb = sb.append(String.format("%02x:", b));
+                }
+                System.out.println("    " + sb.toString());
+            } catch (Exception ex) {
+            }
+        }
+        if (pkt.packet.hasHeader(new Ip4())) {
+            Ip4 ip = pkt.packet.getHeader(new Ip4());
+            try {
+                System.out.println("    " + InetAddress.getByAddress(ip.source()));
+            } catch (Exception ex) {
+            }
+        }
         if (this.syslogServer != null) {
             LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
             Syslog.warning(this.syslogServer, "CHIMERA:AttackLogged", JsonWriter.toJson(log));
@@ -238,6 +266,30 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
 
     protected void logCriteriaViolation(PduAtomic pkt, Criteria criteria, Statistics statistics) {
         System.out.println("Attack Logged (Criteria Tree)");
+        if (pkt.packet.hasHeader(new Ethernet())) {
+            Ethernet eth = pkt.packet.getHeader(new Ethernet());
+            try {
+                StringBuilder sb = new StringBuilder();
+                for (byte b : eth.source()) {
+                    sb = sb.append(String.format("%02x:", b));
+                }
+                System.out.println("    Eth Source....... " + sb.toString());
+                sb = new StringBuilder();
+                for (byte b : eth.destination()) {
+                    sb = sb.append(String.format("%02x:", b));
+                }
+                System.out.println("    Eth Destination.. " + sb.toString());
+            } catch (Exception ex) {
+            }
+        }
+        if (pkt.packet.hasHeader(new Ip4())) {
+            Ip4 ip = pkt.packet.getHeader(new Ip4());
+            try {
+                System.out.println("    Ip Source........ " + InetAddress.getByAddress(ip.source()));
+                System.out.println("    Ip Destination... " + InetAddress.getByAddress(ip.destination()));
+            } catch (Exception ex) {
+            }
+        }
         if (this.syslogServer != null) {
             LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
             Syslog.warning(this.syslogServer, "CHIMERA:AttackLogged", JsonWriter.toJson(log));

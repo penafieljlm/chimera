@@ -48,7 +48,7 @@ public class ComponentAssemblerTable extends ComponentActive {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
         if (this.assemblertable != null) {
             synchronized (this.assemblertable) {
-                ArrayList<Diagnostic> states = new ArrayList<>();
+                ArrayList<Diagnostic> states = new ArrayList<Diagnostic>();
                 for (TcpSocketPair socks : this.assemblertable.keySet()) {
                     Assembler assembler = this.assemblertable.get(socks);
                     StringBuilder keybld = new StringBuilder();

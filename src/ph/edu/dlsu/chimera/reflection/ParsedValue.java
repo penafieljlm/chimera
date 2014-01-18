@@ -28,30 +28,26 @@ public final class ParsedValue {
         }
         String type = v.substring(0, boundaryIdx);
         String val = v.substring(boundaryIdx + 1);
-        switch (type) {
-            case "ip":
-                try {
-                    this.value = new BigInteger(InetAddress.getByName(val).getAddress());
-                } catch (UnknownHostException ex) {
-                    throw new Exception("Parse Error: Invalid IP Address '" + val + "'!");
-                }
-                break;
-            case "dec":
-                try {
-                    this.value = new BigInteger(val);
-                } catch (NumberFormatException ex) {
-                    throw new Exception("Parse Error: Value '" + val + "' is not a decimal number!");
-                }
-                break;
-            case "hex":
-                try {
-                    this.value = new BigInteger(val, 16);
-                } catch (NumberFormatException ex) {
-                    throw new Exception("Parse Error: Value '" + val + "' is not a hexadecimal number!");
-                }
-                break;
-            default:
-                throw new Exception("Parse Error: Unknown value type '" + type + "'");
+        if (type.equals("ip")) {
+            try {
+                this.value = new BigInteger(InetAddress.getByName(val).getAddress());
+            } catch (UnknownHostException ex) {
+                throw new Exception("Parse Error: Invalid IP Address '" + val + "'!");
+            }
+        } else if (type.equals("dec")) {
+            try {
+                this.value = new BigInteger(val);
+            } catch (NumberFormatException ex) {
+                throw new Exception("Parse Error: Value '" + val + "' is not a decimal number!");
+            }
+        } else if (type.equals("hex")) {
+            try {
+                this.value = new BigInteger(val, 16);
+            } catch (NumberFormatException ex) {
+                throw new Exception("Parse Error: Value '" + val + "' is not a hexadecimal number!");
+            }
+        } else {
+            throw new Exception("Parse Error: Unknown value type '" + type + "'");
         }
     }
 }

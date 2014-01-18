@@ -9,10 +9,8 @@ import de.tbsol.iptablesjava.rules.match.ModMac;
 import de.tbsol.iptablesjava.rules.match.ModTcp;
 import de.tbsol.iptablesjava.rules.match.ModUdp;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.util.Objects;
 import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.structure.JField;
@@ -119,59 +117,55 @@ public final class PacketField {
             if (pkt.hasHeader(type)) {
                 if (this.headerClass == Ethernet.class) {
                     ModMac mac = new ModMac();
-                    switch (this.fieldName) {
-                        case "source":
-                            mac.setSrcaddr(this.getFieldValue(pkt).toByteArray());
-                            rule.addModule(mac);
-                            return true;
+                    if (this.fieldName.equals("source")) {
+                        mac.setSrcaddr(this.getFieldValue(pkt).toByteArray());
+                        rule.addModule(mac);
+                        return true;
                     }
                 } else if (this.headerClass == Ip4.class) {
-                    switch (this.fieldName) {
-                        case "source":
-                            rule.setSource(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
-                            rule.setSourceMask(InetAddress.getByName("255.255.255.255"));
-                            return true;
-                        case "destination":
-                            rule.setDestination(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
-                            rule.setDestinationMask(InetAddress.getByName("255.255.255.255"));
-                            return true;
+                    if (this.fieldName.equals("source")) {
+                        rule.setSource(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
+                        rule.setSourceMask(InetAddress.getByName("255.255.255.255"));
+                        return true;
+                    } else if (this.fieldName.equals("destination")) {
+                        rule.setDestination(InetAddress.getByAddress(this.getFieldValue(pkt).toByteArray()));
+                        rule.setDestinationMask(InetAddress.getByName("255.255.255.255"));
+                        return true;
                     }
                 } else if (this.headerClass == Icmp.class) {
                     rule.setProtocol(IpRule.IpProto.IPPROTO_ICMP);
                 } else if (this.headerClass == Tcp.class) {
                     ModTcp tcp = new ModTcp();
                     rule.setProtocol(IpRule.IpProto.IPPROTO_TCP);
-                    switch (this.fieldName) {
-                        case "source":
-                            tcp.setSourcePortStart(this.getFieldValue(pkt).intValue());
-                            tcp.setSourcePortEnd(this.getFieldValue(pkt).intValue());
-                            rule.addModule(tcp);
-                            return true;
-                        case "destination":
-                            tcp.setDestinationPortStart(this.getFieldValue(pkt).intValue());
-                            tcp.setDestinationPortEnd(this.getFieldValue(pkt).intValue());
-                            rule.addModule(tcp);
-                            return true;
-                        case "flags":
-                            tcp.setFlagCompare(this.getFieldValue(pkt).byteValue());
-                            tcp.setFlagMask((byte) 0xFF);
-                            rule.addModule(tcp);
-                            return true;
+                    if (this.fieldName.equals("source")) {
+                        tcp.setSourcePortStart(this.getFieldValue(pkt).intValue());
+                        tcp.setSourcePortEnd(this.getFieldValue(pkt).intValue());
+                        rule.addModule(tcp);
+                        return true;
+                    } else if (this.fieldName.equals("destination")) {
+                        tcp.setDestinationPortStart(this.getFieldValue(pkt).intValue());
+                        tcp.setDestinationPortEnd(this.getFieldValue(pkt).intValue());
+                        rule.addModule(tcp);
+                        return true;
+                    } else if (this.fieldName.equals("flags")) {
+                        tcp.setFlagCompare(this.getFieldValue(pkt).byteValue());
+                        tcp.setFlagMask((byte) 0xFF);
+                        rule.addModule(tcp);
+                        return true;
                     }
                 } else if (this.headerClass == Udp.class) {
                     ModUdp udp = new ModUdp();
                     rule.setProtocol(IpRule.IpProto.IPPROTO_UDP);
-                    switch (this.fieldName) {
-                        case "source":
-                            udp.setSourcePortStart(this.getFieldValue(pkt).intValue());
-                            udp.setSourcePortEnd(this.getFieldValue(pkt).intValue());
-                            rule.addModule(udp);
-                            return true;
-                        case "destination":
-                            udp.setDestinationPortStart(this.getFieldValue(pkt).intValue());
-                            udp.setDestinationPortEnd(this.getFieldValue(pkt).intValue());
-                            rule.addModule(udp);
-                            return true;
+                    if (this.fieldName.equals("source")) {
+                        udp.setSourcePortStart(this.getFieldValue(pkt).intValue());
+                        udp.setSourcePortEnd(this.getFieldValue(pkt).intValue());
+                        rule.addModule(udp);
+                        return true;
+                    } else if (this.fieldName.equals("destination")) {
+                        udp.setDestinationPortStart(this.getFieldValue(pkt).intValue());
+                        udp.setDestinationPortEnd(this.getFieldValue(pkt).intValue());
+                        rule.addModule(udp);
+                        return true;
                     }
                 }
             }
@@ -180,6 +174,7 @@ public final class PacketField {
         return false;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -188,20 +183,20 @@ public final class PacketField {
             return false;
         }
         final PacketField other = (PacketField) obj;
-        if (!Objects.equals(this.headerClass, other.headerClass)) {
+        if (this.headerClass != other.headerClass && (this.headerClass == null || !this.headerClass.equals(other.headerClass))) {
             return false;
         }
-        if (!Objects.equals(this.fieldName, other.fieldName)) {
+        if ((this.fieldName == null) ? (other.fieldName != null) : !this.fieldName.equals(other.fieldName)) {
             return false;
         }
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + Objects.hashCode(this.headerClass);
-        hash = 97 * hash + Objects.hashCode(this.fieldName);
-        hash = 97 * hash + Objects.hashCode(this.headerConstructor);
+        hash = 59 * hash + (this.headerClass != null ? this.headerClass.hashCode() : 0);
+        hash = 59 * hash + (this.fieldName != null ? this.fieldName.hashCode() : 0);
         return hash;
     }
 }

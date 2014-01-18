@@ -14,7 +14,7 @@ import java.util.HashMap;
 public abstract class UtilsParse {
 
     public static HashMap<String, String> parseArgs(String[] args) throws ParseException {
-        HashMap<String, String> _args = new HashMap<>();
+        HashMap<String, String> _args = new HashMap<String, String>();
         String varname = null;
         for (int i = 0; i < args.length; i++) {
             if (varname == null && args[i].startsWith("/")) {

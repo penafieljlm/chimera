@@ -26,7 +26,7 @@ public class ModelLive {
     public ModelLive(ModelSerializable file) throws Exception {
         this.protectedInterface = file.protectedInterface;
         this.connectionSubModel = file.connectionSubModel;
-        HashMap<Criteria, SubModel> _criteriaTrees = new HashMap<>();
+        HashMap<Criteria, SubModel> _criteriaTrees = new HashMap<Criteria, SubModel>();
         for (String crt : file.criteriaSubModels.keySet()) {
             _criteriaTrees.put(new Criteria(crt), file.criteriaSubModels.get(crt));
         }
