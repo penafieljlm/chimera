@@ -18,7 +18,7 @@ public class IntermodulePipe<TData> {
     private ComponentActive reader;
 
     public IntermodulePipe() {
-        this.queue = new ConcurrentLinkedQueue<>();
+        this.queue = new ConcurrentLinkedQueue<TData>();
         this.writer = null;
         this.reader = null;
     }

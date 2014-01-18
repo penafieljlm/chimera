@@ -57,7 +57,7 @@ public abstract class UtilsTraining {
     public static final String ATTK_HEADER = "attack";
 
     public static Object[] getCoreInstance(PduAtomic packet) {
-        ArrayList<Object> instance = new ArrayList<>();
+        ArrayList<Object> instance = new ArrayList<Object>();
         Tcp tcp = packet.packet.getHeader(new Tcp());
         Udp udp = packet.packet.getHeader(new Udp());
         instance.add(packet.getProtocolName());
@@ -77,7 +77,7 @@ public abstract class UtilsTraining {
     }
 
     public static Object[] getConnectionInstance(PduAtomic packet) {
-        ArrayList<Object> instance = new ArrayList<>();
+        ArrayList<Object> instance = new ArrayList<Object>();
         Connection conn = packet.getConnection();
         instance.add(((conn == null) ? -1 : conn.ingressLastEncounterDeltaNs()));
         instance.add(((conn == null) ? -1 : conn.egressLastEncounterDeltaNs()));
@@ -99,7 +99,7 @@ public abstract class UtilsTraining {
     }
 
     public static String[] getCriteriaHeaders(Criteria criteria) {
-        ArrayList<String> headers = new ArrayList<>();
+        ArrayList<String> headers = new ArrayList<String>();
         String exp = criteria.expression.replaceAll(" ", "");
         headers.add("exp(" + exp + ").enc_timed");
         headers.add("exp(" + exp + ").enc_count");
@@ -110,7 +110,7 @@ public abstract class UtilsTraining {
     }
 
     public static Object[] getCriteriaInstance(Criteria criteria, PduAtomic packet) {
-        ArrayList<Object> instance = new ArrayList<>();
+        ArrayList<Object> instance = new ArrayList<Object>();
         Statistics crtstats = packet.getStatistics(criteria);
         instance.add(((crtstats == null) ? -1 : crtstats.getLastEncounterDeltaNs()));
         instance.add(((crtstats == null) ? -1 : crtstats.getTotalEncounters()));
@@ -140,7 +140,7 @@ public abstract class UtilsTraining {
     }
 
     public static String[] getCriteriasHeaders(Criteria[] criterias) {
-        ArrayList<String> headers = new ArrayList<>();
+        ArrayList<String> headers = new ArrayList<String>();
         for (Criteria crt : criterias) {
             headers.addAll(Arrays.asList(UtilsTraining.getCriteriaHeaders(crt)));
         }
@@ -148,7 +148,7 @@ public abstract class UtilsTraining {
     }
 
     public static Object[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet) {
-        ArrayList<Object> instance = new ArrayList<>();
+        ArrayList<Object> instance = new ArrayList<Object>();
         for (Criteria crt : criterias) {
             instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet)));
         }
@@ -156,7 +156,7 @@ public abstract class UtilsTraining {
     }
 
     public static String[] getHeaders(Criteria[] criterias) {
-        ArrayList<String> headers = new ArrayList<>();
+        ArrayList<String> headers = new ArrayList<String>();
         headers.addAll(Arrays.asList(UtilsTraining.CORE_HEADERS));
         headers.addAll(Arrays.asList(UtilsTraining.CONN_HEADERS));
         for (Criteria crt : criterias) {
@@ -167,7 +167,7 @@ public abstract class UtilsTraining {
     }
 
     public static Object[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack) {
-        ArrayList<Object> instance = new ArrayList<>();
+        ArrayList<Object> instance = new ArrayList<Object>();
         instance.addAll(Arrays.asList(UtilsTraining.getCoreInstance(packet)));
         instance.addAll(Arrays.asList(UtilsTraining.getConnectionInstance(packet)));
         for (Criteria crt : criterias) {
@@ -190,7 +190,7 @@ public abstract class UtilsTraining {
         }
         //create training subsets files
         File connectionDataSet = File.createTempFile("connection", ".trntmpcsv");
-        HashMap<Criteria, File> criteriaDataSet = new HashMap<>();
+        HashMap<Criteria, File> criteriaDataSet = new HashMap<Criteria, File>();
         int ct = 0;
         for (Criteria crt : criterias) {
             criteriaDataSet.put(crt, File.createTempFile("crt[" + ct + "]", ".trntmpcsv"));
@@ -198,49 +198,49 @@ public abstract class UtilsTraining {
         }
         //instance count per training set
         long connectionInstancesCount = 0;
-        HashMap<Criteria, Long> criteriaInstancesCount = new HashMap<>();
+        HashMap<Criteria, Long> criteriaInstancesCount = new HashMap<Criteria, Long>();
         for (Criteria crt : criterias) {
             criteriaInstancesCount.put(crt, new Long(0));
         }
         //open writers and write headers
         String[] attackHeader = {UtilsTraining.ATTK_HEADER};
         HashMap<Criteria, CSVWriter> criteriaDataSetWriter;
-        try (CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet))) {
-            connDataSetWriter.writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.CONN_HEADERS, attackHeader));
-            criteriaDataSetWriter = new HashMap<>();
-            for (Criteria crt : criteriaDataSet.keySet()) {
-                criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
-                criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader)));
+        CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet));
+        connDataSetWriter.writeNext(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.CONN_HEADERS, attackHeader));
+        criteriaDataSetWriter = new HashMap<Criteria, CSVWriter>();
+        for (Criteria crt : criteriaDataSet.keySet()) {
+            criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
+            criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader)));
+        }
+        String[] headers = reader.readNext();
+        if (headers == null) {
+            throw new Exception("Missing headers.");
+        }
+        String[] instance;
+        while ((instance = reader.readNext()) != null) {
+            //core
+            Object[] core = UtilsTraining.getCoreInstance(instance);
+            Object[] attack = {instance[instance.length - 1]};
+            //connection
+            Object[] conn_inst = UtilsTraining.getConnectionInstance(instance);
+            if (!UtilsTraining.instanceIsNull(conn_inst)) {
+                connectionInstancesCount++;
+                conn_inst = UtilsArray.concat(core, conn_inst, attack);
+                connDataSetWriter.writeNext(UtilsArray.toCsv(conn_inst));
+                connDataSetWriter.flush();
             }
-            String[] headers = reader.readNext();
-            if (headers == null) {
-                throw new Exception("Missing headers.");
-            }
-            String[] instance;
-            while ((instance = reader.readNext()) != null) {
-                //core
-                Object[] core = UtilsTraining.getCoreInstance(instance);
-                Object[] attack = {instance[instance.length - 1]};
-                //connection
-                Object[] conn_inst = UtilsTraining.getConnectionInstance(instance);
-                if (!UtilsTraining.instanceIsNull(conn_inst)) {
-                    connectionInstancesCount++;
-                    conn_inst = UtilsArray.concat(core, conn_inst, attack);
-                    connDataSetWriter.writeNext(UtilsArray.toCsv(conn_inst));
-                    connDataSetWriter.flush();
-                }
-                //criteria
-                for (Criteria crt : criterias) {
-                    Object[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
-                    if (!UtilsTraining.instanceIsNull(crt_inst)) {
-                        criteriaInstancesCount.put(crt, criteriaInstancesCount.get(crt) + 1);
-                        crt_inst = UtilsArray.concat(core, crt_inst, attack);
-                        criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(crt_inst));
-                        criteriaDataSetWriter.get(crt).flush();
-                    }
+            //criteria
+            for (Criteria crt : criterias) {
+                Object[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
+                if (!UtilsTraining.instanceIsNull(crt_inst)) {
+                    criteriaInstancesCount.put(crt, criteriaInstancesCount.get(crt) + 1);
+                    crt_inst = UtilsArray.concat(core, crt_inst, attack);
+                    criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(crt_inst));
+                    criteriaDataSetWriter.get(crt).flush();
                 }
             }
         }
+        connDataSetWriter.close();
         for (Criteria crt : criteriaDataSetWriter.keySet()) {
             criteriaDataSetWriter.get(crt).close();
         }
@@ -250,7 +250,7 @@ public abstract class UtilsTraining {
             connCsvLoader.setSource(connectionDataSet);
         }
         DataSource connSource = (connCsvLoader != null) ? new DataSource(connCsvLoader) : null;
-        HashMap<Criteria, DataSource> criteriaSource = new HashMap<>();
+        HashMap<Criteria, DataSource> criteriaSource = new HashMap<Criteria, DataSource>();
         for (Criteria crt : criteriaDataSet.keySet()) {
             CSVLoader crtCsvLoader = new CSVLoader();
             crtCsvLoader.setSource(criteriaDataSet.get(crt));
@@ -268,7 +268,7 @@ public abstract class UtilsTraining {
         }
         //create subset instances
         Instances connInstance = (connSource != null) ? connSource.getDataSet() : null;
-        HashMap<Criteria, Instances> criteriaInstance = new HashMap<>();
+        HashMap<Criteria, Instances> criteriaInstance = new HashMap<Criteria, Instances>();
         for (Criteria crt : criteriaSource.keySet()) {
             criteriaInstance.put(crt, criteriaSource.get(crt).getDataSet());
         }
@@ -313,7 +313,7 @@ public abstract class UtilsTraining {
         if (connTree != null) {
             connTree.setOptions(options);
         }
-        HashMap<Criteria, J48> criteriaTree = new HashMap<>();
+        HashMap<Criteria, J48> criteriaTree = new HashMap<Criteria, J48>();
         for (Criteria crt : criteriaInstance.keySet()) {
             J48 _criteriaTree = new J48();
             _criteriaTree.setOptions(options);
@@ -371,7 +371,7 @@ public abstract class UtilsTraining {
         StringBuilder iface = new StringBuilder();
         for (String iface1 : ifaces) {
             if (!iface1.isEmpty()) {
-                iface = iface.append("\\").append(iface1);
+                iface = iface.append(iface1);
             }
         }
         //create submodels
@@ -384,7 +384,7 @@ public abstract class UtilsTraining {
             }
             connSubModel = new SubModel(connTree, connAttrs);
         }
-        HashMap<Criteria, SubModel> criteriaSubModels = new HashMap<>();
+        HashMap<Criteria, SubModel> criteriaSubModels = new HashMap<Criteria, SubModel>();
         for (Criteria crt : criteriaTree.keySet()) {
             FastVector attrs = new FastVector();
             Enumeration _attrs = criteriaInstance.get(crt).enumerateAttributes();

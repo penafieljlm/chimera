@@ -16,7 +16,7 @@ public abstract class UtilsPcap {
 
     public static ArrayList<PcapIf> getInterfaces() throws Exception {
         StringBuilder pcapStrBldr = new StringBuilder();
-        ArrayList<PcapIf> interfaces = new ArrayList<>();
+        ArrayList<PcapIf> interfaces = new ArrayList<PcapIf>();
         int result = Pcap.findAllDevs(interfaces, pcapStrBldr);
         if (result != 0 || interfaces == null) {
             throw new Exception("No network interfaces detected.");

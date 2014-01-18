@@ -23,7 +23,7 @@ public abstract class ComponentActive extends Thread implements Component {
     protected boolean running;
 
     public ComponentActive() {
-        this.errors = new ArrayList<>();
+        this.errors = new ArrayList<Exception>();
         this.running = false;
     }
 
@@ -39,14 +39,14 @@ public abstract class ComponentActive extends Thread implements Component {
      */
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
-        ArrayList<Diagnostic> diag = new ArrayList<>();
+        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
         diag.add(new Diagnostic("running", "Is Running", this.running));
         diag.add(new Diagnostic("errors", "Current Error Count", this.errors.size()));
         return diag;
     }
 
     public synchronized ArrayList<Exception> pollErrors() {
-        ArrayList<Exception> errs = new ArrayList<>(this.errors);
+        ArrayList<Exception> errs = new ArrayList<Exception>(this.errors);
         this.errors.clear();
         return errs;
     }

@@ -41,7 +41,7 @@ public class CommandException implements Command {
             if (this.pollErrors) {
                 errors = active.pollErrors();
             } else {
-                errors = new ArrayList<>(active.errors);
+                errors = new ArrayList<Exception>(active.errors);
             }
             StringBuilder errprint = new StringBuilder();
             for (Exception err : errors) {

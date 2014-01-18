@@ -49,7 +49,7 @@ public final class ComponentStateTable extends ComponentActive {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
         if (this.stateTable != null) {
             synchronized (this.stateTable) {
-                ArrayList<Diagnostic> states = new ArrayList<>();
+                ArrayList<Diagnostic> states = new ArrayList<Diagnostic>();
                 for (TcpSocketPair socks : this.stateTable.keySet()) {
                     Connection connection = this.stateTable.get(socks);
                     StringBuilder keybld = new StringBuilder();

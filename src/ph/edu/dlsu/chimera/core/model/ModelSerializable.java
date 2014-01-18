@@ -27,7 +27,7 @@ public class ModelSerializable implements Serializable {
     public ModelSerializable(ModelLive live) {
         this.protectedInterface = live.protectedInterface;
         this.connectionSubModel = live.connectionSubModel;
-        HashMap<String, SubModel> _criteriaTrees = new HashMap<>();
+        HashMap<String, SubModel> _criteriaTrees = new HashMap<String, SubModel>();
         for (Criteria crt : live.criteriaSubModels.keySet()) {
             _criteriaTrees.put(crt.expression, live.criteriaSubModels.get(crt));
         }

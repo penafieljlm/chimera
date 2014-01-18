@@ -36,9 +36,9 @@ public final class ComponentAssembler extends ComponentActiveProcessor<PduAtomic
             ConcurrentHashMap<TcpSocketPair, Connection> stateTable) {
         super(inQueue, outQueue);
         this.setPriority(Thread.NORM_PRIORITY);
-        this.tcpAssemblerTable = new ConcurrentHashMap<>();
+        this.tcpAssemblerTable = new ConcurrentHashMap<TcpSocketPair, AssemblerTcp>();
         this.tcpPortProtocolLookup = tcpPortProtocolLookup;
-        this.udpAssemblerTable = new ConcurrentHashMap<>();
+        this.udpAssemblerTable = new ConcurrentHashMap<TcpSocketPair, AssemblerUdp>();
         this.udpPortProtocolLookup = udpPortProtocolLookup;
         this.stateTable = stateTable;
     }

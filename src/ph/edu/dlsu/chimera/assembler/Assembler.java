@@ -24,7 +24,7 @@ public abstract class Assembler extends Statistics {
 
     public Assembler(long timeCreatedNanos) {
         super(timeCreatedNanos);
-        this.queue = new ConcurrentLinkedQueue<>();
+        this.queue = new ConcurrentLinkedQueue<PduComposite>();
         this.currentConstructionStartedMs = UtilsTime.nowMs();
     }
 

@@ -72,7 +72,7 @@ public class Statistics implements IDiagnosable, Serializable {
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
-        ArrayList<Diagnostic> diag = new ArrayList<>();
+        ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
         Date create = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.timeCreatedNanos));
         Date update = (this.timeCreatedNanos < 0) ? null : new java.sql.Date(UtilsTime.nsToMs(this.lastEncounterNanos));
         diag.add(new Diagnostic("createtime", "Time Created", (create == null) ? "N/A" : create.toLocaleString()));

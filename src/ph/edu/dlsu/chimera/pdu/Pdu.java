@@ -22,7 +22,7 @@ public abstract class Pdu {
     public Pdu(TrafficDirection ingress, long timestampInNanos) {
         this.direction = ingress;
         this.timestampInNanos = timestampInNanos;
-        this.statistics = new HashMap<>();
+        this.statistics = new HashMap<Criteria, Statistics>();
     }
 
     public String printDebug() {

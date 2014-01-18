@@ -127,20 +127,20 @@ public class cproduce {
             }
 
             //ingress queues
-            IntermodulePipe<PduAtomic> inProduceSniffOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> inProduceStatsOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> inProduceStateOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inProduceSniffOut = new IntermodulePipe<PduAtomic>();
+            IntermodulePipe<PduAtomic> inProduceStatsOut = new IntermodulePipe<PduAtomic>();
+            IntermodulePipe<PduAtomic> inProduceStateOut = new IntermodulePipe<PduAtomic>();
 
             //egress queues
-            IntermodulePipe<PduAtomic> egProduceSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> egProduceSniffOut = new IntermodulePipe<PduAtomic>();
 
             //shared resources
-            ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
-            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<>();
+            ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
+            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<TcpSocketPair, Connection>();
             List<Object> rulesMap = (active) ? Collections.synchronizedList(Collections.EMPTY_LIST) : null;
 
             //component holder
-            HashMap<String, Component> components = new HashMap<>();
+            HashMap<String, Component> components = new HashMap<String, Component>();
 
             //daemons
             components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));

@@ -209,19 +209,19 @@ public class cgather {
             }
 
             //ingress queues
-            IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> inGatherStatsOut = new IntermodulePipe<>();
-            IntermodulePipe<PduAtomic> inGatherStateOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<PduAtomic>();
+            IntermodulePipe<PduAtomic> inGatherStatsOut = new IntermodulePipe<PduAtomic>();
+            IntermodulePipe<PduAtomic> inGatherStateOut = new IntermodulePipe<PduAtomic>();
 
             //egress queues
-            IntermodulePipe<PduAtomic> egGatherSniffOut = new IntermodulePipe<>();
+            IntermodulePipe<PduAtomic> egGatherSniffOut = new IntermodulePipe<PduAtomic>();
 
             //shared resources
-            ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<>();
-            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<>();
+            ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
+            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<TcpSocketPair, Connection>();
 
             //component holder
-            HashMap<String, Component> components = new HashMap<>();
+            HashMap<String, Component> components = new HashMap<String, Component>();
 
             //daemons
             components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));

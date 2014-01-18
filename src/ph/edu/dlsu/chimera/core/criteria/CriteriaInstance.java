@@ -6,7 +6,6 @@ package ph.edu.dlsu.chimera.core.criteria;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  *
@@ -39,28 +38,30 @@ public final class CriteriaInstance {
         return id.toString();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Arrays.deepHashCode(this.criteriaId);
+        hash = 89 * hash + (this.criteria != null ? this.criteria.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
-        if (this.getClass() != obj.getClass()) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
         final CriteriaInstance other = (CriteriaInstance) obj;
         if (!Arrays.deepEquals(this.criteriaId, other.criteriaId)) {
             return false;
         }
-        if (!Objects.equals(this.criteria, other.criteria)) {
+        if (this.criteria != other.criteria && (this.criteria == null || !this.criteria.equals(other.criteria))) {
             return false;
         }
         return true;
-    }
-
-    public int hashCode() {
-        int hash = 3;
-        hash = 67 * hash + Arrays.deepHashCode(this.criteriaId);
-        hash = 67 * hash + Objects.hashCode(this.criteria);
-        return hash;
     }
 
     public String getChainName() {
