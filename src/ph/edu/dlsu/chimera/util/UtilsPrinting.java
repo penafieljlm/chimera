@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.util;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.TrainingResult;
-import ph.edu.dlsu.chimera.core.criteria.Criteria;
+import ph.edu.dlsu.chimera.core.Criteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
