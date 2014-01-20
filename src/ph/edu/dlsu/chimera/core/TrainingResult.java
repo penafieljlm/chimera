@@ -6,7 +6,6 @@
 package ph.edu.dlsu.chimera.core;
 
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import weka.core.Instances;
 
@@ -25,5 +24,4 @@ public final class TrainingResult {
         this.connectionInstances = connectionInstances;
         this.criteriaInstances = criteriaInstances;
     }
-
 }

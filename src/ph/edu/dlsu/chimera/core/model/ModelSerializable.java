@@ -4,7 +4,7 @@
  */
 package ph.edu.dlsu.chimera.core.model;
 
-import ph.edu.dlsu.chimera.core.criteria.Criteria;
+import ph.edu.dlsu.chimera.core.Criteria;
 import java.io.Serializable;
 import java.util.HashMap;
 

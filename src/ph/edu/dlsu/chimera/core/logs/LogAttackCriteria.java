@@ -8,7 +8,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import org.jnetpcap.packet.PcapPacket;
 import ph.edu.dlsu.chimera.core.Statistics;
-import ph.edu.dlsu.chimera.core.criteria.Criteria;
+import ph.edu.dlsu.chimera.core.Criteria;
 import ph.edu.dlsu.chimera.reflection.PacketField;
 
 /**

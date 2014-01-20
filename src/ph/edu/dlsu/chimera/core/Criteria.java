@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.core.criteria;
+package ph.edu.dlsu.chimera.core;
 
 import de.tbsol.iptablesjava.rules.IpRule;
 import java.io.File;
