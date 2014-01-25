@@ -4,8 +4,10 @@
  */
 package ph.edu.dlsu.chimera.util;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
+import ph.edu.dlsu.chimera.core.ReturnParameter;
 import ph.edu.dlsu.chimera.core.tools.Transceiver;
 import ph.edu.dlsu.chimera.messages.Response;
 import ph.edu.dlsu.chimera.messages.MessageFinished;
@@ -17,12 +19,12 @@ import ph.edu.dlsu.chimera.messages.Command;
  */
 public abstract class UtilsCommand {
 
-    public static void send(int serverport, Command command, PrintStream out) throws Exception {
+    public static Object send(int serverport, Command command, PrintStream out) throws Exception {
         //connect
         Socket client;
         try {
             client = new Socket("localhost", serverport);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new Exception("No deployment detected.");
         }
         Transceiver transc = new Transceiver(client);
@@ -33,12 +35,13 @@ public abstract class UtilsCommand {
             transc.send(command);
 
             //receive / send loop
+            ReturnParameter rp = new ReturnParameter();
             while (true) {
                 Response resp = (Response) transc.receive();
-                Command handle = resp.handleShellMessage(out);
+                Command handle = resp.handleResponse(rp);
                 transc.send(handle);
                 if (handle instanceof MessageFinished) {
-                    return;
+                    return rp.getReturnedObject();
                 }
             }
         } else {

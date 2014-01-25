@@ -5,8 +5,6 @@
 package ph.edu.dlsu.chimera.messages;
 
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.messages.Response;
-import ph.edu.dlsu.chimera.messages.ResponseDiagnose;
 import ph.edu.dlsu.chimera.components.Component;
 import ph.edu.dlsu.chimera.core.Session;
 
@@ -23,7 +21,7 @@ public class CommandDiagnose implements Command {
     }
 
     @Override
-    public Response handleMessage(Session session, HashMap<String, Component> assembly) throws Exception {
+    public Response handleCommand(Session session, HashMap<String, Component> assembly) throws Exception {
         if (assembly == null) {
             throw new Exception("A deployment phase is not being executed!");
         }

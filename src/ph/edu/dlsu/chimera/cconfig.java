@@ -33,7 +33,7 @@ public class cconfig {
             + "\n        DEFAULT CONFIG.. 9999"
             + "\n    -protected"
             + "\n        DESCRIPTION"
-            + "\n            The index of the interface facing the protected network."
+            + "\n            The name of the interface facing the protected network."
             + "\n            Refer to the output of the 'cifaces' command."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
@@ -66,62 +66,51 @@ public class cconfig {
                 }
             }
 
-            //load config
-            Config config = Config.loadConfig();
-
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
 
             //control port
+            Integer _port = null;
             try {
                 if (_args.containsKey("-port")) {
-                    config.controlPort = Integer.parseInt(_args.get("-port"));
+                    _port = Integer.parseInt(_args.get("-port"));
                 }
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 throw new Exception("The argument '-port' must provide a numerical value.");
             }
 
-            //interfaces
-            ArrayList<PcapIf> interfaces = UtilsPcap.getInterfaces();
-            if (_args.containsKey("-protected")) {
-                int ifProtectedIdx = -1;
-                try {
-                    ifProtectedIdx = Integer.parseInt(_args.get("-protected"));
-                } catch (Exception ex) {
-                    throw new Exception("The argument '-protected' must provide a numerical value.");
-                }
-                String ifProtectedName = null;
-                try {
-                    ifProtectedName = (ifProtectedIdx < 0) ? config.ifProtected : interfaces.get(ifProtectedIdx).getName();
-                } catch (Exception ex) {
-                    throw new Exception("Interface index '" + ifProtectedIdx + "' is invalid.");
-                }
-                config.ifProtected = ifProtectedName;
-            }
+            //interface
+            String _protected = _args.get("-protected");
 
             //state timout
+            Long _statetimeout = null;
             try {
                 if (_args.containsKey("-statetimeout")) {
-                    config.stateTimeoutMs = Integer.parseInt(_args.get("-statetimeout"));
+                    _statetimeout = Long.parseLong(_args.get("-statetimeout"));
                 }
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 throw new Exception("The argument '-statetimeout' must provide a numerical value.");
             }
 
             //stats timeout
+            Long _statstimeout = null;
             try {
                 if (_args.containsKey("-statstimeout")) {
-                    config.statsTimeoutMs = Integer.parseInt(_args.get("-statstimeout"));
+                    _statstimeout = Long.parseLong(_args.get("-statstimeout"));
                 }
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 throw new Exception("The argument '-statstimeout' must provide a numerical value.");
             }
+
+            //execute
+            Config config = Chimera.cconfig(_port, _protected, _statetimeout, _statstimeout);
 
             //show
             boolean show = false;
             if (_args.containsKey("/show")) {
                 show = Boolean.parseBoolean(_args.get("/show"));
             }
+
             if (show) {
                 System.out.println("CHIMERA Configuration:");
                 System.out.println("    config.controlPort....." + config.controlPort);
@@ -129,9 +118,6 @@ public class cconfig {
                 System.out.println("    config.stateTimeoutMs.." + config.stateTimeoutMs);
                 System.out.println("    config.statsTimeoutMs.." + config.statsTimeoutMs);
             }
-
-            //save config
-            Config.saveConfig(config);
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());

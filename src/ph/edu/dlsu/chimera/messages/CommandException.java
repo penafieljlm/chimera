@@ -30,7 +30,7 @@ public class CommandException implements Command {
         this.pollErrors = pollErrors;
     }
 
-    public Response handleMessage(Session session, HashMap<String, Component> assembly) throws Exception {
+    public Response handleCommand(Session session, HashMap<String, Component> assembly) throws Exception {
         if (assembly == null) {
             throw new Exception("A deployment phase is not being executed!");
         }

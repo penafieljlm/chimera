@@ -6,9 +6,14 @@
 package ph.edu.dlsu.chimera.util;
 
 import java.util.HashMap;
+import java.util.List;
+import org.jnetpcap.PcapIf;
+import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.TrainingResult;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
+import ph.edu.dlsu.chimera.core.nic.NicData;
+import ph.edu.dlsu.chimera.core.nic.NicDataAddress;
 import weka.classifiers.Evaluation;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
@@ -59,5 +64,51 @@ public abstract class UtilsPrinting {
             graphBuilder = graphBuilder.deleteCharAt(graphBuilder.length() - 1);
         }
         System.out.println(graphBuilder);
+    }
+
+    public static void printDiagnostics(List diags, String prefix) {
+        int maxNameLen = 0;
+        for (Object o : diags) {
+            if (o instanceof Diagnostic) {
+                Diagnostic diag = (Diagnostic) o;
+                if (diag.getName().length() > maxNameLen) {
+                    maxNameLen = diag.getName().length();
+                }
+            }
+        }
+        maxNameLen += 2;
+        for (Object o : diags) {
+            if (o instanceof Diagnostic) {
+                Diagnostic diag = (Diagnostic) o;
+                if (diag.getValue() instanceof List) {
+                    System.out.println(prefix + diag.getName());
+                    UtilsPrinting.printDiagnostics((List<Diagnostic>) diag.getValue(), prefix + "    ");
+                } else {
+                    int dotCount = maxNameLen - diag.getName().length();
+                    String dots = "";
+                    for (int i = 0; i < dotCount; i++) {
+                        dots += ".";
+                    }
+                    System.out.println(prefix + diag.getName() + dots + " " + diag.getValue());
+                }
+            }
+        }
+    }
+
+    public static void printInterfaces(NicData[] cifaces) {
+        System.out.println("CHIMERA Network Interfaces:");
+        int intctr = 0;
+        for (NicData nic : cifaces) {
+            System.out.println("Interface................ " + intctr++);
+            System.out.println("    Name................. " + nic.name);
+            System.out.println("    Description.......... " + nic.description);
+            System.out.println("    Hardware Address..... " + nic.hardwareAddress);
+            int addrctr = 0;
+            for (NicDataAddress addr : nic.addresses) {
+                System.out.println("        Interface Address " + ++addrctr);
+                System.out.println("            IP Address... " + addr.address);
+                System.out.println("            Subnet Mask.. " + addr.netmask);
+            }
+        }
     }
 }

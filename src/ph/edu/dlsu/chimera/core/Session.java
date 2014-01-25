@@ -55,7 +55,7 @@ public class Session extends Thread {
             return null;
         }
         try {
-            return received.handleMessage(this, this.assembly);
+            return received.handleCommand(this, this.assembly);
         } catch (Exception ex) {
             return new ResponseException(ex);
         }

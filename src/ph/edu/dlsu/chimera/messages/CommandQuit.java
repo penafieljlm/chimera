@@ -10,7 +10,7 @@ public class CommandQuit implements Command {
     public CommandQuit() {
     }
 
-    public Response handleMessage(Session session, HashMap<String, Component> assembly) throws Exception {
+    public Response handleCommand(Session session, HashMap<String, Component> assembly) throws Exception {
         return null;
     }
 }
