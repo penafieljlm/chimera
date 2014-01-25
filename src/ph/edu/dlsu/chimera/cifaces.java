@@ -4,10 +4,12 @@
  */
 package ph.edu.dlsu.chimera;
 
+import java.util.ArrayList;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.nic.NicData;
 import ph.edu.dlsu.chimera.core.nic.NicDataAddress;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
+import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
 /**
  *
@@ -33,21 +35,11 @@ public class cifaces {
                 }
             }
 
-            System.out.println("CHIMERA Network Interfaces:");
-            int intctr = 0;
-            for (PcapIf nic : UtilsPcap.getInterfaces()) {
-                NicData _nic = new NicData(nic);
-                System.out.println("Interface................ " + intctr++);
-                System.out.println("    Name................. " + _nic.name);
-                System.out.println("    Description.......... " + _nic.description);
-                System.out.println("    Hardware Address..... " + _nic.hardwareAddress);
-                int addrctr = 0;
-                for (NicDataAddress addr : _nic.addresses) {
-                    System.out.println("        Interface Address " + ++addrctr);
-                    System.out.println("            IP Address... " + addr.address);
-                    System.out.println("            Subnet Mask.. " + addr.netmask);
-                }
-            }
+            //execute
+            NicData[] nics = Chimera.cifaces();
+
+            //print
+            UtilsPrinting.printInterfaces(nics);
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cifaces /help' to see usage.");

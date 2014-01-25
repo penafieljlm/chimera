@@ -9,18 +9,15 @@ import com.protomatter.syslog.Syslog;
 import de.tbsol.iptablesjava.IpTables;
 import de.tbsol.iptablesjava.rules.IpRule;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jnetpcap.protocol.lan.Ethernet;
-import org.jnetpcap.protocol.network.Ip4;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.logs.Log;
 import ph.edu.dlsu.chimera.core.logs.LogAttackConnection;
 import ph.edu.dlsu.chimera.core.logs.LogAttackCriteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
@@ -35,7 +32,7 @@ import weka.core.Instances;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
+public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
     public static final String CHIMERA_CHAIN = "CHIMERA";
     public static final String FORWARD_CHAIN = "FORWARD";
@@ -45,9 +42,10 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     public final Instances connDataInstances;
     public final HashMap<Criteria, Instances> criteriaDataInstances;
     public final boolean active;
+    public final ConcurrentLinkedQueue<Log> logs;
     private IpTables iptable;
 
-    public ComponentDecision(IntermodulePipe<PduAtomic> inQueue,
+    public ComponentDetector(IntermodulePipe<PduAtomic> inQueue,
             ModelLive model,
             List<Object> rulesMap,
             InetAddress syslogServer,
@@ -62,6 +60,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
             this.criteriaDataInstances.put(crt, new Instances(crt.expression, this.model.criteriaSubModels.get(crt).attributes, 0));
         }
         this.active = active;
+        this.logs = new ConcurrentLinkedQueue<Log>();
     }
 
     @Override
@@ -70,13 +69,13 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
             this.iptable = new IpTables("filter");
             //clean up
             for (String ch : this.iptable.getAllChains()) {
-                if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
+                if (ch.startsWith(ComponentDetector.CHIMERA_CHAIN)) {
                     this.iptable.deleteChain(ch);
                 }
             }
             this.iptable.commit();
             //create master chain
-            this.iptable.createChain(ComponentDecision.CHIMERA_CHAIN);
+            this.iptable.createChain(ComponentDetector.CHIMERA_CHAIN);
             this.iptable.commit();
         }
     }
@@ -87,8 +86,8 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
             //integrity check
             if (this.active) {
                 if (this.rulesMap != null) {
-                    if (this.iptable.getAllRules(ComponentDecision.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
-                        throw new Exception("Error: [Decision] The CHIMERA iptables chain has been tampered with.");
+                    if (this.iptable.getAllRules(ComponentDetector.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
+                        throw new Exception("Error: [Detector] The CHIMERA iptables chain has been tampered with.");
                     }
                 }
             }
@@ -102,7 +101,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                         if (!this.rulesMap.contains(input.getConnection().sockets)) {
                             IpRule rule = input.getConnection().sockets.createRule();
                             if (rule != null) {
-                                this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
+                                this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, rule);
                                 this.iptable.commit();
                             }
                             this.rulesMap.add(input.getConnection().sockets);
@@ -117,7 +116,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                         if (this.rulesMap.contains(input.getConnection().sockets)) {
                             if (this.active) {
                                 int idx = this.rulesMap.indexOf(input.getConnection().sockets);
-                                this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
+                                this.iptable.deleteNumEntry(ComponentDetector.FORWARD_CHAIN, idx);
                                 this.iptable.commit();
                                 this.rulesMap.remove(input.getConnection().sockets);
                             }
@@ -138,7 +137,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                             if (!this.rulesMap.contains(inst)) {
                                 IpRule rule = inst.criteria.createRule(input.packet);
                                 if (rule != null) {
-                                    this.iptable.appendEntry(ComponentDecision.FORWARD_CHAIN, rule);
+                                    this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, rule);
                                     this.iptable.commit();
                                 }
                                 this.rulesMap.add(inst);
@@ -152,7 +151,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                             //remove rules
                             if (this.rulesMap.contains(inst)) {
                                 int idx = this.rulesMap.indexOf(inst);
-                                this.iptable.deleteNumEntry(ComponentDecision.FORWARD_CHAIN, idx);
+                                this.iptable.deleteNumEntry(ComponentDetector.FORWARD_CHAIN, idx);
                                 this.iptable.commit();
                                 this.rulesMap.remove(inst);
                             }
@@ -161,7 +160,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
                 }
             }
         } else {
-            throw new Exception("Error: [Decision] Encountered egress packet.");
+            throw new Exception("Error: [Detector] Encountered egress packet.");
         }
         return null;
     }
@@ -171,7 +170,7 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
         //clean up
         if (this.active) {
             for (String ch : this.iptable.getAllChains()) {
-                if (ch.startsWith(ComponentDecision.CHIMERA_CHAIN)) {
+                if (ch.startsWith(ComponentDetector.CHIMERA_CHAIN)) {
                     this.iptable.deleteChain(ch);
                 }
             }
@@ -234,65 +233,18 @@ public class ComponentDecision extends ComponentActiveProcessor<PduAtomic, PduAt
     }
 
     protected void logConnectionViolation(PduAtomic pkt) {
-        System.out.println("Attack Logged (Connection Tree)");
-        if (pkt.packet.hasHeader(new Ethernet())) {
-            Ethernet eth = pkt.packet.getHeader(new Ethernet());
-            try {
-                StringBuilder sb = new StringBuilder();
-                for (byte b : eth.source()) {
-                    sb = sb.append(String.format("%02x:", b));
-                }
-                System.out.println("    " + sb.toString());
-                sb = new StringBuilder();
-                for (byte b : eth.destination()) {
-                    sb = sb.append(String.format("%02x:", b));
-                }
-                System.out.println("    " + sb.toString());
-            } catch (Exception ex) {
-            }
-        }
-        if (pkt.packet.hasHeader(new Ip4())) {
-            Ip4 ip = pkt.packet.getHeader(new Ip4());
-            try {
-                System.out.println("    " + InetAddress.getByAddress(ip.source()));
-            } catch (Exception ex) {
-            }
-        }
+        LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
+        this.logs.add(log);
         if (this.syslogServer != null) {
-            LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
-            Syslog.warning(this.syslogServer, "CHIMERA:AttackLogged", JsonWriter.toJson(log));
+            Syslog.warning(this.syslogServer, "chimera.logs.attacks.connection", JsonWriter.toJson(log));
         }
     }
 
     protected void logCriteriaViolation(PduAtomic pkt, Criteria criteria, Statistics statistics) {
-        System.out.println("Attack Logged (Criteria Tree)");
-        if (pkt.packet.hasHeader(new Ethernet())) {
-            Ethernet eth = pkt.packet.getHeader(new Ethernet());
-            try {
-                StringBuilder sb = new StringBuilder();
-                for (byte b : eth.source()) {
-                    sb = sb.append(String.format("%02x:", b));
-                }
-                System.out.println("    Eth Source....... " + sb.toString());
-                sb = new StringBuilder();
-                for (byte b : eth.destination()) {
-                    sb = sb.append(String.format("%02x:", b));
-                }
-                System.out.println("    Eth Destination.. " + sb.toString());
-            } catch (Exception ex) {
-            }
-        }
-        if (pkt.packet.hasHeader(new Ip4())) {
-            Ip4 ip = pkt.packet.getHeader(new Ip4());
-            try {
-                System.out.println("    Ip Source........ " + InetAddress.getByAddress(ip.source()));
-                System.out.println("    Ip Destination... " + InetAddress.getByAddress(ip.destination()));
-            } catch (Exception ex) {
-            }
-        }
+        LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
+        this.logs.add(log);
         if (this.syslogServer != null) {
-            LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
-            Syslog.warning(this.syslogServer, "CHIMERA:AttackLogged", JsonWriter.toJson(log));
+            Syslog.warning(this.syslogServer, "chimera.logs.attacks.criteria", JsonWriter.toJson(log));
         }
     }
 }

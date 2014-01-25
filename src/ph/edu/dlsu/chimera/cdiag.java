@@ -4,11 +4,11 @@
  */
 package ph.edu.dlsu.chimera;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.util.UtilsCommand;
-import ph.edu.dlsu.chimera.core.Config;
-import ph.edu.dlsu.chimera.messages.CommandDiagnose;
+import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.util.UtilsParse;
+import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
 /**
  *
@@ -39,18 +39,20 @@ public class cdiag {
                 }
             }
 
-            //load config
-            Config config = Config.loadConfig();
-
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
-            if (!_args.containsKey("-component")) {
-                throw new Exception("The argument '-component' must be provided.");
-            }
+            
+            //get parameter
             String component = _args.get("-component");
 
-            //run command
-            UtilsCommand.send(config.controlPort, new CommandDiagnose(component), System.out);
+            //execute
+            ArrayList<Diagnostic> diag = Chimera.cdiag(component);
+
+            if (diag == null) {
+                throw new Exception("The component: '" + component + "' was not found or is not active!");
+            }
+            System.out.println("Diagnostics: " + component);
+            UtilsPrinting.printDiagnostics(diag, "    ");
 
         } catch (Exception ex) {
             System.err.println(ex.getMessage());

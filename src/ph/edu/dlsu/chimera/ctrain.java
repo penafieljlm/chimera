@@ -4,16 +4,10 @@
  */
 package ph.edu.dlsu.chimera;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.TrainingResult;
-import ph.edu.dlsu.chimera.core.model.ModelSerializable;
-import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 import ph.edu.dlsu.chimera.util.UtilsPrinting;
-import ph.edu.dlsu.chimera.util.UtilsTraining;
 
 /**
  *
@@ -107,52 +101,28 @@ public class ctrain {
             }
 
             //load training file
-            if (!_args.containsKey("-input")) {
-                throw new Exception("The argument '-input' must be provided.");
-            }
-            File trainingFile = new File(_args.get("-input") + ".ctset");
+            String trainingFile = _args.get("-input");
 
             //load model file
-            if (!_args.containsKey("-output")) {
-                throw new Exception("The argument '-output' must be provided.");
-            }
-            File modelFile = new File(_args.get("-output") + ".cmodel");
+            String modelFile = _args.get("-output");
 
             //filter
-            String filter = "";
-            if (_args.containsKey("-filter")) {
-                filter = _args.get("-filter");
-            }
+            String filter = _args.get("-filter");
 
             //exclude
-            boolean include = false;
+            boolean exclude = false;
             if (_args.containsKey("/exclude")) {
-                include = Boolean.parseBoolean(_args.get("/exclude"));
+                exclude = Boolean.parseBoolean(_args.get("/exclude"));
             }
 
-            //create model
-            TrainingResult result = UtilsTraining.train(trainingFile, filter, include);
-
-            //wrap into serializable model
-            ModelSerializable modelSerializable = new ModelSerializable(result.model);
-
-            //open output stream
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
-
-            //write
-            oos.writeObject(modelSerializable);
-
-            //flush
-            oos.flush();
-
-            //close
-            oos.close();
+            //execute
+            TrainingResult result = Chimera.ctrain(trainingFile, modelFile, filter, exclude);
 
             //print results
-            UtilsPrinting.printTrainingResult(result);
-
+            if (verbose) {
+                UtilsPrinting.printTrainingResult(result);
+            }
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'ctrain /help' to see usage.");
         }

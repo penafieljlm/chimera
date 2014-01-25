@@ -4,6 +4,7 @@
  */
 package ph.edu.dlsu.chimera;
 
+import com.cedarsoftware.util.io.JsonWriter;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
@@ -15,7 +16,8 @@ import org.jnetpcap.Pcap;
 import ph.edu.dlsu.chimera.components.Component;
 import ph.edu.dlsu.chimera.components.ComponentActive;
 import ph.edu.dlsu.chimera.components.ComponentController;
-import ph.edu.dlsu.chimera.components.ComponentDecision;
+import ph.edu.dlsu.chimera.components.ComponentDetector;
+import ph.edu.dlsu.chimera.components.ComponentDumper;
 import ph.edu.dlsu.chimera.components.ComponentSniffer;
 import ph.edu.dlsu.chimera.components.ComponentStateTable;
 import ph.edu.dlsu.chimera.components.ComponentStateTracker;
@@ -28,9 +30,11 @@ import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
+import ph.edu.dlsu.chimera.core.logs.Log;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.core.model.ModelSerializable;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
+import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.pdu.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 
@@ -87,12 +91,6 @@ public class cproduce {
                 }
             }
 
-            //load config
-            Config config = Config.loadConfig();
-
-            //load criterias
-            Criteria[] criterias = Criteria.loadCriterias();
-
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
 
@@ -106,19 +104,10 @@ public class cproduce {
             }
 
             //load model file
-            if (!_args.containsKey("-input")) {
-                throw new Exception("The argument '-input' must be provided.");
-            }
-            ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(_args.get("-input") + ".cmodel"));
-            ModelSerializable modelSerializable = (ModelSerializable) objectInputStream.readObject();
-            ModelLive modelLive = new ModelLive(modelSerializable);
+            String modelFile = _args.get("-input");
 
             //syslog server
-            String syslog = null;
-            if (_args.containsKey("-syslog")) {
-                syslog = _args.get("-syslog");
-            }
-            InetAddress syslogServ = (syslog != null) ? InetAddress.getByName(syslog) : null;
+            String syslog = _args.get("-syslog");
 
             //gather access flag
             boolean active = false;
@@ -126,68 +115,27 @@ public class cproduce {
                 active = Boolean.parseBoolean(_args.get("/active"));
             }
 
-            //ingress queues
-            IntermodulePipe<PduAtomic> inProduceSniffOut = new IntermodulePipe<PduAtomic>();
-            IntermodulePipe<PduAtomic> inProduceStatsOut = new IntermodulePipe<PduAtomic>();
-            IntermodulePipe<PduAtomic> inProduceStateOut = new IntermodulePipe<PduAtomic>();
+            //monitor
+            PhaseMonitorProduction monitorProduction = (verbose) ? new PhaseMonitorProduction(200) {
 
-            //egress queues
-            IntermodulePipe<PduAtomic> egProduceSniffOut = new IntermodulePipe<PduAtomic>();
-
-            //shared resources
-            ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
-            ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<TcpSocketPair, Connection>();
-            List<Object> rulesMap = (active) ? Collections.synchronizedList(Collections.EMPTY_LIST) : null;
-
-            //component holder
-            HashMap<String, Component> components = new HashMap<String, Component>();
-
-            //daemons
-            components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
-            components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
-
-            //ingress path
-            components.put("produce.in.sniff", new ComponentSniffer(inProduceStateOut, modelLive.protectedInterface, TrafficDirection.Egress, TrafficDirection.Ingress));
-            components.put("produce.in.stats", new ComponentStatisticsTracker(inProduceSniffOut, inProduceStatsOut, criterias, statsTableAtomic));
-            components.put("produce.in.states", new ComponentStateTracker(inProduceStatsOut, inProduceStateOut, stateTable));
-            components.put("produce.in.decision", new ComponentDecision(inProduceStateOut, modelLive, rulesMap, syslogServ, active));
-            inProduceSniffOut.setWriter((ComponentActive) components.get("produce.in.sniff"));
-            inProduceSniffOut.setReader((ComponentActive) components.get("produce.in.stats"));
-            inProduceStatsOut.setWriter((ComponentActive) components.get("produce.in.stats"));
-            inProduceStatsOut.setReader((ComponentActive) components.get("produce.in.states"));
-            inProduceStateOut.setWriter((ComponentActive) components.get("produce.in.states"));
-            inProduceStateOut.setReader((ComponentActive) components.get("produce.in.decision"));
-
-            //egress path
-            components.put("produce.eg.sniff", new ComponentSniffer(egProduceSniffOut, modelLive.protectedInterface, TrafficDirection.Ingress, TrafficDirection.Egress));
-            components.put("produce.eg.states", new ComponentStateTracker(egProduceSniffOut, null, stateTable));
-            egProduceSniffOut.setWriter((ComponentActive) components.get("produce.eg.sniff"));
-            egProduceSniffOut.setReader((ComponentActive) components.get("produce.eg.states"));
-
-            //controller
-            ComponentController controller = new ComponentController(components, config.controlPort);
-
-            //start components
-            for (String c : components.keySet()) {
-                Component _c = components.get(c);
-                if (_c instanceof ComponentActive) {
-                    ((ComponentActive) (_c)).start();
+                @Override
+                protected void update() {
+                    while (!this.getLogs().isEmpty()) {
+                        Log log = this.getLogs().poll();
+                        System.out.println(JsonWriter.toJson(log));
+                        System.out.println();
+                    }
                 }
-            }
-            controller.start();
+            } : new PhaseMonitorProduction(200) {
 
-            //print dump count if verbose
-            if (verbose) {
-            }
-
-            //join threads
-            for (String c : components.keySet()) {
-                Component _c = components.get(c);
-                if (_c instanceof ComponentActive) {
-                    ((ComponentActive) (_c)).join();
+                @Override
+                protected void update() {
+                    this.getLogs().clear();
                 }
-            }
-            controller.join();
+            };
+
+            //execute
+            Chimera.cproduce(monitorProduction, modelFile, syslog, active);
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
