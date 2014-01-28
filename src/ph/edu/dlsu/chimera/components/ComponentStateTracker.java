@@ -8,10 +8,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsPacket;
 import ph.edu.dlsu.chimera.core.TcpSocketPair;
 import ph.edu.dlsu.chimera.core.Connection;
+import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
@@ -60,11 +61,14 @@ public final class ComponentStateTracker extends ComponentActiveProcessor<PduAto
                 } catch (Exception ex) {
                 }
                 //forward
-                return input;
+                if (input.direction == TrafficDirection.Ingress) {
+                    return input;
+                }
             }
         } else {
             throw new Exception("Error: [State Tracker] stateTable is null.");
         }
+        return null;
     }
 
     @Override

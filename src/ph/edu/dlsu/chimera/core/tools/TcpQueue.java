@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 
 /**
  *

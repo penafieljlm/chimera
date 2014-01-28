@@ -32,7 +32,6 @@ import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TcpSocketPair;
-import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.TrainingResult;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
@@ -44,7 +43,7 @@ import ph.edu.dlsu.chimera.monitors.PhaseMonitorGathering;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.messages.CommandDiagnose;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.util.UtilsCommand;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
@@ -136,13 +135,10 @@ public class Chimera {
         //training filter
         PacketFilter trainingFilter = (_training != null) ? (!_training.trim().isEmpty()) ? PacketFilter.parseExpression(_training) : null : null;
 
-        //ingress queues
-        IntermodulePipe<PduAtomic> inGatherSniffOut = new IntermodulePipe<PduAtomic>();
-        IntermodulePipe<PduAtomic> inGatherStatsOut = new IntermodulePipe<PduAtomic>();
-        IntermodulePipe<PduAtomic> inGatherStateOut = new IntermodulePipe<PduAtomic>();
-
-        //egress queues
-        IntermodulePipe<PduAtomic> egGatherSniffOut = new IntermodulePipe<PduAtomic>();
+        //queues
+        IntermodulePipe<PduAtomic> gatherSniffOut = new IntermodulePipe<PduAtomic>();
+        IntermodulePipe<PduAtomic> gatherStateOut = new IntermodulePipe<PduAtomic>();
+        IntermodulePipe<PduAtomic> gatherStatsOut = new IntermodulePipe<PduAtomic>();
 
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
@@ -152,26 +148,20 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
+        components.put("gather.stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put("gather.states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
-        //ingress path
-        components.put("gather.in.sniff", new ComponentSniffer(inGatherSniffOut, ifProtected, accessFilter, _allow, TrafficDirection.Egress, TrafficDirection.Ingress));
-        components.put("gather.in.stats", new ComponentStatisticsTracker(inGatherSniffOut, inGatherStatsOut, criterias, statsTableAtomic));
-        components.put("gather.in.states", new ComponentStateTracker(inGatherStatsOut, inGatherStateOut, stateTable));
-        components.put("gather.in.dumper", new ComponentDumper(inGatherStateOut, ifProtected, criterias, trainingDumpFile, trainingFilter, _attack));
-        inGatherSniffOut.setWriter((ComponentActive) components.get("gather.in.sniff"));
-        inGatherSniffOut.setReader((ComponentActive) components.get("gather.in.stats"));
-        inGatherStatsOut.setWriter((ComponentActive) components.get("gather.in.stats"));
-        inGatherStatsOut.setReader((ComponentActive) components.get("gather.in.states"));
-        inGatherStateOut.setWriter((ComponentActive) components.get("gather.in.states"));
-        inGatherStateOut.setReader((ComponentActive) components.get("gather.in.dumper"));
-
-        //egress path
-        components.put("gather.eg.sniff", new ComponentSniffer(egGatherSniffOut, ifProtected, accessFilter, _allow, TrafficDirection.Ingress, TrafficDirection.Egress));
-        components.put("gather.eg.states", new ComponentStateTracker(egGatherSniffOut, null, stateTable));
-        egGatherSniffOut.setWriter((ComponentActive) components.get("gather.eg.sniff"));
-        egGatherSniffOut.setReader((ComponentActive) components.get("gather.eg.states"));
+        //pipeline
+        components.put("gather.sniff", new ComponentSniffer(gatherSniffOut, ifProtected, accessFilter, _allow));
+        components.put("gather.states", new ComponentStateTracker(gatherSniffOut, gatherStateOut, stateTable));
+        components.put("gather.stats", new ComponentStatisticsTracker(gatherStateOut, gatherStatsOut, criterias, statsTableAtomic));
+        components.put("gather.dumper", new ComponentDumper(gatherStatsOut, ifProtected, criterias, trainingDumpFile, trainingFilter, _attack));
+        gatherSniffOut.setWriter((ComponentActive) components.get("gather.sniff"));
+        gatherSniffOut.setReader((ComponentActive) components.get("gather.states"));
+        gatherStateOut.setWriter((ComponentActive) components.get("gather.states"));
+        gatherStateOut.setReader((ComponentActive) components.get("gather.stats"));
+        gatherStatsOut.setWriter((ComponentActive) components.get("gather.stats"));
+        gatherStatsOut.setReader((ComponentActive) components.get("gather.dumper"));
 
         //controller
         ComponentController controller = new ComponentController(components, config.controlPort);
@@ -186,7 +176,7 @@ public class Chimera {
         controller.start();
 
         //get dumper
-        ComponentDumper dumper = (ComponentDumper) components.get("gather.in.dumper");
+        ComponentDumper dumper = (ComponentDumper) components.get("gather.dumper");
 
         //update monitor
         if (_monitor != null) {
@@ -270,13 +260,10 @@ public class Chimera {
         //syslog server
         InetAddress syslogServ = (_syslog != null) ? InetAddress.getByName(_syslog) : null;
 
-        //ingress queues
-        IntermodulePipe<PduAtomic> inProduceSniffOut = new IntermodulePipe<PduAtomic>();
-        IntermodulePipe<PduAtomic> inProduceStatsOut = new IntermodulePipe<PduAtomic>();
-        IntermodulePipe<PduAtomic> inProduceStateOut = new IntermodulePipe<PduAtomic>();
-
-        //egress queues
-        IntermodulePipe<PduAtomic> egProduceSniffOut = new IntermodulePipe<PduAtomic>();
+        //queues
+        IntermodulePipe<PduAtomic> produceSniffOut = new IntermodulePipe<PduAtomic>();
+        IntermodulePipe<PduAtomic> produceStateOut = new IntermodulePipe<PduAtomic>();
+        IntermodulePipe<PduAtomic> produceStatsOut = new IntermodulePipe<PduAtomic>();
 
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
@@ -287,26 +274,20 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
+        components.put("produce.stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put("produce.states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
 
-        //ingress path
-        components.put("produce.in.sniff", new ComponentSniffer(inProduceStateOut, modelLive.protectedInterface, TrafficDirection.Egress, TrafficDirection.Ingress));
-        components.put("produce.in.stats", new ComponentStatisticsTracker(inProduceSniffOut, inProduceStatsOut, criterias, statsTableAtomic));
-        components.put("produce.in.states", new ComponentStateTracker(inProduceStatsOut, inProduceStateOut, stateTable));
-        components.put("produce.in.detector", new ComponentDetector(inProduceStateOut, modelLive, rulesMap, syslogServ, _active));
-        inProduceSniffOut.setWriter((ComponentActive) components.get("produce.in.sniff"));
-        inProduceSniffOut.setReader((ComponentActive) components.get("produce.in.stats"));
-        inProduceStatsOut.setWriter((ComponentActive) components.get("produce.in.stats"));
-        inProduceStatsOut.setReader((ComponentActive) components.get("produce.in.states"));
-        inProduceStateOut.setWriter((ComponentActive) components.get("produce.in.states"));
-        inProduceStateOut.setReader((ComponentActive) components.get("produce.in.detector"));
-
-        //egress path
-        components.put("produce.eg.sniff", new ComponentSniffer(egProduceSniffOut, modelLive.protectedInterface, TrafficDirection.Ingress, TrafficDirection.Egress));
-        components.put("produce.eg.states", new ComponentStateTracker(egProduceSniffOut, null, stateTable));
-        egProduceSniffOut.setWriter((ComponentActive) components.get("produce.eg.sniff"));
-        egProduceSniffOut.setReader((ComponentActive) components.get("produce.eg.states"));
+        //pipeline
+        components.put("produce.sniff", new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
+        components.put("produce.states", new ComponentStateTracker(produceSniffOut, produceStateOut, stateTable));
+        components.put("produce.stats", new ComponentStatisticsTracker(produceStateOut, produceStatsOut, criterias, statsTableAtomic));
+        components.put("produce.detect", new ComponentDetector(produceStatsOut, modelLive, rulesMap, syslogServ, _active));
+        produceSniffOut.setWriter((ComponentActive) components.get("produce.sniff"));
+        produceSniffOut.setReader((ComponentActive) components.get("produce.states"));
+        produceStateOut.setWriter((ComponentActive) components.get("produce.states"));
+        produceStateOut.setReader((ComponentActive) components.get("produce.stats"));
+        produceStatsOut.setWriter((ComponentActive) components.get("produce.stats"));
+        produceStatsOut.setReader((ComponentActive) components.get("produce.detect"));
 
         //controller
         ComponentController controller = new ComponentController(components, config.controlPort);
@@ -321,7 +302,7 @@ public class Chimera {
         controller.start();
 
         //get detector
-        ComponentDetector detector = (ComponentDetector) components.get("produce.in.detector");
+        ComponentDetector detector = (ComponentDetector) components.get("produce.detect");
 
         //update monitor
         if (_monitor != null) {

@@ -7,7 +7,6 @@ package ph.edu.dlsu.chimera.util;
 
 import java.util.HashMap;
 import java.util.List;
-import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.TrainingResult;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
