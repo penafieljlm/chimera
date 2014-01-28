@@ -14,12 +14,10 @@ import ph.edu.dlsu.chimera.core.TcpSocketPair;
  */
 public class LogAttackConnection extends LogAttack {
 
-    public TcpSocketPair socketPair;
     public Connection connection;
 
     public LogAttackConnection(Date dateTime, Connection connection) {
         super(dateTime);
-        this.socketPair = connection.sockets;
         this.connection = connection;
     }
 }

@@ -26,6 +26,7 @@ public abstract class PhaseMonitorProduction extends PhaseMonitor {
 
     public void setLogs(ConcurrentLinkedQueue<Log> logs) {
         this.logs = logs;
+        this.update();
     }
 
 }

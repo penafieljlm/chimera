@@ -24,6 +24,7 @@ public abstract class PhaseMonitorGathering extends PhaseMonitor {
 
     public synchronized void setInstancesGathered(long instancesGathered) {
         this.instancesGathered = instancesGathered;
+        this.update();
     }
 
 }
