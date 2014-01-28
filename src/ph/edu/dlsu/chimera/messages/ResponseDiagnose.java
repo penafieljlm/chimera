@@ -4,9 +4,7 @@
  */
 package ph.edu.dlsu.chimera.messages;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.List;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.ReturnParameter;
 

@@ -10,6 +10,7 @@ import ph.edu.dlsu.chimera.components.ComponentActive;
 /**
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
+ * @param <TData>
  */
 public class IntermodulePipe<TData> {
 

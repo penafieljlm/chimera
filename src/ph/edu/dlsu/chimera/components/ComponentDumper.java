@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;

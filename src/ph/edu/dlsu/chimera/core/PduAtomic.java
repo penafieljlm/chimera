@@ -2,14 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ph.edu.dlsu.chimera.pdu;
+package ph.edu.dlsu.chimera.core;
 
 import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.JHeaderPool;
 import org.jnetpcap.packet.Payload;
 import org.jnetpcap.packet.PcapPacket;
-import ph.edu.dlsu.chimera.core.Connection;
-import ph.edu.dlsu.chimera.core.TrafficDirection;
 
 /**
  *
@@ -21,8 +19,8 @@ public class PduAtomic extends Pdu {
     private Connection connection;
 
     public PduAtomic(PcapPacket packet,
-            TrafficDirection ingress) {
-        super(ingress, packet.getCaptureHeader().timestampInNanos());
+            TrafficDirection direction) {
+        super(direction, packet.getCaptureHeader().timestampInNanos());
         this.packet = packet;
         this.connection = null;
     }

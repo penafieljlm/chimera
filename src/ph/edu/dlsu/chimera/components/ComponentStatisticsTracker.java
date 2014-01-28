@@ -7,7 +7,7 @@ package ph.edu.dlsu.chimera.components;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import ph.edu.dlsu.chimera.core.Diagnostic;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;

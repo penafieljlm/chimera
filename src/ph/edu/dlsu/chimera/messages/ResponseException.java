@@ -1,6 +1,5 @@
 package ph.edu.dlsu.chimera.messages;
 
-import java.io.PrintStream;
 import ph.edu.dlsu.chimera.core.ReturnParameter;
 
 /**

@@ -4,11 +4,8 @@
  */
 package ph.edu.dlsu.chimera;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.Config;
-import ph.edu.dlsu.chimera.util.UtilsPcap;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 
 /**
