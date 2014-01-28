@@ -72,6 +72,7 @@ public abstract class ComponentActive extends Thread implements Component {
 
     /**
      * The task of the component.
+     * @throws java.lang.Exception
      */
     protected abstract void componentRun() throws Exception;
 }

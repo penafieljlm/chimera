@@ -5,7 +5,6 @@
 package ph.edu.dlsu.chimera.core;
 
 import java.util.ArrayList;
-import ph.edu.dlsu.chimera.core.Diagnostic;
 
 /**
  *
