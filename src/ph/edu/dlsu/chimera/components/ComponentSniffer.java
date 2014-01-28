@@ -14,7 +14,7 @@ import org.jnetpcap.protocol.lan.Ethernet;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 
 /**
@@ -26,8 +26,6 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
     public final String pcapIf;
     public final PacketFilter accessFilter;
     public final boolean allowFiltered;
-    public final TrafficDirection sniffDirection;
-    public final TrafficDirection packetDirectionFlag;
     private Pcap pcap;
     private StringBuilder errBuff;
     private byte[] interfaceMacAddress;
@@ -35,23 +33,17 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
     public ComponentSniffer(IntermodulePipe<PduAtomic> outQueue,
             String inPcapIf,
             PacketFilter accessFilter,
-            boolean allowFiltered,
-            TrafficDirection sniffDirection,
-            TrafficDirection packetFlagDirection) {
+            boolean allowFiltered) {
         super(null, outQueue);
         this.setPriority(Thread.MAX_PRIORITY);
         this.pcapIf = inPcapIf;
         this.accessFilter = accessFilter;
         this.allowFiltered = allowFiltered;
-        this.sniffDirection = sniffDirection;
-        this.packetDirectionFlag = packetFlagDirection;
     }
 
     public ComponentSniffer(IntermodulePipe<PduAtomic> outQueue,
-            String inPcapIf,
-            TrafficDirection sniffDirection,
-            TrafficDirection packetFlagDirection) {
-        this(outQueue, inPcapIf, null, true, sniffDirection, packetFlagDirection);
+            String inPcapIf) {
+        this(outQueue, inPcapIf, null, true);
     }
 
     @Override
@@ -93,21 +85,17 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
         if (input.hasHeader(new Ethernet())) {
             Ethernet eth = input.getHeader(new Ethernet());
             if (this.outQueue != null) {
-                TrafficDirection _sniffDirection = TrafficDirection.None;
-                if (Arrays.equals(this.interfaceMacAddress, eth.destination())) {
-                    //ingress
-                    _sniffDirection = TrafficDirection.Ingress;
-                } else if (Arrays.equals(this.interfaceMacAddress, eth.source())) {
-                    //egress
-                    _sniffDirection = TrafficDirection.Egress;
+                boolean allow = this.allowFiltered;
+                if (this.accessFilter != null) {
+                    allow = !(this.accessFilter.matches(input) ^ allow);
                 }
-                if (this.sniffDirection == _sniffDirection || this.sniffDirection == TrafficDirection.None) {
-                    boolean allow = this.allowFiltered;
-                    if (this.accessFilter != null) {
-                        allow = !(this.accessFilter.matches(input) ^ allow);
-                    }
-                    if (allow) {
-                        return new PduAtomic(input, this.packetDirectionFlag);
+                if (allow) {
+                    if (Arrays.equals(this.interfaceMacAddress, eth.destination())) {
+                        //ingress to iface, egress to network
+                        return new PduAtomic(input, TrafficDirection.Egress);
+                    } else if (Arrays.equals(this.interfaceMacAddress, eth.source())) {
+                        //egress to iface, ingress to network
+                        return new PduAtomic(input, TrafficDirection.Ingress);
                     }
                 }
             }

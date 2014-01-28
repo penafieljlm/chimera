@@ -22,7 +22,7 @@ import ph.edu.dlsu.chimera.core.logs.LogAttackConnection;
 import ph.edu.dlsu.chimera.core.logs.LogAttackCriteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
-import ph.edu.dlsu.chimera.pdu.PduAtomic;
+import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.util.UtilsArray;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 import weka.core.Instance;

@@ -4,11 +4,7 @@
  */
 package ph.edu.dlsu.chimera;
 
-import java.util.ArrayList;
-import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.core.nic.NicData;
-import ph.edu.dlsu.chimera.core.nic.NicDataAddress;
-import ph.edu.dlsu.chimera.util.UtilsPcap;
 import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
 /**
