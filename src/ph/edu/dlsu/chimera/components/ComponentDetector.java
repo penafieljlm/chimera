@@ -235,6 +235,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     protected void logConnectionViolation(PduAtomic pkt) {
         LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
         this.logs.add(log);
+        System.out.println(pkt.packet.toString());
         if (this.syslogServer != null) {
             Syslog.warning(this.syslogServer, "chimera.logs.attacks.connection", JsonWriter.toJson(log));
         }
@@ -243,6 +244,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     protected void logCriteriaViolation(PduAtomic pkt, Criteria criteria, Statistics statistics) {
         LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
         this.logs.add(log);
+        System.out.println(pkt.packet.toString());
         if (this.syslogServer != null) {
             Syslog.warning(this.syslogServer, "chimera.logs.attacks.criteria", JsonWriter.toJson(log));
         }
