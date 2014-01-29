@@ -94,8 +94,8 @@ public class cproduce {
                 protected void update() {
                     while (!this.getLogs().isEmpty()) {
                         Log log = this.getLogs().poll();
-                        System.out.println(JsonWriter.toJson(log));
-                        System.out.println();
+//                        System.out.println(JsonWriter.toJson(log));
+//                        System.out.println();
                     }
                 }
             } : new PhaseMonitorProduction(200) {
