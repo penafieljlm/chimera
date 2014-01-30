@@ -8,8 +8,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.messages.Response;
-import ph.edu.dlsu.chimera.messages.ResponseText;
 import ph.edu.dlsu.chimera.core.Session;
 import ph.edu.dlsu.chimera.components.Component;
 import ph.edu.dlsu.chimera.components.ComponentActive;
@@ -30,6 +28,7 @@ public class CommandException implements Command {
         this.pollErrors = pollErrors;
     }
 
+    @Override
     public Response handleCommand(Session session, HashMap<String, Component> assembly) throws Exception {
         if (assembly == null) {
             throw new Exception("A deployment phase is not being executed!");

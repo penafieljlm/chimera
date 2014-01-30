@@ -4,7 +4,6 @@
  */
 package ph.edu.dlsu.chimera;
 
-import com.cedarsoftware.util.io.JsonWriter;
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.logs.Log;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;

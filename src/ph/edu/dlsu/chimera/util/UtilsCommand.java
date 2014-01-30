@@ -19,7 +19,7 @@ import ph.edu.dlsu.chimera.messages.Command;
  */
 public abstract class UtilsCommand {
 
-    public static Object send(int serverport, Command command, PrintStream out) throws Exception {
+    public static Object send(int serverport, Command command) throws Exception {
         //connect
         Socket client;
         try {

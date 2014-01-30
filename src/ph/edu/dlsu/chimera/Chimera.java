@@ -44,6 +44,7 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.messages.CommandDiagnose;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.core.PduAtomic;
+import ph.edu.dlsu.chimera.messages.CommandQuit;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.util.UtilsCommand;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
@@ -89,7 +90,7 @@ public class Chimera {
         Config config = Config.loadConfig();
 
         //run command
-        Object result = UtilsCommand.send(config.controlPort, new CommandDiagnose(_component), System.out);
+        Object result = UtilsCommand.send(config.controlPort, new CommandDiagnose(_component));
 
         //return
         if (result instanceof ArrayList) {
@@ -322,6 +323,14 @@ public class Chimera {
         controller.join();
 
         return detector.logs.toArray(new Log[0]);
+    }
+
+    public static void cquit() throws Exception {
+        //load config
+        Config config = Config.loadConfig();
+
+        //run command
+        Object result = UtilsCommand.send(config.controlPort, new CommandQuit());
     }
 
 }
