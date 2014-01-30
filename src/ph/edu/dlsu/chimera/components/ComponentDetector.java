@@ -92,7 +92,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                 }
             }
             //connection evaluation
-            if (this.evaluateAgainstConnection(input)) {
+            if (!this.evaluateAgainstConnection(input)) {
                 //attack
                 this.logConnectionViolation(input);
                 if (this.active) {
@@ -128,7 +128,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
             HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(input);
             for (Criteria crt : crtEval.keySet()) {
                 CriteriaInstance inst = crt.createInstance(input.packet);
-                if (crtEval.get(crt)) {
+                if (!crtEval.get(crt)) {
                     //attack
                     this.logCriteriaViolation(input, crt, input.getConnection());
                     if (this.active) {
