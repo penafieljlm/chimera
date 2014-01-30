@@ -193,12 +193,12 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                     _inst.setValue(i, (String) inst[i]);
                 }
             }
-            double evalResult = 0.0;
+            double evalResult = (this.model.connectionSubModel.attackClass == 1.0) ? 0.0 : 1.0;
             try {
                 evalResult = this.model.connectionSubModel.tree.classifyInstance(_inst);
             } catch (Exception ex) {
             }
-            allow = evalResult == 0.0;
+            allow = evalResult != this.model.connectionSubModel.attackClass;
         }
         return allow;
     }
@@ -220,12 +220,12 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                         _inst.setValue(i, (String) inst[i]);
                     }
                 }
-                double evalResult = 0.0;
+                double evalResult = (this.model.criteriaSubModels.get(crt).attackClass == 1.0) ? 0.0 : 1.0;
                 try {
                     evalResult = this.model.criteriaSubModels.get(crt).tree.classifyInstance(_inst);
                 } catch (Exception ex) {
                 }
-                allow = evalResult == 0.0;
+                allow = evalResult != this.model.criteriaSubModels.get(crt).attackClass;
             }
             report.put(crt, allow);
         }

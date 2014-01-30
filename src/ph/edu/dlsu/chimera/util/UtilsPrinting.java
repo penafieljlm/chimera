@@ -30,14 +30,14 @@ public abstract class UtilsPrinting {
     public static void printModel(ModelLive model, Instances connectionInstances, HashMap<Criteria, Instances> criteriaInstances) throws Exception {
         System.out.println("Interface....................... " + model.protectedInterface);
         if (model.connectionSubModel.tree != null) {
-            UtilsPrinting.printTree("connection", model.connectionSubModel.tree, connectionInstances);
+            UtilsPrinting.printTree("connection", model.connectionSubModel.tree, connectionInstances, model.connectionSubModel.attackClass);
         }
         for (Criteria crt : criteriaInstances.keySet()) {
-            UtilsPrinting.printTree(crt.expression, model.criteriaSubModels.get(crt).tree, criteriaInstances.get(crt));
+            UtilsPrinting.printTree(crt.expression, model.criteriaSubModels.get(crt).tree, criteriaInstances.get(crt), model.criteriaSubModels.get(crt).attackClass);
         }
     }
 
-    public static void printTree(String name, J48 tree, Instances data) throws Exception {
+    public static void printTree(String name, J48 tree, Instances data, double attackClass) throws Exception {
         System.out.println("Tree............................ " + name);
         System.out.println("    Number of Leaves............ " + tree.measureNumLeaves());
         System.out.println("    Size of the Tree............ " + tree.measureTreeSize());
@@ -54,8 +54,10 @@ public abstract class UtilsPrinting {
                 zeroCount++;
             }
         }
-        System.out.println("        Attack (1.0)............ " + oneCount);
-        System.out.println("        Normal (0.0)............ " + zeroCount);
+        int _atackcount = (attackClass == 1.0) ? oneCount : zeroCount;
+        int _normalcount = (attackClass == 1.0) ? zeroCount : oneCount;
+        System.out.println("        Attack.................. " + _atackcount);
+        System.out.println("        Normal.................. " + _normalcount);
         System.out.print(eval.toSummaryString("    Summary of Training Set.....", false).replaceAll("\n", "\n        "));
         System.out.println("\b\b\b\bGraph....................... ");
         StringBuilder graphBuilder = new StringBuilder("        " + tree.graph().replaceAll("\n", "\n        "));

@@ -17,10 +17,12 @@ public final class SubModel implements Serializable {
 
     public final J48 tree;
     public final FastVector attributes;
+    public final double attackClass;
 
-    public SubModel(J48 tree, FastVector attributes) {
+    public SubModel(J48 tree, FastVector attributes, double attackClass) {
         this.tree = tree;
         this.attributes = attributes;
+        this.attackClass = attackClass;
+        
     }
-
 }
