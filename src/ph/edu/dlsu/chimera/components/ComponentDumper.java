@@ -53,14 +53,14 @@ public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtom
         this.writer = new CSVWriter(new FileWriter(this.trainingFile));
         String[] _iface = this.inPcapIf.split("[\\\\]");
         ArrayList<String> iface = new ArrayList();
-        for (int i = 0; i < _iface.length; i++) {
-            if (_iface[i] != null) {
-                if (!_iface[i].isEmpty()) {
-                    iface.add(_iface[i]);
+        for (String _iface1 : _iface) {
+            if (_iface1 != null) {
+                if (!_iface1.isEmpty()) {
+                    iface.add(_iface1);
                 }
             }
         }
-        this.headers = UtilsTraining.getHeaders(this.criterias);
+        this.headers = UtilsTraining.getHeaders(this.criterias, null);
         String[] _criterias = new String[this.criterias.length];
         for (int i = 0; i < this.criterias.length; i++) {
             _criterias[i] = this.criterias[i].expression;
@@ -87,7 +87,7 @@ public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtom
                         if (this.trainingFilter != null) {
                             attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
                         }
-                        Object[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack);
+                        Object[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack, null);
                         if (this.headers.length != instance.length) {
                             throw new Exception("Error: [Dumper] Headers do not match data.");
                         }

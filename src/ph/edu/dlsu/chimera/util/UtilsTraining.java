@@ -56,78 +56,160 @@ public abstract class UtilsTraining {
         "conn.ou_rateps"};
     public static final String ATTK_HEADER = "attack";
 
-    public static Object[] getCoreInstance(PduAtomic packet) {
+    public static Object[] getCoreInstance(PduAtomic packet, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         Tcp tcp = packet.packet.getHeader(new Tcp());
         Udp udp = packet.packet.getHeader(new Udp());
-        instance.add(packet.getProtocolName());
-        instance.add(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
-        instance.add(((Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 3600) + (Calendar.getInstance().get(Calendar.MINUTE) * 60) + (Calendar.getInstance().get(Calendar.SECOND) * 1)));
-        instance.add(packet.packet.size());
-        instance.add(((tcp == null) ? -1 : tcp.destination()));
-        instance.add(((udp == null) ? -1 : udp.destination()));
-        instance.add(((tcp == null) ? -1 : tcp.flags()));
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[0]) != null) {
+            instance.add(packet.getProtocolName());
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[1]) != null) {
+            instance.add(Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[2]) != null) {
+            instance.add(((Calendar.getInstance().get(Calendar.HOUR_OF_DAY) * 3600) + (Calendar.getInstance().get(Calendar.MINUTE) * 60) + (Calendar.getInstance().get(Calendar.SECOND) * 1)));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[3]) != null) {
+            instance.add(packet.packet.size());
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[4]) != null) {
+            instance.add(((tcp == null) ? -1 : tcp.destination()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[5]) != null) {
+            instance.add(((udp == null) ? -1 : udp.destination()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CORE_HEADERS[6]) != null) {
+            instance.add(((tcp == null) ? -1 : tcp.flags()));
+        }
         return instance.toArray(new Object[0]);
     }
 
-    public static Object[] getCoreInstance(Object[] instance) {
-        Object[] subinst = new Object[UtilsTraining.CORE_HEADERS.length];
+    public static Object[] getCoreInstance(Object[] instance, Instances instances) {
+        int coreHeadersCt = UtilsTraining.CORE_HEADERS.length;
+        if (instance != null) {
+            coreHeadersCt = 0;
+            for (String h : UtilsTraining.CORE_HEADERS) {
+                if (instances.attribute(h) != null) {
+                    coreHeadersCt++;
+                }
+            }
+        }
+        Object[] subinst = new Object[coreHeadersCt];
         System.arraycopy(instance, 0, subinst, 0, subinst.length);
         return subinst;
     }
 
-    public static Object[] getConnectionInstance(PduAtomic packet) {
+    public static Object[] getConnectionInstance(PduAtomic packet, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         Connection conn = packet.getConnection();
-        instance.add(((conn == null) ? -1 : conn.ingressLastEncounterDeltaNs()));
-        instance.add(((conn == null) ? -1 : conn.egressLastEncounterDeltaNs()));
-        instance.add(((conn == null) ? -1 : conn.ingressEncounters()));
-        instance.add(((conn == null) ? -1 : conn.egressEncounters()));
-        instance.add(((conn == null) ? -1 : conn.ingressTotalSize()));
-        instance.add(((conn == null) ? -1 : conn.egressTotalSize()));
-        instance.add(((conn == null) ? -1 : conn.ingressAverageSize()));
-        instance.add(((conn == null) ? -1 : conn.egressAverageSize()));
-        instance.add(((conn == null) ? -1 : conn.ingressRatePerSec()));
-        instance.add(((conn == null) ? -1 : conn.egressRatePerSec()));
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[0]) != null) {
+            instance.add(((conn == null) ? -1 : conn.ingressLastEncounterDeltaNs()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[1]) != null) {
+            instance.add(((conn == null) ? -1 : conn.egressLastEncounterDeltaNs()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[2]) != null) {
+            instance.add(((conn == null) ? -1 : conn.ingressEncounters()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[3]) != null) {
+            instance.add(((conn == null) ? -1 : conn.egressEncounters()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[4]) != null) {
+            instance.add(((conn == null) ? -1 : conn.ingressTotalSize()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[5]) != null) {
+            instance.add(((conn == null) ? -1 : conn.egressTotalSize()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[6]) != null) {
+            instance.add(((conn == null) ? -1 : conn.ingressAverageSize()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[7]) != null) {
+            instance.add(((conn == null) ? -1 : conn.egressAverageSize()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[8]) != null) {
+            instance.add(((conn == null) ? -1 : conn.ingressRatePerSec()));
+        }
+        if (instances == null || instances.attribute(UtilsTraining.CONN_HEADERS[9]) != null) {
+            instance.add(((conn == null) ? -1 : conn.egressRatePerSec()));
+        }
         return instance.toArray(new Object[0]);
     }
 
-    public static Object[] getConnectionInstance(Object[] instance) {
-        Object[] subinst = new Object[UtilsTraining.CONN_HEADERS.length];
-        System.arraycopy(instance, UtilsTraining.CORE_HEADERS.length, subinst, 0, subinst.length);
+    public static Object[] getConnectionInstance(Object[] instance, Instances instances) {
+        int coreHeadersCt = UtilsTraining.CORE_HEADERS.length;
+        if (instance != null) {
+            coreHeadersCt = 0;
+            for (String h : UtilsTraining.CORE_HEADERS) {
+                if (instances.attribute(h) != null) {
+                    coreHeadersCt++;
+                }
+            }
+        }
+        int connHeadersCt = UtilsTraining.CONN_HEADERS.length;
+        if (instance != null) {
+            connHeadersCt = 0;
+            for (String h : UtilsTraining.CONN_HEADERS) {
+                if (instances.attribute(h) != null) {
+                    connHeadersCt++;
+                }
+            }
+        }
+        Object[] subinst = new Object[connHeadersCt];
+        System.arraycopy(instance, coreHeadersCt, subinst, 0, subinst.length);
         return subinst;
     }
 
-    public static String[] getCriteriaHeaders(Criteria criteria) {
+    public static String[] getCriteriaHeaders(Criteria criteria, Instances instances) {
         ArrayList<String> headers = new ArrayList<String>();
         String exp = criteria.expression.replaceAll(" ", "");
-        headers.add("exp(" + exp + ").enc_timed");
-        headers.add("exp(" + exp + ").enc_count");
-        headers.add("exp(" + exp + ").enc_tsize");
-        headers.add("exp(" + exp + ").enc_asize");
-        headers.add("exp(" + exp + ").enc_rateps");
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_timed") != null) {
+            headers.add("exp(" + exp + ").enc_timed");
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_count") != null) {
+            headers.add("exp(" + exp + ").enc_count");
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_tsize") != null) {
+            headers.add("exp(" + exp + ").enc_tsize");
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_asize") != null) {
+            headers.add("exp(" + exp + ").enc_asize");
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_rateps") != null) {
+            headers.add("exp(" + exp + ").enc_rateps");
+        }
         return headers.toArray(new String[0]);
     }
 
-    public static Object[] getCriteriaInstance(Criteria criteria, PduAtomic packet) {
+    public static Object[] getCriteriaInstance(Criteria criteria, PduAtomic packet, Instances instances) {
+        String exp = criteria.expression.replaceAll(" ", "");
         ArrayList<Object> instance = new ArrayList<Object>();
         Statistics crtstats = packet.getStatistics(criteria);
-        instance.add(((crtstats == null) ? -1 : crtstats.getLastEncounterDeltaNs()));
-        instance.add(((crtstats == null) ? -1 : crtstats.getTotalEncounters()));
-        instance.add(((crtstats == null) ? -1 : crtstats.getTotalSize()));
-        instance.add(((crtstats == null) ? -1 : crtstats.getAverageSize()));
-        instance.add(((crtstats == null) ? -1 : crtstats.getTrafficRatePerSec()));
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_timed") != null) {
+            instance.add(((crtstats == null) ? -1 : crtstats.getLastEncounterDeltaNs()));
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_count") != null) {
+            instance.add(((crtstats == null) ? -1 : crtstats.getTotalEncounters()));
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_tsize") != null) {
+            instance.add(((crtstats == null) ? -1 : crtstats.getTotalSize()));
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_asize") != null) {
+            instance.add(((crtstats == null) ? -1 : crtstats.getAverageSize()));
+        }
+        if (instances == null || instances.attribute("exp(" + exp + ").enc_rateps") != null) {
+            instance.add(((crtstats == null) ? -1 : crtstats.getTrafficRatePerSec()));
+        }
         return instance.toArray(new Object[0]);
     }
 
-    public static Object[] getCriteriaInstance(Criteria criteria, Object[] headers, Object[] instance) {
+    public static Object[] getCriteriaInstance(Criteria criteria, Object[] headers, Object[] instance, Instances instances) {
         if (headers.length != instance.length) {
             return null;
         }
-        Object[] _headers = UtilsTraining.getCriteriaHeaders(criteria);
+        String[] _headers = UtilsTraining.getCriteriaHeaders(criteria, instances);
         Object[] subinst = new Object[_headers.length];
         for (int hCounter = 0; hCounter < _headers.length; hCounter++) {
-            Object _header = _headers[hCounter];
+            String _header = _headers[hCounter];
             Object _value = null;
             for (int locCounter = 0; locCounter < headers.length; locCounter++) {
                 if (_header.equals(headers[locCounter])) {
@@ -139,39 +221,39 @@ public abstract class UtilsTraining {
         return subinst;
     }
 
-    public static String[] getCriteriasHeaders(Criteria[] criterias) {
+    public static String[] getCriteriasHeaders(Criteria[] criterias, Instances instances) {
         ArrayList<String> headers = new ArrayList<String>();
         for (Criteria crt : criterias) {
-            headers.addAll(Arrays.asList(UtilsTraining.getCriteriaHeaders(crt)));
+            headers.addAll(Arrays.asList(UtilsTraining.getCriteriaHeaders(crt, instances)));
         }
         return headers.toArray(new String[0]);
     }
 
-    public static Object[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet) {
+    public static Object[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         for (Criteria crt : criterias) {
-            instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet)));
+            instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet, instances)));
         }
         return instance.toArray(new Object[0]);
     }
 
-    public static String[] getHeaders(Criteria[] criterias) {
+    public static String[] getHeaders(Criteria[] criterias, Instances instances) {
         ArrayList<String> headers = new ArrayList<String>();
         headers.addAll(Arrays.asList(UtilsTraining.CORE_HEADERS));
         headers.addAll(Arrays.asList(UtilsTraining.CONN_HEADERS));
         for (Criteria crt : criterias) {
-            headers.addAll(Arrays.asList(UtilsTraining.getCriteriaHeaders(crt)));
+            headers.addAll(Arrays.asList(UtilsTraining.getCriteriaHeaders(crt, instances)));
         }
         headers.add(UtilsTraining.ATTK_HEADER);
         return headers.toArray(new String[0]);
     }
 
-    public static Object[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack) {
+    public static Object[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
-        instance.addAll(Arrays.asList(UtilsTraining.getCoreInstance(packet)));
-        instance.addAll(Arrays.asList(UtilsTraining.getConnectionInstance(packet)));
+        instance.addAll(Arrays.asList(UtilsTraining.getCoreInstance(packet, instances)));
+        instance.addAll(Arrays.asList(UtilsTraining.getConnectionInstance(packet, instances)));
         for (Criteria crt : criterias) {
-            instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet)));
+            instance.addAll(Arrays.asList(UtilsTraining.getCriteriaInstance(crt, packet, instances)));
         }
         instance.add("" + tagAsAttack);
         return instance.toArray(new Object[0]);
@@ -210,7 +292,7 @@ public abstract class UtilsTraining {
         criteriaDataSetWriter = new HashMap<Criteria, CSVWriter>();
         for (Criteria crt : criteriaDataSet.keySet()) {
             criteriaDataSetWriter.put(crt, new CSVWriter(new FileWriter(criteriaDataSet.get(crt))));
-            criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt), attackHeader)));
+            criteriaDataSetWriter.get(crt).writeNext(UtilsArray.toCsv(UtilsArray.concat(UtilsTraining.CORE_HEADERS, UtilsTraining.getCriteriaHeaders(crt, null), attackHeader)));
         }
         String[] headers = reader.readNext();
         if (headers == null) {
@@ -219,10 +301,10 @@ public abstract class UtilsTraining {
         String[] instance;
         while ((instance = reader.readNext()) != null) {
             //core
-            Object[] core = UtilsTraining.getCoreInstance(instance);
+            Object[] core = UtilsTraining.getCoreInstance(instance, null);
             Object[] attack = {instance[instance.length - 1]};
             //connection
-            Object[] conn_inst = UtilsTraining.getConnectionInstance(instance);
+            Object[] conn_inst = UtilsTraining.getConnectionInstance(instance, null);
             if (!UtilsTraining.instanceIsNull(conn_inst)) {
                 connectionInstancesCount++;
                 conn_inst = UtilsArray.concat(core, conn_inst, attack);
@@ -231,7 +313,7 @@ public abstract class UtilsTraining {
             }
             //criteria
             for (Criteria crt : criterias) {
-                Object[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance);
+                Object[] crt_inst = UtilsTraining.getCriteriaInstance(crt, headers, instance, null);
                 if (!UtilsTraining.instanceIsNull(crt_inst)) {
                     criteriaInstancesCount.put(crt, criteriaInstancesCount.get(crt) + 1);
                     crt_inst = UtilsArray.concat(core, crt_inst, attack);

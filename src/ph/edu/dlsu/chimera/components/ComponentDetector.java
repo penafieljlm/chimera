@@ -182,10 +182,10 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
 
     protected boolean evaluateAgainstConnection(PduAtomic pkt) {
         boolean allow = true;
-        Object[] connInst = UtilsTraining.getConnectionInstance(pkt);
+        Object[] connInst = UtilsTraining.getConnectionInstance(pkt, this.connDataInstances);
         try {
             if (!UtilsTraining.instanceIsNull(connInst)) {
-                Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
+                Object[] coreInst = UtilsTraining.getCoreInstance(pkt, this.connDataInstances);
                 Object[] inst = UtilsArray.concat(coreInst, connInst);
                 Instance _inst = new Instance(inst.length + 1);
                 _inst.setDataset(this.connDataInstances);
@@ -213,10 +213,10 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
 
     protected HashMap<Criteria, Boolean> evaluateAgainstCriterias(PduAtomic pkt) {
         HashMap<Criteria, Boolean> report = new HashMap<Criteria, Boolean>();
-        Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
         for (Criteria crt : this.model.criteriaSubModels.keySet()) {
             boolean allow = true;
-            Object[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt);
+            Object[] coreInst = UtilsTraining.getCoreInstance(pkt, this.criteriaDataInstances.get(crt));
+            Object[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt, this.criteriaDataInstances.get(crt));
             try {
                 if (!UtilsTraining.instanceIsNull(crtInst)) {
                     Object[] inst = UtilsArray.concat(coreInst, crtInst);
