@@ -60,11 +60,17 @@ public abstract class UtilsPrinting {
         System.out.println("        Normal.................. " + _normalcount);
         System.out.print(eval.toSummaryString("    Summary of Training Set.....", false).replaceAll("\n", "\n        "));
         System.out.println("\b\b\b\bGraph....................... ");
-        StringBuilder graphBuilder = new StringBuilder("        " + tree.graph().replaceAll("\n", "\n        "));
+        StringBuilder graphBuilder = new StringBuilder("    " + tree.graph().replaceAll("\n", "\n              "));
         for (int i = 0; i < 9; i++) {
             graphBuilder = graphBuilder.deleteCharAt(graphBuilder.length() - 1);
         }
         System.out.println(graphBuilder);
+        System.out.println("        Java Code............... ");
+        StringBuilder codeBuilder = new StringBuilder("    " + tree.toSource(name).replaceAll("\n", "\n              "));
+        for (int i = 0; i < 9; i++) {
+            codeBuilder = codeBuilder.deleteCharAt(graphBuilder.length() - 1);
+        }
+        System.out.println("        " + codeBuilder);
     }
 
     public static void printDiagnostics(List diags, String prefix) {
@@ -111,5 +117,13 @@ public abstract class UtilsPrinting {
                 System.out.println("            Subnet Mask.. " + addr.netmask);
             }
         }
+    }
+
+    public static void printArray(Object[] a) {
+        StringBuilder b = new StringBuilder();
+        for (Object c : a) {
+            b = b.append("[").append(c).append("]");
+        }
+        System.out.println(b);
     }
 }
