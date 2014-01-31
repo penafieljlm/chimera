@@ -26,7 +26,6 @@ import ph.edu.dlsu.chimera.core.PduAtomic;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.FastVector;
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.CSVLoader;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -384,17 +383,7 @@ public abstract class UtilsTraining {
                 connAttrs.addElement(_connAttrs.nextElement());
             }
             //determine double value of attack classification
-            long attackct = 0;
-            long normalct = 0;
-            for (int i = 0; i < connInstance.numInstances(); i++) {
-                Instance _inst = connInstance.instance(i);
-                if (_inst.stringValue(_inst.numAttributes() - 1).equals("" + true)) {
-                    attackct++;
-                } else {
-                    normalct++;
-                }
-            }
-            double _attack = (normalct > attackct) ? 1.0 : 0.0;
+            double _attack = (connInstance.firstInstance().stringValue(connInstance.numAttributes() - 1).equals("" + true)) ? 0.0 : 1.0;
             connSubModel = new SubModel(connTree, connAttrs, _attack);
         }
         HashMap<Criteria, SubModel> criteriaSubModels = new HashMap<Criteria, SubModel>();
@@ -405,17 +394,7 @@ public abstract class UtilsTraining {
                 attrs.addElement(_attrs.nextElement());
             }
             //determine double value of attack classification
-            long attackct = 0;
-            long normalct = 0;
-            for (int i = 0; i < criteriaInstance.get(crt).numInstances(); i++) {
-                Instance _inst = criteriaInstance.get(crt).instance(i);
-                if (_inst.stringValue(_inst.numAttributes() - 1).equals("" + true)) {
-                    attackct++;
-                } else {
-                    normalct++;
-                }
-            }
-            double _attack = (normalct > attackct) ? 1.0 : 0.0;
+            double _attack = (criteriaInstance.get(crt).firstInstance().stringValue(criteriaInstance.get(crt).numAttributes() - 1).equals("" + true)) ? 0.0 : 1.0;
             SubModel sm = new SubModel(criteriaTree.get(crt), attrs, _attack);
             criteriaSubModels.put(crt, sm);
         }

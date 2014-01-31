@@ -55,9 +55,11 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         this.rulesMap = rulesMap;
         this.syslogServer = syslogServer;
         this.connDataInstances = new Instances("connection", this.model.connectionSubModel.attributes, 0);
+        this.connDataInstances.setClassIndex(this.connDataInstances.numAttributes() - 1);
         this.criteriaDataInstances = new HashMap<Criteria, Instances>();
         for (Criteria crt : this.model.criteriaSubModels.keySet()) {
             this.criteriaDataInstances.put(crt, new Instances(crt.expression, this.model.criteriaSubModels.get(crt).attributes, 0));
+            this.criteriaDataInstances.get(crt).setClassIndex(this.criteriaDataInstances.get(crt).numAttributes() - 1);
         }
         this.active = active;
         this.logs = new ConcurrentLinkedQueue<Log>();
@@ -181,24 +183,30 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     protected boolean evaluateAgainstConnection(PduAtomic pkt) {
         boolean allow = true;
         Object[] connInst = UtilsTraining.getConnectionInstance(pkt);
-        if (!UtilsTraining.instanceIsNull(connInst)) {
-            Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
-            Object[] inst = UtilsArray.concat(coreInst, connInst);
-            Instance _inst = new Instance(inst.length);
-            _inst.setDataset(this.connDataInstances);
-            for (int i = 0; i < inst.length; i++) {
-                if (inst[i] instanceof Number) {
-                    _inst.setValue(i, ((Number) inst[i]).doubleValue());
-                } else {
-                    _inst.setValue(i, (String) inst[i]);
+        try {
+            if (!UtilsTraining.instanceIsNull(connInst)) {
+                Object[] coreInst = UtilsTraining.getCoreInstance(pkt);
+                Object[] inst = UtilsArray.concat(coreInst, connInst);
+                Instance _inst = new Instance(inst.length + 1);
+                _inst.setDataset(this.connDataInstances);
+                for (int i = 0; i < inst.length - 1; i++) {
+                    if (inst[i] instanceof Number) {
+                        _inst.setValue(i, ((Number) inst[i]).doubleValue());
+                    } else {
+                        _inst.setValue(i, (String) inst[i]);
+                    }
                 }
+                _inst.setMissing(_inst.numAttributes() - 1);
+                double evalResult = (this.model.connectionSubModel.attackClass == 1.0) ? 0.0 : 1.0;
+                try {
+                    evalResult = this.model.connectionSubModel.tree.classifyInstance(_inst);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                allow = evalResult != this.model.connectionSubModel.attackClass;
             }
-            double evalResult = (this.model.connectionSubModel.attackClass == 1.0) ? 0.0 : 1.0;
-            try {
-                evalResult = this.model.connectionSubModel.tree.classifyInstance(_inst);
-            } catch (Exception ex) {
-            }
-            allow = evalResult != this.model.connectionSubModel.attackClass;
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return allow;
     }
@@ -209,23 +217,30 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         for (Criteria crt : this.model.criteriaSubModels.keySet()) {
             boolean allow = true;
             Object[] crtInst = UtilsTraining.getCriteriaInstance(crt, pkt);
-            if (!UtilsTraining.instanceIsNull(crtInst)) {
-                Object[] inst = UtilsArray.concat(coreInst, crtInst);
-                Instance _inst = new Instance(inst.length);
-                _inst.setDataset(this.criteriaDataInstances.get(crt));
-                for (int i = 0; i < inst.length; i++) {
-                    if (inst[i] instanceof Number) {
-                        _inst.setValue(i, ((Number) inst[i]).doubleValue());
-                    } else {
-                        _inst.setValue(i, (String) inst[i]);
+            try {
+                if (!UtilsTraining.instanceIsNull(crtInst)) {
+                    Object[] inst = UtilsArray.concat(coreInst, crtInst);
+                    Instance _inst = new Instance(inst.length + 1);
+                    _inst.setDataset(this.criteriaDataInstances.get(crt));
+                    for (int i = 0; i < inst.length - 1; i++) {
+                        if (inst[i] instanceof Number) {
+                            _inst.setValue(i, ((Number) inst[i]).doubleValue());
+                        } else {
+                            _inst.setValue(i, (String) inst[i]);
+                        }
                     }
+                    _inst.setMissing(_inst.numAttributes() - 1);
+                    double evalResult = (this.model.criteriaSubModels.get(crt).attackClass == 1.0) ? 0.0 : 1.0;
+                    try {
+                        evalResult = this.model.criteriaSubModels.get(crt).tree.classifyInstance(_inst);
+                        System.out.println(evalResult);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                    allow = evalResult != this.model.criteriaSubModels.get(crt).attackClass;
                 }
-                double evalResult = (this.model.criteriaSubModels.get(crt).attackClass == 1.0) ? 0.0 : 1.0;
-                try {
-                    evalResult = this.model.criteriaSubModels.get(crt).tree.classifyInstance(_inst);
-                } catch (Exception ex) {
-                }
-                allow = evalResult != this.model.criteriaSubModels.get(crt).attackClass;
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
             report.put(crt, allow);
         }

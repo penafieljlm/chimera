@@ -250,13 +250,13 @@ public class Chimera {
         //load config
         Config config = Config.loadConfig();
 
-        //load criterias
-        Criteria[] criterias = Criteria.loadCriterias();
-
         //load model file
         ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(_input + ".cmodel"));
         ModelSerializable modelSerializable = (ModelSerializable) objectInputStream.readObject();
         ModelLive modelLive = new ModelLive(modelSerializable);
+
+        //load criterias
+        Criteria[] criterias = modelLive.criteriaSubModels.keySet().toArray(new Criteria[0]);
 
         //syslog server
         InetAddress syslogServ = (_syslog != null) ? InetAddress.getByName(_syslog) : null;
@@ -332,5 +332,4 @@ public class Chimera {
         //run command
         Object result = UtilsCommand.send(config.controlPort, new CommandQuit());
     }
-
 }
