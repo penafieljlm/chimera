@@ -12,7 +12,6 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.HashMap;
 import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
@@ -407,9 +406,8 @@ public abstract class UtilsTraining {
                 boolean _exclude;
                 do {
                     _exclude = false;
-                    Enumeration attrs = connInstance.enumerateAttributes();
-                    while (attrs.hasMoreElements()) {
-                        Attribute attr = (Attribute) attrs.nextElement();
+                    for (int i = 0; i < connInstance.numAttributes(); i++) {
+                        Attribute attr = connInstance.attribute(i);
                         _exclude = exclude;
                         if (filter != null) {
                             _exclude = !(attr.name().matches(filter) ^ _exclude);
@@ -431,9 +429,8 @@ public abstract class UtilsTraining {
                 boolean _exclude;
                 do {
                     _exclude = false;
-                    Enumeration attrs = criteriaInstance.get(crt).enumerateAttributes();
-                    while (attrs.hasMoreElements()) {
-                        Attribute attr = (Attribute) attrs.nextElement();
+                    for (int i = 0; i < criteriaInstance.get(crt).numAttributes(); i++) {
+                        Attribute attr = criteriaInstance.get(crt).attribute(i);
                         _exclude = exclude;
                         if (filter != null) {
                             _exclude = !(attr.name().matches(filter) ^ _exclude);
@@ -460,9 +457,8 @@ public abstract class UtilsTraining {
         SubModel connSubModel = null;
         if (connInstance != null) {
             FastVector connAttrs = new FastVector();
-            Enumeration _connAttrs = connInstance.enumerateAttributes();
-            while (_connAttrs.hasMoreElements()) {
-                connAttrs.addElement(_connAttrs.nextElement());
+            for (int i = 0; i < connInstance.numAttributes(); i++) {
+                connAttrs.addElement(connInstance.attribute(i));
             }
             //determine double value of attack classification
             double _attack = (connInstance.firstInstance().stringValue(connInstance.numAttributes() - 1).equals("" + true)) ? 0.0 : 1.0;
@@ -471,9 +467,8 @@ public abstract class UtilsTraining {
         HashMap<Criteria, SubModel> criteriaSubModels = new HashMap<Criteria, SubModel>();
         for (Criteria crt : criteriaTree.keySet()) {
             FastVector attrs = new FastVector();
-            Enumeration _attrs = criteriaInstance.get(crt).enumerateAttributes();
-            while (_attrs.hasMoreElements()) {
-                attrs.addElement(_attrs.nextElement());
+            for (int i = 0; i < criteriaInstance.get(crt).numAttributes(); i++) {
+                attrs.addElement(criteriaInstance.get(crt).attribute(i));
             }
             //determine double value of attack classification
             double _attack = (criteriaInstance.get(crt).firstInstance().stringValue(criteriaInstance.get(crt).numAttributes() - 1).equals("" + true)) ? 0.0 : 1.0;
