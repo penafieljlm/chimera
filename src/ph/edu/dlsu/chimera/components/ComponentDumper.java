@@ -73,33 +73,19 @@ public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtom
 
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
-        if (this.inQueue != null) {
-            if (this.inQueue.isEmpty()) {
-                synchronized (this) {
-                    this.wait();
-                }
+        if (input.direction == TrafficDirection.Ingress) {
+            boolean attack = this.tagFilteredAsAttack;
+            if (this.trainingFilter != null) {
+                attack = !(this.trainingFilter.matches(input.packet) ^ attack);
             }
-            while (!this.inQueue.isEmpty()) {
-                PduAtomic pkt = this.inQueue.poll();
-                synchronized (pkt) {
-                    if (pkt.direction == TrafficDirection.Ingress) {
-                        boolean attack = this.tagFilteredAsAttack;
-                        if (this.trainingFilter != null) {
-                            attack = !(this.trainingFilter.matches(pkt.packet) ^ attack);
-                        }
-                        Object[] instance = UtilsTraining.getInstance(this.criterias, pkt, attack, null);
-                        if (this.headers.length != instance.length) {
-                            throw new Exception("Error: [Dumper] Headers do not match data.");
-                        }
-                        this.writer.writeNext(UtilsArray.toCsv(instance));
-                        this.writer.flush();
-                    } else {
-                        throw new Exception("Error: [Dumper] Encountered egress packet.");
-                    }
-                }
+            Object[] instance = UtilsTraining.getInstance(this.criterias, input, attack, null);
+            if (this.headers.length != instance.length) {
+                throw new Exception("Error: [Dumper] Headers do not match data.");
             }
+            this.writer.writeNext(UtilsArray.toCsv(instance));
+            this.writer.flush();
         } else {
-            throw new Exception("Error: [Dumper] inQueue is null.");
+            throw new Exception("Error: [Dumper] Encountered egress packet.");
         }
         return null;
     }

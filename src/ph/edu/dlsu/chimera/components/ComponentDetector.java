@@ -36,6 +36,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
 
     public static final String CHIMERA_CHAIN = "CHIMERA";
     public static final String FORWARD_CHAIN = "FORWARD";
+    public static final String DROP_JUMP = "DROP";
     public final ModelLive model;
     public final List<Object> rulesMap;
     public final InetAddress syslogServer;
@@ -71,13 +72,17 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
             this.iptable = new IpTables("filter");
             //clean up
             for (String ch : this.iptable.getAllChains()) {
-                if (ch.startsWith(ComponentDetector.CHIMERA_CHAIN)) {
+                if (ch.equalsIgnoreCase(ComponentDetector.CHIMERA_CHAIN)) {
                     this.iptable.deleteChain(ch);
                 }
             }
+            this.iptable.flushEntries(ComponentDetector.FORWARD_CHAIN);
             this.iptable.commit();
             //create master chain
             this.iptable.createChain(ComponentDetector.CHIMERA_CHAIN);
+            IpRule toChimeraChain = new IpRule();
+            toChimeraChain.setJump(ComponentDetector.CHIMERA_CHAIN);
+            this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, toChimeraChain);
             this.iptable.commit();
         }
     }
@@ -103,7 +108,8 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                         if (!this.rulesMap.contains(input.getConnection().sockets)) {
                             IpRule rule = input.getConnection().sockets.createRule();
                             if (rule != null) {
-                                this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, rule);
+                                rule.setJump(ComponentDetector.DROP_JUMP);
+                                this.iptable.appendEntry(ComponentDetector.CHIMERA_CHAIN, rule);
                                 this.iptable.commit();
                             }
                             this.rulesMap.add(input.getConnection().sockets);
@@ -118,7 +124,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                         if (this.rulesMap.contains(input.getConnection().sockets)) {
                             if (this.active) {
                                 int idx = this.rulesMap.indexOf(input.getConnection().sockets);
-                                this.iptable.deleteNumEntry(ComponentDetector.FORWARD_CHAIN, idx);
+                                this.iptable.deleteNumEntry(ComponentDetector.CHIMERA_CHAIN, idx);
                                 this.iptable.commit();
                                 this.rulesMap.remove(input.getConnection().sockets);
                             }
@@ -139,7 +145,8 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                             if (!this.rulesMap.contains(inst)) {
                                 IpRule rule = inst.criteria.createRule(input.packet);
                                 if (rule != null) {
-                                    this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, rule);
+                                    rule.setJump(ComponentDetector.DROP_JUMP);
+                                    this.iptable.appendEntry(ComponentDetector.CHIMERA_CHAIN, rule);
                                     this.iptable.commit();
                                 }
                                 this.rulesMap.add(inst);
@@ -153,7 +160,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                             //remove rules
                             if (this.rulesMap.contains(inst)) {
                                 int idx = this.rulesMap.indexOf(inst);
-                                this.iptable.deleteNumEntry(ComponentDetector.FORWARD_CHAIN, idx);
+                                this.iptable.deleteNumEntry(ComponentDetector.CHIMERA_CHAIN, idx);
                                 this.iptable.commit();
                                 this.rulesMap.remove(inst);
                             }
@@ -172,7 +179,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         //clean up
         if (this.active) {
             for (String ch : this.iptable.getAllChains()) {
-                if (ch.startsWith(ComponentDetector.CHIMERA_CHAIN)) {
+                if (ch.equalsIgnoreCase(ComponentDetector.CHIMERA_CHAIN)) {
                     this.iptable.deleteChain(ch);
                 }
             }

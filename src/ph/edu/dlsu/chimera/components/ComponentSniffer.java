@@ -83,13 +83,13 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
     @Override
     protected PduAtomic process(PcapPacket input) throws Exception {
         if (input.hasHeader(new Ethernet())) {
-            Ethernet eth = input.getHeader(new Ethernet());
             if (this.outQueue != null) {
                 boolean allow = this.allowFiltered;
                 if (this.accessFilter != null) {
                     allow = !(this.accessFilter.matches(input) ^ allow);
                 }
                 if (allow) {
+                    Ethernet eth = input.getHeader(new Ethernet());
                     if (Arrays.equals(this.interfaceMacAddress, eth.destination())) {
                         //ingress to iface, egress to network
                         return new PduAtomic(input, TrafficDirection.Egress);
