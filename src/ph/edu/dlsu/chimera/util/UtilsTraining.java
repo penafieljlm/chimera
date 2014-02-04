@@ -86,7 +86,7 @@ public abstract class UtilsTraining {
 
     public static Object[] getCoreInstance(Object[] instance, Instances instances) {
         int coreHeadersCt = UtilsTraining.CORE_HEADERS.length;
-        if (instance != null) {
+        if (instances != null) {
             coreHeadersCt = 0;
             for (String h : UtilsTraining.CORE_HEADERS) {
                 if (instances.attribute(h) != null) {
@@ -137,7 +137,7 @@ public abstract class UtilsTraining {
 
     public static Object[] getConnectionInstance(Object[] instance, Instances instances) {
         int coreHeadersCt = UtilsTraining.CORE_HEADERS.length;
-        if (instance != null) {
+        if (instances != null) {
             coreHeadersCt = 0;
             for (String h : UtilsTraining.CORE_HEADERS) {
                 if (instances.attribute(h) != null) {
@@ -146,7 +146,7 @@ public abstract class UtilsTraining {
             }
         }
         int connHeadersCt = UtilsTraining.CONN_HEADERS.length;
-        if (instance != null) {
+        if (instances != null) {
             connHeadersCt = 0;
             for (String h : UtilsTraining.CONN_HEADERS) {
                 if (instances.attribute(h) != null) {

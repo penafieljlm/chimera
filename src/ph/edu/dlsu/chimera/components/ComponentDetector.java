@@ -229,7 +229,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                     Object[] inst = UtilsArray.concat(coreInst, crtInst);
                     Instance _inst = new Instance(inst.length + 1);
                     _inst.setDataset(this.criteriaDataInstances.get(crt));
-                    for (int i = 0; i < inst.length - 1; i++) {
+                    for (int i = 0; i < inst.length; i++) {
                         if (inst[i] instanceof Number) {
                             _inst.setValue(i, ((Number) inst[i]).doubleValue());
                         } else {
@@ -239,7 +239,21 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                     _inst.setMissing(_inst.numAttributes() - 1);
                     double evalResult = (this.model.criteriaSubModels.get(crt).attackClass == 1.0) ? 0.0 : 1.0;
                     try {
+                        StringBuilder attb = new StringBuilder();
+                        StringBuilder valb = new StringBuilder();
+                        for (int i = 0; i < _inst.numValues() - 1; i++) {
+                            attb = attb.append("|").append(_inst.attribute(i).name()).append("|");
+                            if (_inst.attribute(i).isNominal()) {
+                                valb = valb.append("|").append(_inst.stringValue(i)).append("|");
+                            } else {
+                                valb = valb.append("|").append(_inst.value(i)).append("|");
+                            }
+                        }
+                        System.out.println(attb);
+                        System.out.println(valb);
                         evalResult = this.model.criteriaSubModels.get(crt).tree.classifyInstance(_inst);
+                        System.out.println(this.model.criteriaSubModels.get(crt).tree.graph());
+                        System.out.println(this.model.criteriaSubModels.get(crt).tree.toSource("Tree"));
                         System.out.println(evalResult);
                     } catch (Exception ex) {
                         ex.printStackTrace();
