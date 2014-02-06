@@ -18,12 +18,12 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsTracker extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
+public class ComponentStatisticsCalculator extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
     public final Criteria[] criterias;
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
 
-    public ComponentStatisticsTracker(IntermodulePipe<PduAtomic> inQueue,
+    public ComponentStatisticsCalculator(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable) {
@@ -53,7 +53,7 @@ public class ComponentStatisticsTracker extends ComponentActiveProcessor<PduAtom
                             //associate criteria to packet
                             input.addStatistics(crt, this.statsTable.get(pktcrt));
                         } else {
-                            throw new Exception("Error: [Statistics Tracker] statisticsTable is null.");
+                            throw new Exception("Error: [Statistics Calculator] statisticsTable is null.");
                         }
                     } else {
                         input.addStatistics(crt, null);
@@ -62,7 +62,7 @@ public class ComponentStatisticsTracker extends ComponentActiveProcessor<PduAtom
                 //forward packet
                 return input;
             } else {
-                throw new Exception("Error: [Statistics Tracker] Encountered egress packet.");
+                throw new Exception("Error: [Statistics Calculator] Encountered egress packet.");
             }
         }
     }

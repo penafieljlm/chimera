@@ -23,6 +23,7 @@ public final class Config {
     public long statsTimeoutMs;
     public long stateTimeoutMs;
     public int syslogPort;
+    public long rulesTimeoutMs;
 
     public Config() {
         this.controlPort = 9999;
@@ -30,6 +31,7 @@ public final class Config {
         this.statsTimeoutMs = 300000;
         this.stateTimeoutMs = 300000;
         this.syslogPort = 514;
+        this.rulesTimeoutMs = 30000;
     }
 
     public static Config loadConfig() throws Exception {

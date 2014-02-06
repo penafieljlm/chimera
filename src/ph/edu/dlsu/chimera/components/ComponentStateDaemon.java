@@ -15,12 +15,12 @@ import ph.edu.dlsu.chimera.core.TrafficDirection;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentStateTable extends ComponentActive {
+public final class ComponentStateDaemon extends ComponentActive {
 
     public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
     public final long stateTimeoutMs;
 
-    public ComponentStateTable(ConcurrentHashMap<TcpSocketPair, Connection> stateTable, long stateTimeoutMs) {
+    public ComponentStateDaemon(ConcurrentHashMap<TcpSocketPair, Connection> stateTable, long stateTimeoutMs) {
         this.setPriority(Thread.MIN_PRIORITY);
         this.stateTable = stateTable;
         this.stateTimeoutMs = stateTimeoutMs;
@@ -39,7 +39,7 @@ public final class ComponentStateTable extends ComponentActive {
                     }
                 }
             } else {
-                throw new Exception("Error: [State Table] stateTable is null.");
+                throw new Exception("Error: [State Daemon] stateTable is null.");
             }
         }
     }

@@ -5,12 +5,10 @@
 package ph.edu.dlsu.chimera.components;
 
 import com.cedarsoftware.util.io.JsonWriter;
-import de.tbsol.iptablesjava.IpTables;
 import de.tbsol.iptablesjava.rules.IpRule;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.productivity.java.syslog4j.Syslog;
 import org.productivity.java.syslog4j.SyslogIF;
@@ -24,6 +22,7 @@ import ph.edu.dlsu.chimera.core.logs.LogAttackCriteria;
 import ph.edu.dlsu.chimera.core.model.ModelLive;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.core.PduAtomic;
+import ph.edu.dlsu.chimera.rules.RulesManager;
 import ph.edu.dlsu.chimera.util.UtilsArray;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 import weka.core.Instance;
@@ -35,27 +34,21 @@ import weka.core.Instances;
  */
 public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
 
-    public static final String CHIMERA_CHAIN = "CHIMERA";
-    public static final String FORWARD_CHAIN = "FORWARD";
-    public static final String DROP_JUMP = "DROP";
     public final ModelLive model;
-    public final List<Object> rulesMap;
+    public final RulesManager rulesManager;
     public final SyslogIF syslogLogger;
     public final Instances connDataInstances;
     public final HashMap<Criteria, Instances> criteriaDataInstances;
-    public final boolean active;
     public final ConcurrentLinkedQueue<Log> logs;
-    private IpTables iptable;
 
     public ComponentDetector(IntermodulePipe<PduAtomic> inQueue,
             ModelLive model,
-            List<Object> rulesMap,
+            RulesManager rulesManager,
             InetAddress syslogServer,
-            int syslogPort,
-            boolean active) {
+            int syslogPort) {
         super(inQueue, null);
         this.model = model;
-        this.rulesMap = rulesMap;
+        this.rulesManager = rulesManager;
         if (syslogServer != null) {
             this.syslogLogger = Syslog.getInstance("udp");
             this.syslogLogger.getConfig().setHost(syslogServer.getHostAddress());
@@ -70,135 +63,54 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
             this.criteriaDataInstances.put(crt, new Instances(crt.expression, this.model.criteriaSubModels.get(crt).attributes, 0));
             this.criteriaDataInstances.get(crt).setClassIndex(this.criteriaDataInstances.get(crt).numAttributes() - 1);
         }
-        this.active = active;
         this.logs = new ConcurrentLinkedQueue<Log>();
-    }
-
-    @Override
-    protected void preLoop() throws Exception {
-        if (this.active) {
-            this.iptable = new IpTables("filter");
-            this.iptable.flushEntries(ComponentDetector.FORWARD_CHAIN);
-            //create master chain
-            if (!this.iptable.getAllChains().contains(ComponentDetector.CHIMERA_CHAIN)) {
-                this.iptable.createChain(ComponentDetector.CHIMERA_CHAIN);
-            } else {
-                this.iptable.flushEntries(ComponentDetector.CHIMERA_CHAIN);
-            }
-            IpRule toChimeraChain = new IpRule();
-            toChimeraChain.setJump(ComponentDetector.CHIMERA_CHAIN);
-            this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, toChimeraChain);
-            boolean ok;
-            do {
-                ok = true;
-                try {
-                    System.out.println("96");
-                    this.iptable.commit();
-                } catch (Exception ex) {
-                    ok = false;
-                }
-            } while (!ok);
-        }
     }
 
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
         if (input.direction == TrafficDirection.Ingress) {
-            boolean commit = false;
-            //integrity check
-            if (this.active) {
-                if (this.rulesMap != null) {
-                    if (this.iptable.getAllRules(ComponentDetector.CHIMERA_CHAIN).size() != this.rulesMap.size()) {
-                        throw new Exception("Error: [Detector] The CHIMERA iptables chain has been tampered with.");
-                    }
+            synchronized (this.rulesManager) {
+                //integrity check
+                if (this.rulesManager != null && this.rulesManager.isTampered()) {
+                    throw new Exception("Error: [Detector] The CHIMERA iptables chain has been tampered with.");
                 }
-            }
-            //connection evaluation
-            if (!this.evaluateAgainstConnection(input)) {
-                //attack
-                this.logConnectionViolation(input);
-                if (this.active) {
-                    if (this.rulesMap != null) {
+                //connection evaluation
+                if (!this.evaluateAgainstConnection(input)) {
+                    //attack
+                    this.logConnectionViolation(input);
+                    if (this.rulesManager != null) {
                         //add rules
-                        if (input.getConnection() != null && !this.rulesMap.contains(input.getConnection().sockets)) {
+                        if (input.getConnection() != null && !this.rulesManager.contains(input.getConnection().sockets)) {
                             IpRule rule = input.getConnection().sockets.createRule();
                             if (rule != null) {
-                                rule.setJump(ComponentDetector.DROP_JUMP);
-                                this.iptable.appendEntry(ComponentDetector.CHIMERA_CHAIN, rule);
-                                commit = true;
-                            }
-                            this.rulesMap.add(input.getConnection().sockets);
-                        }
-                    }
-                }
-            } else {
-                //normal
-                if (this.active) {
-                    if (this.rulesMap != null) {
-                        //remove rules
-                        if (input.getConnection() != null && this.rulesMap.contains(input.getConnection().sockets)) {
-                            if (this.active) {
-                                int idx = this.rulesMap.indexOf(input.getConnection().sockets);
-                                this.iptable.deleteNumEntry(ComponentDetector.CHIMERA_CHAIN, idx);
-                                System.out.println("Conn Normal " + idx);
-                                commit = true;
-                                this.rulesMap.remove(input.getConnection().sockets);
+                                rule.setJump(RulesManager.DROP_JUMP);
+                                this.rulesManager.append(input.getConnection(), rule);
                             }
                         }
                     }
                 }
-            }
-            //criteria evaluation
-            HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(input);
-            for (Criteria crt : crtEval.keySet()) {
-                CriteriaInstance inst = crt.createInstance(input.packet);
-                if (!crtEval.get(crt)) {
-                    //attack
-                    this.logCriteriaViolation(input, crt, input.getConnection());
-                    if (this.active) {
-                        if (this.rulesMap != null) {
+                //criteria evaluation
+                HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(input);
+                for (Criteria crt : crtEval.keySet()) {
+                    CriteriaInstance inst = crt.createInstance(input.packet);
+                    if (!crtEval.get(crt)) {
+                        //attack
+                        this.logCriteriaViolation(input, crt, input.getConnection());
+                        if (this.rulesManager != null) {
                             //create rules
-                            if (!this.rulesMap.contains(inst)) {
+                            if (!this.rulesManager.contains(inst)) {
                                 IpRule rule = inst.criteria.createRule(input.packet);
                                 if (rule != null) {
-                                    rule.setJump(ComponentDetector.DROP_JUMP);
-                                    this.iptable.appendEntry(ComponentDetector.CHIMERA_CHAIN, rule);
-                                    commit = true;
+                                    rule.setJump(RulesManager.DROP_JUMP);
+                                    this.rulesManager.append(inst, rule);
                                 }
-                                this.rulesMap.add(inst);
-                            }
-                        }
-                    }
-                } else {
-                    //normal
-                    if (this.active) {
-                        if (this.rulesMap != null) {
-                            //remove rules
-                            if (this.rulesMap.contains(inst)) {
-                                int idx = this.rulesMap.indexOf(inst);
-                                this.iptable.deleteNumEntry(ComponentDetector.CHIMERA_CHAIN, idx);
-                                System.out.println("Crit Normal " + idx);
-                                commit = true;
-                                this.rulesMap.remove(inst);
                             }
                         }
                     }
                 }
-            }
-            if (this.active && commit) {
-                int i = 0;
-                boolean ok;
-                do {
-                    ok = true;
-                    try {
-                        System.out.println("190-" + i);
-                        this.iptable.commit();
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        i++;
-                        ok = false;
-                    }
-                } while (!ok);
+                if (this.rulesManager.hasUncommitedChanges()) {
+                    this.rulesManager.commit();
+                }
             }
         } else {
             throw new Exception("Error: [Detector] Encountered egress packet.");
@@ -209,20 +121,8 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     @Override
     protected void postLoop() throws Exception {
         //clean up
-        if (this.active) {
-            if (this.iptable.getAllChains().contains(ComponentDetector.CHIMERA_CHAIN)) {
-                this.iptable.flushEntries(ComponentDetector.CHIMERA_CHAIN);
-                boolean ok;
-                do {
-                    ok = true;
-                    try {
-                        System.out.println("210");
-                        this.iptable.commit();
-                    } catch (Exception ex) {
-                        ok = false;
-                    }
-                } while (!ok);
-            }
+        if (this.rulesManager != null) {
+            this.rulesManager.free();
         }
     }
 
