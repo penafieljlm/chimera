@@ -5,7 +5,6 @@
 package ph.edu.dlsu.chimera.components;
 
 import com.cedarsoftware.util.io.JsonWriter;
-import com.protomatter.syslog.Syslog;
 import de.tbsol.iptablesjava.IpTables;
 import de.tbsol.iptablesjava.rules.IpRule;
 import java.net.InetAddress;
@@ -13,6 +12,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.productivity.java.syslog4j.Syslog;
+import org.productivity.java.syslog4j.SyslogIF;
 import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.criteria.Criteria;
@@ -39,7 +40,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     public static final String DROP_JUMP = "DROP";
     public final ModelLive model;
     public final List<Object> rulesMap;
-    public final InetAddress syslogServer;
+    public final SyslogIF syslogLogger;
     public final Instances connDataInstances;
     public final HashMap<Criteria, Instances> criteriaDataInstances;
     public final boolean active;
@@ -50,11 +51,18 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
             ModelLive model,
             List<Object> rulesMap,
             InetAddress syslogServer,
+            int syslogPort,
             boolean active) {
         super(inQueue, null);
         this.model = model;
         this.rulesMap = rulesMap;
-        this.syslogServer = syslogServer;
+        if (syslogServer != null) {
+            this.syslogLogger = Syslog.getInstance("udp");
+            this.syslogLogger.getConfig().setHost(syslogServer.getHostAddress());
+            this.syslogLogger.getConfig().setPort(syslogPort);
+        } else {
+            this.syslogLogger = null;
+        }
         this.connDataInstances = new Instances("connection", this.model.connectionSubModel.attributes, 0);
         this.connDataInstances.setClassIndex(this.connDataInstances.numAttributes() - 1);
         this.criteriaDataInstances = new HashMap<Criteria, Instances>();
@@ -208,12 +216,10 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                 try {
                     evalResult = this.model.connectionSubModel.tree.classifyInstance(_inst);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                 }
                 allow = evalResult != this.model.connectionSubModel.attackClass;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
         }
         return allow;
     }
@@ -256,12 +262,10 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                         System.out.println(this.model.criteriaSubModels.get(crt).tree.toSource("Tree"));
                         System.out.println(evalResult);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
                     }
                     allow = evalResult != this.model.criteriaSubModels.get(crt).attackClass;
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
             }
             report.put(crt, allow);
         }
@@ -272,8 +276,8 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
         this.logs.add(log);
         System.out.println(pkt.packet.toString());
-        if (this.syslogServer != null) {
-            Syslog.warning(this.syslogServer, "chimera.logs.attacks.connection", JsonWriter.toJson(log));
+        if (this.syslogLogger != null) {
+            this.syslogLogger.alert(JsonWriter.toJson(log));
         }
     }
 
@@ -281,8 +285,8 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
         this.logs.add(log);
         System.out.println(pkt.packet.toString());
-        if (this.syslogServer != null) {
-            Syslog.warning(this.syslogServer, "chimera.logs.attacks.criteria", JsonWriter.toJson(log));
+        if (this.syslogLogger != null) {
+            this.syslogLogger.alert(JsonWriter.toJson(log));
         }
     }
 }

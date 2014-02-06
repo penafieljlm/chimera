@@ -47,6 +47,12 @@ public class cconfig {
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n        DEFAULT CONFIG.. 300000"
+            + "\n    -syslogport"
+            + "\n        DESCRIPTION"
+            + "\n             The UDP port number of default syslog server applications to contact."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
+            + "\n        DEFAULT CONFIG.. 514"
             + "\n    /show"
             + "\n        DESCRIPTION"
             + "\n            Print the configuration after modification are made."
@@ -99,8 +105,18 @@ public class cconfig {
                 throw new Exception("The argument '-statstimeout' must provide a numerical value.");
             }
 
+            //stats timeout
+            Integer _syslogport = null;
+            try {
+                if (_args.containsKey("-syslogport")) {
+                    _syslogport = Integer.parseInt(_args.get("-syslogport"));
+                }
+            } catch (NumberFormatException ex) {
+                throw new Exception("The argument '-syslogport' must provide a numerical value.");
+            }
+
             //execute
-            Config config = Chimera.cconfig(_port, _protected, _statetimeout, _statstimeout);
+            Config config = Chimera.cconfig(_port, _protected, _statetimeout, _statstimeout, _syslogport);
 
             //show
             boolean show = false;
@@ -110,10 +126,11 @@ public class cconfig {
 
             if (show) {
                 System.out.println("CHIMERA Configuration:");
-                System.out.println("    config.controlPort....." + config.controlPort);
-                System.out.println("    config.ifProtected....." + config.ifProtected);
-                System.out.println("    config.stateTimeoutMs.." + config.stateTimeoutMs);
-                System.out.println("    config.statsTimeoutMs.." + config.statsTimeoutMs);
+                System.out.println("    config.controlPort..... " + config.controlPort);
+                System.out.println("    config.ifProtected..... " + config.ifProtected);
+                System.out.println("    config.stateTimeoutMs.. " + config.stateTimeoutMs);
+                System.out.println("    config.statsTimeoutMs.. " + config.statsTimeoutMs);
+                System.out.println("    config.syslogPort...... " + config.syslogPort);
             }
 
         } catch (Exception ex) {

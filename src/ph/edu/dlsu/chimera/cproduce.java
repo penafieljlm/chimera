@@ -35,6 +35,11 @@ public class cproduce {
             + "\n            Hostname or IP Address of the Syslog server to send logs to."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
+            + "\n    -logport"
+            + "\n        DESCRIPTION"
+            + "\n            UDP port number of the Syslog server application."
+            + "\n        REQUIRED........ No"
+            + "\n        DEFAULT VALUE... N/A"
             + "\n    /active"
             + "\n        DESCRIPTION"
             + "\n            If set, the following apply:"
@@ -80,6 +85,9 @@ public class cproduce {
             //syslog server
             String syslog = _args.get("-syslog");
 
+            //syslog server
+            Integer syslogport = (_args.get("-logport") != null) ? Integer.parseInt(_args.get("-logport")) : null;
+
             //gather access flag
             boolean active = false;
             if (_args.containsKey("/active")) {
@@ -88,7 +96,6 @@ public class cproduce {
 
             //monitor
             PhaseMonitorProduction monitorProduction = (verbose) ? new PhaseMonitorProduction(200) {
-
                 @Override
                 protected void update() {
                     while (!this.getLogs().isEmpty()) {
@@ -98,7 +105,6 @@ public class cproduce {
                     }
                 }
             } : new PhaseMonitorProduction(200) {
-
                 @Override
                 protected void update() {
                     this.getLogs().clear();
@@ -106,7 +112,7 @@ public class cproduce {
             };
 
             //execute
-            Chimera.cproduce(monitorProduction, modelFile, syslog, active);
+            Chimera.cproduce(monitorProduction, modelFile, syslog, syslogport, active);
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
             System.out.println("Type 'cgather /help' to see usage.");
