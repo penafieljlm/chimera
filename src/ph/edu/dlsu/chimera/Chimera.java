@@ -12,7 +12,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,11 +21,12 @@ import ph.edu.dlsu.chimera.components.ComponentActive;
 import ph.edu.dlsu.chimera.components.ComponentController;
 import ph.edu.dlsu.chimera.components.ComponentDetector;
 import ph.edu.dlsu.chimera.components.ComponentDumper;
+import ph.edu.dlsu.chimera.components.ComponentRulesDaemon;
 import ph.edu.dlsu.chimera.components.ComponentSniffer;
-import ph.edu.dlsu.chimera.components.ComponentStateTable;
+import ph.edu.dlsu.chimera.components.ComponentStateDaemon;
 import ph.edu.dlsu.chimera.components.ComponentStateTracker;
-import ph.edu.dlsu.chimera.components.ComponentStatisticsTable;
-import ph.edu.dlsu.chimera.components.ComponentStatisticsTracker;
+import ph.edu.dlsu.chimera.components.ComponentStatisticsDaemon;
+import ph.edu.dlsu.chimera.components.ComponentStatisticsCalculator;
 import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.Diagnostic;
@@ -46,6 +46,7 @@ import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.messages.CommandQuit;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
+import ph.edu.dlsu.chimera.rules.RulesManager;
 import ph.edu.dlsu.chimera.util.UtilsCommand;
 import ph.edu.dlsu.chimera.util.UtilsPcap;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
@@ -56,7 +57,7 @@ import ph.edu.dlsu.chimera.util.UtilsTraining;
  */
 public class Chimera {
 
-    public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout, Integer _syslogport) throws Exception {
+    public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout, Integer _syslogport, Long _rulestimeout) throws Exception {
         //load config
         Config config = Config.loadConfig();
 
@@ -74,6 +75,9 @@ public class Chimera {
         }
         if (_syslogport != null) {
             config.syslogPort = _syslogport;
+        }
+        if (_rulestimeout != null) {
+            config.rulesTimeoutMs = _rulestimeout;
         }
 
         //save config
@@ -152,13 +156,13 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("gather.stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("gather.states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
+        components.put("gather.stats", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put("gather.states", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
 
         //pipeline
         components.put("gather.sniff", new ComponentSniffer(gatherSniffOut, ifProtected, accessFilter, _allow));
         components.put("gather.states", new ComponentStateTracker(gatherSniffOut, gatherStateOut, stateTable));
-        components.put("gather.stats", new ComponentStatisticsTracker(gatherStateOut, gatherStatsOut, criterias, statsTableAtomic));
+        components.put("gather.stats", new ComponentStatisticsCalculator(gatherStateOut, gatherStatsOut, criterias, statsTableAtomic));
         components.put("gather.dumper", new ComponentDumper(gatherStatsOut, ifProtected, criterias, trainingDumpFile, trainingFilter, _attack));
         gatherSniffOut.setWriter((ComponentActive) components.get("gather.sniff"));
         gatherSniffOut.setReader((ComponentActive) components.get("gather.states"));
@@ -273,20 +277,21 @@ public class Chimera {
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
         ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<TcpSocketPair, Connection>();
-        List<Object> rulesMap = (_active) ? new ArrayList<Object>() : null;
+        RulesManager rulesManager = (_active) ? new RulesManager() : null;
 
         //component holder
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("produce.stats", new ComponentStatisticsTable(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("produce.states", new ComponentStateTable(stateTable, config.stateTimeoutMs));
+        components.put("produce.stats", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put("produce.states", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
+        components.put("produce.rules", new ComponentRulesDaemon(rulesManager, config.rulesTimeoutMs));
 
         //pipeline
         components.put("produce.sniff", new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
         components.put("produce.states", new ComponentStateTracker(produceSniffOut, produceStateOut, stateTable));
-        components.put("produce.stats", new ComponentStatisticsTracker(produceStateOut, produceStatsOut, criterias, statsTableAtomic));
-        components.put("produce.detect", new ComponentDetector(produceStatsOut, modelLive, rulesMap, syslogServ, syslogPort, _active));
+        components.put("produce.stats", new ComponentStatisticsCalculator(produceStateOut, produceStatsOut, criterias, statsTableAtomic));
+        components.put("produce.detect", new ComponentDetector(produceStatsOut, modelLive, rulesManager, syslogServ, syslogPort));
         produceSniffOut.setWriter((ComponentActive) components.get("produce.sniff"));
         produceSniffOut.setReader((ComponentActive) components.get("produce.states"));
         produceStateOut.setWriter((ComponentActive) components.get("produce.states"));

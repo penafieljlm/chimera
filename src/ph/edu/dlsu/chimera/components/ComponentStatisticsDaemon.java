@@ -15,13 +15,13 @@ import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsTable extends ComponentActive {
+public class ComponentStatisticsDaemon extends ComponentActive {
 
     public final Criteria[] criterias;
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
     public final long statsTimeoutMs;
 
-    public ComponentStatisticsTable(Criteria[] criterias,
+    public ComponentStatisticsDaemon(Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable,
             long statsTimeoutMs) {
         this.setPriority(Thread.MIN_PRIORITY);
@@ -43,7 +43,7 @@ public class ComponentStatisticsTable extends ComponentActive {
                     }
                 }
             } else {
-                throw new Exception("Error: [Statistics Table] statisticsTable is null.");
+                throw new Exception("Error: [Statistics Daemon] statisticsTable is null.");
             }
         }
     }
