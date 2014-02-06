@@ -56,7 +56,7 @@ import ph.edu.dlsu.chimera.util.UtilsTraining;
  */
 public class Chimera {
 
-    public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout) throws Exception {
+    public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout, Integer _syslogport) throws Exception {
         //load config
         Config config = Config.loadConfig();
 
@@ -71,6 +71,9 @@ public class Chimera {
         }
         if (_statstimeout != null) {
             config.statsTimeoutMs = _statstimeout;
+        }
+        if (_syslogport != null) {
+            config.syslogPort = _syslogport;
         }
 
         //save config
@@ -241,7 +244,7 @@ public class Chimera {
         return result;
     }
 
-    public static Log[] cproduce(PhaseMonitorProduction _monitor, String _input, String _syslog, boolean _active) throws Exception {
+    public static Log[] cproduce(PhaseMonitorProduction _monitor, String _input, String _syslog, Integer _syslogport, boolean _active) throws Exception {
         //check parameters
         if (_input == null) {
             throw new Exception("The argument '-input' must be provided.");
@@ -260,6 +263,7 @@ public class Chimera {
 
         //syslog server
         InetAddress syslogServ = (_syslog != null) ? InetAddress.getByName(_syslog) : null;
+        int syslogPort = (_syslogport != null) ? _syslogport : config.syslogPort;
 
         //queues
         IntermodulePipe<PduAtomic> produceSniffOut = new IntermodulePipe<PduAtomic>();
@@ -282,7 +286,7 @@ public class Chimera {
         components.put("produce.sniff", new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
         components.put("produce.states", new ComponentStateTracker(produceSniffOut, produceStateOut, stateTable));
         components.put("produce.stats", new ComponentStatisticsTracker(produceStateOut, produceStatsOut, criterias, statsTableAtomic));
-        components.put("produce.detect", new ComponentDetector(produceStatsOut, modelLive, rulesMap, syslogServ, _active));
+        components.put("produce.detect", new ComponentDetector(produceStatsOut, modelLive, rulesMap, syslogServ, syslogPort, _active));
         produceSniffOut.setWriter((ComponentActive) components.get("produce.sniff"));
         produceSniffOut.setReader((ComponentActive) components.get("produce.states"));
         produceStateOut.setWriter((ComponentActive) components.get("produce.states"));

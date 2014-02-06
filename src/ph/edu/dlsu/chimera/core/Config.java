@@ -22,12 +22,14 @@ public final class Config {
     public String ifProtected;
     public long statsTimeoutMs;
     public long stateTimeoutMs;
+    public int syslogPort;
 
     public Config() {
         this.controlPort = 9999;
         this.ifProtected = null;
         this.statsTimeoutMs = 300000;
         this.stateTimeoutMs = 300000;
+        this.syslogPort = 514;
     }
 
     public static Config loadConfig() throws Exception {
