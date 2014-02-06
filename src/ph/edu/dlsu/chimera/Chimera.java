@@ -273,7 +273,7 @@ public class Chimera {
         //shared resources
         ConcurrentHashMap<CriteriaInstance, Statistics> statsTableAtomic = new ConcurrentHashMap<CriteriaInstance, Statistics>();
         ConcurrentHashMap<TcpSocketPair, Connection> stateTable = new ConcurrentHashMap<TcpSocketPair, Connection>();
-        List<Object> rulesMap = (_active) ? Collections.synchronizedList(Collections.EMPTY_LIST) : null;
+        List<Object> rulesMap = (_active) ? new ArrayList<Object>() : null;
 
         //component holder
         HashMap<String, Component> components = new HashMap<String, Component>();

@@ -78,26 +78,33 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     protected void preLoop() throws Exception {
         if (this.active) {
             this.iptable = new IpTables("filter");
-            //clean up
-            for (String ch : this.iptable.getAllChains()) {
-                if (ch.equalsIgnoreCase(ComponentDetector.CHIMERA_CHAIN)) {
-                    this.iptable.deleteChain(ch);
-                }
-            }
             this.iptable.flushEntries(ComponentDetector.FORWARD_CHAIN);
-            this.iptable.commit();
             //create master chain
-            this.iptable.createChain(ComponentDetector.CHIMERA_CHAIN);
+            if (!this.iptable.getAllChains().contains(ComponentDetector.CHIMERA_CHAIN)) {
+                this.iptable.createChain(ComponentDetector.CHIMERA_CHAIN);
+            } else {
+                this.iptable.flushEntries(ComponentDetector.CHIMERA_CHAIN);
+            }
             IpRule toChimeraChain = new IpRule();
             toChimeraChain.setJump(ComponentDetector.CHIMERA_CHAIN);
             this.iptable.appendEntry(ComponentDetector.FORWARD_CHAIN, toChimeraChain);
-            this.iptable.commit();
+            boolean ok;
+            do {
+                ok = true;
+                try {
+                    System.out.println("96");
+                    this.iptable.commit();
+                } catch (Exception ex) {
+                    ok = false;
+                }
+            } while (!ok);
         }
     }
 
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
         if (input.direction == TrafficDirection.Ingress) {
+            boolean commit = false;
             //integrity check
             if (this.active) {
                 if (this.rulesMap != null) {
@@ -113,12 +120,12 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                 if (this.active) {
                     if (this.rulesMap != null) {
                         //add rules
-                        if (!this.rulesMap.contains(input.getConnection().sockets)) {
+                        if (input.getConnection() != null && !this.rulesMap.contains(input.getConnection().sockets)) {
                             IpRule rule = input.getConnection().sockets.createRule();
                             if (rule != null) {
                                 rule.setJump(ComponentDetector.DROP_JUMP);
                                 this.iptable.appendEntry(ComponentDetector.CHIMERA_CHAIN, rule);
-                                this.iptable.commit();
+                                commit = true;
                             }
                             this.rulesMap.add(input.getConnection().sockets);
                         }
@@ -129,11 +136,12 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                 if (this.active) {
                     if (this.rulesMap != null) {
                         //remove rules
-                        if (this.rulesMap.contains(input.getConnection().sockets)) {
+                        if (input.getConnection() != null && this.rulesMap.contains(input.getConnection().sockets)) {
                             if (this.active) {
                                 int idx = this.rulesMap.indexOf(input.getConnection().sockets);
                                 this.iptable.deleteNumEntry(ComponentDetector.CHIMERA_CHAIN, idx);
-                                this.iptable.commit();
+                                System.out.println("Conn Normal " + idx);
+                                commit = true;
                                 this.rulesMap.remove(input.getConnection().sockets);
                             }
                         }
@@ -155,7 +163,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                                 if (rule != null) {
                                     rule.setJump(ComponentDetector.DROP_JUMP);
                                     this.iptable.appendEntry(ComponentDetector.CHIMERA_CHAIN, rule);
-                                    this.iptable.commit();
+                                    commit = true;
                                 }
                                 this.rulesMap.add(inst);
                             }
@@ -169,12 +177,28 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                             if (this.rulesMap.contains(inst)) {
                                 int idx = this.rulesMap.indexOf(inst);
                                 this.iptable.deleteNumEntry(ComponentDetector.CHIMERA_CHAIN, idx);
-                                this.iptable.commit();
+                                System.out.println("Crit Normal " + idx);
+                                commit = true;
                                 this.rulesMap.remove(inst);
                             }
                         }
                     }
                 }
+            }
+            if (this.active && commit) {
+                int i = 0;
+                boolean ok;
+                do {
+                    ok = true;
+                    try {
+                        System.out.println("190-" + i);
+                        this.iptable.commit();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        i++;
+                        ok = false;
+                    }
+                } while (!ok);
             }
         } else {
             throw new Exception("Error: [Detector] Encountered egress packet.");
@@ -186,12 +210,19 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     protected void postLoop() throws Exception {
         //clean up
         if (this.active) {
-            for (String ch : this.iptable.getAllChains()) {
-                if (ch.equalsIgnoreCase(ComponentDetector.CHIMERA_CHAIN)) {
-                    this.iptable.deleteChain(ch);
-                }
+            if (this.iptable.getAllChains().contains(ComponentDetector.CHIMERA_CHAIN)) {
+                this.iptable.flushEntries(ComponentDetector.CHIMERA_CHAIN);
+                boolean ok;
+                do {
+                    ok = true;
+                    try {
+                        System.out.println("210");
+                        this.iptable.commit();
+                    } catch (Exception ex) {
+                        ok = false;
+                    }
+                } while (!ok);
             }
-            this.iptable.commit();
         }
     }
 
@@ -255,12 +286,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                                 valb = valb.append("|").append(_inst.value(i)).append("|");
                             }
                         }
-                        System.out.println(attb);
-                        System.out.println(valb);
                         evalResult = this.model.criteriaSubModels.get(crt).tree.classifyInstance(_inst);
-                        System.out.println(this.model.criteriaSubModels.get(crt).tree.graph());
-                        System.out.println(this.model.criteriaSubModels.get(crt).tree.toSource("Tree"));
-                        System.out.println(evalResult);
                     } catch (Exception ex) {
                     }
                     allow = evalResult != this.model.criteriaSubModels.get(crt).attackClass;
@@ -273,18 +299,18 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     }
 
     protected void logConnectionViolation(PduAtomic pkt) {
+        System.out.println("Conn Attack");
         LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
         this.logs.add(log);
-        System.out.println(pkt.packet.toString());
         if (this.syslogLogger != null) {
             this.syslogLogger.alert(JsonWriter.toJson(log));
         }
     }
 
     protected void logCriteriaViolation(PduAtomic pkt, Criteria criteria, Statistics statistics) {
+        System.out.println("Crit Attack");
         LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
         this.logs.add(log);
-        System.out.println(pkt.packet.toString());
         if (this.syslogLogger != null) {
             this.syslogLogger.alert(JsonWriter.toJson(log));
         }
