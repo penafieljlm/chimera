@@ -53,12 +53,6 @@ public class cconfig {
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n        DEFAULT CONFIG.. 514"
-            + "\n    -rulestimeout"
-            + "\n        DESCRIPTION"
-            + "\n             The amount of time before an iptables rule is allowed to be deleted."
-            + "\n        REQUIRED........ No"
-            + "\n        DEFAULT VALUE... N/A"
-            + "\n        DEFAULT CONFIG.. 30000"
             + "\n    /show"
             + "\n        DESCRIPTION"
             + "\n            Print the configuration after modification are made."
@@ -121,18 +115,8 @@ public class cconfig {
                 throw new Exception("The argument '-syslogport' must provide a numerical value.");
             }
 
-            //rules timeout
-            Long _rulesTimeout = null;
-            try {
-                if (_args.containsKey("-rulestimeout")) {
-                    _rulesTimeout = Long.parseLong(_args.get("-rulestimeout"));
-                }
-            } catch (NumberFormatException ex) {
-                throw new Exception("The argument '-rulestimeout' must provide a numerical value.");
-            }
-
             //execute
-            Config config = Chimera.cconfig(_port, _protected, _statetimeout, _statstimeout, _syslogport, _rulesTimeout);
+            Config config = Chimera.cconfig(_port, _protected, _statetimeout, _statstimeout, _syslogport);
 
             //show
             boolean show = false;

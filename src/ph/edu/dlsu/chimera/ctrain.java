@@ -6,6 +6,7 @@ package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
 import ph.edu.dlsu.chimera.core.TrainingResult;
+import ph.edu.dlsu.chimera.monitors.PhaseMonitorTraining;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
@@ -115,15 +116,28 @@ public class ctrain {
                 exclude = Boolean.parseBoolean(_args.get("/exclude"));
             }
 
+            //monitor
+            PhaseMonitorTraining monitorTraining = (verbose) ? new PhaseMonitorTraining(200) {
+
+                @Override
+                protected void update() {
+                    System.out.print("[" + (this.getProgress() * 100) + "] " + this.getStatus() + "\r");
+                }
+            } : new PhaseMonitorTraining(200) {
+
+                @Override
+                protected void update() {
+                }
+            };
+
             //execute
-            TrainingResult result = Chimera.ctrain(trainingFile, modelFile, filter, exclude);
+            TrainingResult result = Chimera.ctrain(monitorTraining, trainingFile, modelFile, filter, exclude);
 
             //print results
             if (verbose) {
                 UtilsPrinting.printTrainingResult(result);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'ctrain /help' to see usage.");
         }

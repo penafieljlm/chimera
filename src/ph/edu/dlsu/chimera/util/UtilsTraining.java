@@ -22,6 +22,7 @@ import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.TrainingResult;
 import ph.edu.dlsu.chimera.core.model.SubModel;
 import ph.edu.dlsu.chimera.core.PduAtomic;
+import ph.edu.dlsu.chimera.monitors.PhaseMonitorTraining;
 import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -258,18 +259,34 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
-    public static TrainingResult train(File trainingFile, String filter, boolean exclude) throws Exception {
+    public static TrainingResult train(PhaseMonitorTraining monitor, File trainingFile, String filter, boolean exclude) throws Exception {
         //open training set file
+        if (monitor != null) {
+            monitor.setProgress(0.01);
+            monitor.setStatus("Opening Training Set File");
+        }
         CSVReader reader = new CSVReader(new FileReader(trainingFile));
         //read interface
+        if (monitor != null) {
+            monitor.setProgress(0.02);
+            monitor.setStatus("Reading Interface");
+        }
         String[] ifaces = reader.readNext();
         //read criterias
+        if (monitor != null) {
+            monitor.setProgress(0.03);
+            monitor.setStatus("Reading Criterias");
+        }
         String[] _criterias = reader.readNext();
         Criteria[] criterias = new Criteria[_criterias.length];
         for (int i = 0; i < criterias.length; i++) {
             criterias[i] = new Criteria(_criterias[i]);
         }
         //create training subsets files
+        if (monitor != null) {
+            monitor.setProgress(0.04);
+            monitor.setStatus("Splitting Training Set (Creating Files)");
+        }
         File connectionDataSet = File.createTempFile("connection", ".trntmpcsv");
         HashMap<Criteria, File> criteriaDataSet = new HashMap<Criteria, File>();
         int ct = 0;
@@ -278,12 +295,20 @@ public abstract class UtilsTraining {
             ct++;
         }
         //instance count per training set
+        if (monitor != null) {
+            monitor.setProgress(0.07);
+            monitor.setStatus("Splitting Training Set (Counting Instances)");
+        }
         long connectionInstancesCount = 0;
         HashMap<Criteria, Long> criteriaInstancesCount = new HashMap<Criteria, Long>();
         for (Criteria crt : criterias) {
             criteriaInstancesCount.put(crt, new Long(0));
         }
         //open writers and write headers
+        if (monitor != null) {
+            monitor.setProgress(0.10);
+            monitor.setStatus("Splitting Training Set (Opening Writers)");
+        }
         String[] attackHeader = {UtilsTraining.ATTK_HEADER};
         HashMap<Criteria, CSVWriter> criteriaDataSetWriter;
         CSVWriter connDataSetWriter = new CSVWriter(new FileWriter(connectionDataSet));
@@ -296,6 +321,10 @@ public abstract class UtilsTraining {
         String[] headers = reader.readNext();
         if (headers == null) {
             throw new Exception("Missing headers.");
+        }
+        if (monitor != null) {
+            monitor.setProgress(0.18);
+            monitor.setStatus("Splitting Training Set (Copying Instances)");
         }
         String[] instance;
         while ((instance = reader.readNext()) != null) {
@@ -325,6 +354,10 @@ public abstract class UtilsTraining {
         for (Criteria crt : criteriaDataSetWriter.keySet()) {
             criteriaDataSetWriter.get(crt).close();
         }
+        if (monitor != null) {
+            monitor.setProgress(0.31);
+            monitor.setStatus("Opening Splitted Datasets");
+        }
         //create subset data sources
         CSVLoader connCsvLoader = (connectionInstancesCount > 0) ? new CSVLoader() : null;
         if (connCsvLoader != null) {
@@ -348,12 +381,20 @@ public abstract class UtilsTraining {
             ct++;
         }
         //create subset instances
+        if (monitor != null) {
+            monitor.setProgress(0.48);
+            monitor.setStatus("Reading Splitted Datasets");
+        }
         Instances connInstance = (connSource != null) ? connSource.getDataSet() : null;
         HashMap<Criteria, Instances> criteriaInstance = new HashMap<Criteria, Instances>();
         for (Criteria crt : criteriaSource.keySet()) {
             criteriaInstance.put(crt, criteriaSource.get(crt).getDataSet());
         }
         //set class attributes
+        if (monitor != null) {
+            monitor.setProgress(0.50);
+            monitor.setStatus("Setting Class Attributes of Splitted Datasets");
+        }
         if (connInstance != null) {
             if (connInstance.numAttributes() > 2) {
                 if (connInstance.classIndex() == -1) {
@@ -383,6 +424,10 @@ public abstract class UtilsTraining {
             }
         }
         //set classifier options
+        if (monitor != null) {
+            monitor.setProgress(0.61);
+            monitor.setStatus("Preparing Classifiers");
+        }
         String[] options;
         try {
             options = weka.core.Utils.splitOptions(UtilsTraining.CLASSIFIER_OPTIONS);
@@ -390,6 +435,10 @@ public abstract class UtilsTraining {
             throw new Exception("Classifier options corrupted.");
         }
         //create trees
+        if (monitor != null) {
+            monitor.setProgress(0.64);
+            monitor.setStatus("Creating J48 Trees");
+        }
         J48 connTree = (connInstance != null) ? new J48() : null;
         if (connTree != null) {
             connTree.setOptions(options);
@@ -401,6 +450,10 @@ public abstract class UtilsTraining {
             criteriaTree.put(crt, _criteriaTree);
         }
         //build trees
+        if (monitor != null) {
+            monitor.setProgress(0.71);
+            monitor.setStatus("Building J48 Trees");
+        }
         if (connTree != null && connInstance != null) {
             try {
                 boolean _exclude;
@@ -454,6 +507,10 @@ public abstract class UtilsTraining {
             }
         }
         //create submodels
+        if (monitor != null) {
+            monitor.setProgress(0.89);
+            monitor.setStatus("Packaging Trees Into Submodels");
+        }
         SubModel connSubModel = null;
         if (connInstance != null) {
             FastVector connAttrs = new FastVector();
@@ -476,6 +533,10 @@ public abstract class UtilsTraining {
             criteriaSubModels.put(crt, sm);
         }
         //return model
+        if (monitor != null) {
+            monitor.setProgress(1.00);
+            monitor.setStatus("Creating Model");
+        }
         return new TrainingResult(new ModelLive(iface.toString(), connSubModel, criteriaSubModels), connInstance, criteriaInstance);
     }
 

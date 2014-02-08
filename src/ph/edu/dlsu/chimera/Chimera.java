@@ -13,7 +13,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jnetpcap.PcapIf;
 import ph.edu.dlsu.chimera.components.Component;
@@ -21,7 +20,6 @@ import ph.edu.dlsu.chimera.components.ComponentActive;
 import ph.edu.dlsu.chimera.components.ComponentController;
 import ph.edu.dlsu.chimera.components.ComponentDetector;
 import ph.edu.dlsu.chimera.components.ComponentDumper;
-import ph.edu.dlsu.chimera.components.ComponentRulesDaemon;
 import ph.edu.dlsu.chimera.components.ComponentSniffer;
 import ph.edu.dlsu.chimera.components.ComponentStateDaemon;
 import ph.edu.dlsu.chimera.components.ComponentStateTracker;
@@ -45,6 +43,7 @@ import ph.edu.dlsu.chimera.messages.CommandDiagnose;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.messages.CommandQuit;
+import ph.edu.dlsu.chimera.monitors.PhaseMonitorTraining;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.rules.RulesManager;
 import ph.edu.dlsu.chimera.util.UtilsCommand;
@@ -57,7 +56,7 @@ import ph.edu.dlsu.chimera.util.UtilsTraining;
  */
 public class Chimera {
 
-    public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout, Integer _syslogport, Long _rulestimeout) throws Exception {
+    public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout, Integer _syslogport) throws Exception {
         //load config
         Config config = Config.loadConfig();
 
@@ -75,9 +74,6 @@ public class Chimera {
         }
         if (_syslogport != null) {
             config.syslogPort = _syslogport;
-        }
-        if (_rulestimeout != null) {
-            config.rulesTimeoutMs = _rulestimeout;
         }
 
         //save config
@@ -208,7 +204,7 @@ public class Chimera {
         return dumper.getProcessed();
     }
 
-    public static TrainingResult ctrain(String _input, String _output, String _filter, boolean _exclude) throws Exception {
+    public static TrainingResult ctrain(PhaseMonitorTraining _monitor, String _input, String _output, String _filter, boolean _exclude) throws Exception {
         //check parameters
         if (_input == null) {
             throw new Exception("The argument '-input' must be provided.");
@@ -227,7 +223,7 @@ public class Chimera {
         String filter = (_filter != null) ? _filter : "";
 
         //create model
-        TrainingResult result = UtilsTraining.train(trainingFile, filter, _exclude);
+        TrainingResult result = UtilsTraining.train(_monitor, trainingFile, filter, _exclude);
 
         //wrap into serializable model
         ModelSerializable modelSerializable = new ModelSerializable(result.model);
@@ -285,7 +281,6 @@ public class Chimera {
         //daemons
         components.put("produce.stats", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
         components.put("produce.states", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
-        components.put("produce.rules", new ComponentRulesDaemon(rulesManager, config.rulesTimeoutMs));
 
         //pipeline
         components.put("produce.sniff", new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
