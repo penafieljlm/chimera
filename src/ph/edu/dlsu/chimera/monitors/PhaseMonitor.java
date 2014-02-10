@@ -16,11 +16,11 @@ public abstract class PhaseMonitor {
 
     protected abstract void update();
 
-    public boolean isTerminate() {
+    public boolean isTerminated() {
         return terminate;
     }
 
-    public void setTerminate(boolean terminate) {
-        this.terminate = terminate;
+    public void terminate() {
+        this.terminate = true;
     }
 }

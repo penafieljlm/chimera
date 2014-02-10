@@ -66,51 +66,59 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         this.logs = new ConcurrentLinkedQueue<Log>();
     }
 
+    private void evaluate(PduAtomic input) throws Exception {
+        //connection evaluation
+        if (!this.evaluateAgainstConnection(input)) {
+            //attack
+            this.logConnectionViolation(input);
+            if (this.rulesManager != null) {
+                //add rules
+                if (input.getConnection() != null && !this.rulesManager.contains(input.getConnection().sockets)) {
+                    IpRule rule = input.getConnection().sockets.createRule();
+                    if (rule != null) {
+                        rule.setJump(RulesManager.DROP_JUMP);
+                        this.rulesManager.append(input.getConnection(), rule);
+                    }
+                }
+            }
+        }
+        //criteria evaluation
+        HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(input);
+        for (Criteria crt : crtEval.keySet()) {
+            CriteriaInstance inst = crt.createInstance(input.packet);
+            if (!crtEval.get(crt)) {
+                //attack
+                this.logCriteriaViolation(input, crt, input.getConnection());
+                if (this.rulesManager != null) {
+                    //create rules
+                    if (!this.rulesManager.contains(inst)) {
+                        IpRule rule = inst.criteria.createRule(input.packet);
+                        if (rule != null) {
+                            rule.setJump(RulesManager.DROP_JUMP);
+                            this.rulesManager.append(inst, rule);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     protected PduAtomic process(PduAtomic input) throws Exception {
         if (input.direction == TrafficDirection.Ingress) {
-            synchronized (this.rulesManager) {
-                //integrity check
-                if (this.rulesManager != null && this.rulesManager.isTampered()) {
-                    throw new Exception("Error: [Detector] The CHIMERA iptables chain has been tampered with.");
-                }
-                //connection evaluation
-                if (!this.evaluateAgainstConnection(input)) {
-                    //attack
-                    this.logConnectionViolation(input);
-                    if (this.rulesManager != null) {
-                        //add rules
-                        if (input.getConnection() != null && !this.rulesManager.contains(input.getConnection().sockets)) {
-                            IpRule rule = input.getConnection().sockets.createRule();
-                            if (rule != null) {
-                                rule.setJump(RulesManager.DROP_JUMP);
-                                this.rulesManager.append(input.getConnection(), rule);
-                            }
-                        }
+            if (this.rulesManager != null) {
+                synchronized (this.rulesManager) {
+                    //integrity check
+                    if (this.rulesManager != null && this.rulesManager.isTampered()) {
+                        throw new Exception("Error: [Detector] The CHIMERA iptables chain has been tampered with.");
+                    }
+                    this.evaluate(input);
+                    if (this.rulesManager.hasUncommitedChanges()) {
+                        this.rulesManager.commit();
                     }
                 }
-                //criteria evaluation
-                HashMap<Criteria, Boolean> crtEval = this.evaluateAgainstCriterias(input);
-                for (Criteria crt : crtEval.keySet()) {
-                    CriteriaInstance inst = crt.createInstance(input.packet);
-                    if (!crtEval.get(crt)) {
-                        //attack
-                        this.logCriteriaViolation(input, crt, input.getConnection());
-                        if (this.rulesManager != null) {
-                            //create rules
-                            if (!this.rulesManager.contains(inst)) {
-                                IpRule rule = inst.criteria.createRule(input.packet);
-                                if (rule != null) {
-                                    rule.setJump(RulesManager.DROP_JUMP);
-                                    this.rulesManager.append(inst, rule);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (this.rulesManager.hasUncommitedChanges()) {
-                    this.rulesManager.commit();
-                }
+            } else {
+                this.evaluate(input);
             }
         } else {
             throw new Exception("Error: [Detector] Encountered egress packet.");
