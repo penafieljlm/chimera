@@ -189,6 +189,10 @@ public class Chimera {
                 if (_monitor.getInstancesGathered() != dumper.getProcessed()) {
                     _monitor.setInstancesGathered(dumper.getProcessed());
                 }
+                if (_monitor.isTerminate()) {
+                    Chimera.cquit(components);
+                    break;
+                }
             }
         }
 
@@ -225,20 +229,23 @@ public class Chimera {
         //create model
         TrainingResult result = UtilsTraining.train(_monitor, trainingFile, filter, _exclude);
 
-        //wrap into serializable model
-        ModelSerializable modelSerializable = new ModelSerializable(result.model);
+        //try write
+        if (result != null) {
+            //wrap into serializable model
+            ModelSerializable modelSerializable = new ModelSerializable(result.model);
 
-        //open output stream
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
+            //open output stream
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(modelFile));
 
-        //write
-        oos.writeObject(modelSerializable);
+            //write
+            oos.writeObject(modelSerializable);
 
-        //flush
-        oos.flush();
+            //flush
+            oos.flush();
 
-        //close
-        oos.close();
+            //close
+            oos.close();
+        }
 
         //return
         return result;
@@ -314,6 +321,10 @@ public class Chimera {
             while (detector.isAlive()) {
                 Thread.sleep(_monitor.updateInterval);
                 _monitor.setLogs(detector.logs);
+                if (_monitor.isTerminate()) {
+                    Chimera.cquit(components);
+                    break;
+                }
             }
         }
 
@@ -335,5 +346,15 @@ public class Chimera {
 
         //run command
         Object result = UtilsCommand.send(config.controlPort, new CommandQuit());
+    }
+
+    public static void cquit(HashMap<String, Component> assembly) throws Exception {
+        for (String c : assembly.keySet()) {
+            Component _c = assembly.get(c);
+            if (_c instanceof ComponentActive) {
+                ComponentActive _ca = (ComponentActive) _c;
+                _ca.kill();
+            }
+        }
     }
 }

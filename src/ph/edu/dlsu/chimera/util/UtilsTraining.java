@@ -264,18 +264,27 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.01);
             monitor.setStatus("Opening Training Set File");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         CSVReader reader = new CSVReader(new FileReader(trainingFile));
         //read interface
         if (monitor != null) {
             monitor.setProgress(0.02);
             monitor.setStatus("Reading Interface");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         String[] ifaces = reader.readNext();
         //read criterias
         if (monitor != null) {
             monitor.setProgress(0.03);
             monitor.setStatus("Reading Criterias");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         String[] _criterias = reader.readNext();
         Criteria[] criterias = new Criteria[_criterias.length];
@@ -286,6 +295,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.04);
             monitor.setStatus("Splitting Training Set (Creating Files)");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         File connectionDataSet = File.createTempFile("connection", ".trntmpcsv");
         HashMap<Criteria, File> criteriaDataSet = new HashMap<Criteria, File>();
@@ -298,6 +310,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.07);
             monitor.setStatus("Splitting Training Set (Counting Instances)");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         long connectionInstancesCount = 0;
         HashMap<Criteria, Long> criteriaInstancesCount = new HashMap<Criteria, Long>();
@@ -308,6 +323,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.10);
             monitor.setStatus("Splitting Training Set (Opening Writers)");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         String[] attackHeader = {UtilsTraining.ATTK_HEADER};
         HashMap<Criteria, CSVWriter> criteriaDataSetWriter;
@@ -325,6 +343,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.18);
             monitor.setStatus("Splitting Training Set (Copying Instances)");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         String[] instance;
         while ((instance = reader.readNext()) != null) {
@@ -357,6 +378,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.31);
             monitor.setStatus("Opening Splitted Datasets");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         //create subset data sources
         CSVLoader connCsvLoader = (connectionInstancesCount > 0) ? new CSVLoader() : null;
@@ -384,6 +408,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.48);
             monitor.setStatus("Reading Splitted Datasets");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         Instances connInstance = (connSource != null) ? connSource.getDataSet() : null;
         HashMap<Criteria, Instances> criteriaInstance = new HashMap<Criteria, Instances>();
@@ -394,6 +421,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.50);
             monitor.setStatus("Setting Class Attributes of Splitted Datasets");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         if (connInstance != null) {
             if (connInstance.numAttributes() > 2) {
@@ -427,6 +457,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.61);
             monitor.setStatus("Preparing Classifiers");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         String[] options;
         try {
@@ -438,6 +471,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.64);
             monitor.setStatus("Creating J48 Trees");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         J48 connTree = (connInstance != null) ? new J48() : null;
         if (connTree != null) {
@@ -453,6 +489,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.71);
             monitor.setStatus("Building J48 Trees");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         if (connTree != null && connInstance != null) {
             try {
@@ -510,6 +549,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.89);
             monitor.setStatus("Packaging Trees Into Submodels");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         SubModel connSubModel = null;
         if (connInstance != null) {
@@ -536,6 +578,9 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(1.00);
             monitor.setStatus("Creating Model");
+            if (monitor.isTerminate()) {
+                return null;
+            }
         }
         return new TrainingResult(new ModelLive(iface.toString(), connSubModel, criteriaSubModels), connInstance, criteriaInstance);
     }
