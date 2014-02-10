@@ -264,7 +264,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.01);
             monitor.setStatus("Opening Training Set File");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -273,7 +273,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.02);
             monitor.setStatus("Reading Interface");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -282,7 +282,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.03);
             monitor.setStatus("Reading Criterias");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -295,7 +295,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.04);
             monitor.setStatus("Splitting Training Set (Creating Files)");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -310,7 +310,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.07);
             monitor.setStatus("Splitting Training Set (Counting Instances)");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -323,7 +323,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.10);
             monitor.setStatus("Splitting Training Set (Opening Writers)");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -343,7 +343,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.18);
             monitor.setStatus("Splitting Training Set (Copying Instances)");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -378,7 +378,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.31);
             monitor.setStatus("Opening Splitted Datasets");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -408,7 +408,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.48);
             monitor.setStatus("Reading Splitted Datasets");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -421,7 +421,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.50);
             monitor.setStatus("Setting Class Attributes of Splitted Datasets");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -457,7 +457,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.61);
             monitor.setStatus("Preparing Classifiers");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -471,7 +471,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.64);
             monitor.setStatus("Creating J48 Trees");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -489,7 +489,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.71);
             monitor.setStatus("Building J48 Trees");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -549,7 +549,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(0.89);
             monitor.setStatus("Packaging Trees Into Submodels");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }
@@ -578,7 +578,7 @@ public abstract class UtilsTraining {
         if (monitor != null) {
             monitor.setProgress(1.00);
             monitor.setStatus("Creating Model");
-            if (monitor.isTerminate()) {
+            if (monitor.isTerminated()) {
                 return null;
             }
         }

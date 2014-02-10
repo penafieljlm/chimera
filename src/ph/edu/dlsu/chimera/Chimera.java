@@ -189,7 +189,7 @@ public class Chimera {
                 if (_monitor.getInstancesGathered() != dumper.getProcessed()) {
                     _monitor.setInstancesGathered(dumper.getProcessed());
                 }
-                if (_monitor.isTerminate()) {
+                if (_monitor.isTerminated()) {
                     Chimera.cquit(components);
                     break;
                 }
@@ -321,7 +321,7 @@ public class Chimera {
             while (detector.isAlive()) {
                 Thread.sleep(_monitor.updateInterval);
                 _monitor.setLogs(detector.logs);
-                if (_monitor.isTerminate()) {
+                if (_monitor.isTerminated()) {
                     Chimera.cquit(components);
                     break;
                 }
