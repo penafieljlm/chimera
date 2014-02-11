@@ -42,6 +42,7 @@ public final class RulesManager {
         this.ipTables.appendEntry(RulesManager.FORWARD_CHAIN, toChimeraChain);
         this.commitThread = new CommitThread(this);
         this.commit();
+        this.commitThread.join();
     }
 
     public synchronized boolean isTampered() throws Exception {
@@ -103,6 +104,7 @@ public final class RulesManager {
             this.manager = manager;
         }
 
+        @Override
         public synchronized void run() {
             synchronized (this.manager) {
                 boolean ok;
@@ -113,7 +115,7 @@ public final class RulesManager {
                     } catch (Exception ex) {
                         ok = false;
                         try {
-                            this.sleep(1000);
+                            Thread.sleep(1000);
                         } catch (Exception ex1) {
                         }
                     }
