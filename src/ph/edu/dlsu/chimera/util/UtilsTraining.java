@@ -287,10 +287,13 @@ public abstract class UtilsTraining {
             }
         }
         String[] _criterias = reader.readNext();
-        Criteria[] criterias = new Criteria[_criterias.length];
-        for (int i = 0; i < criterias.length; i++) {
-            criterias[i] = new Criteria(_criterias[i]);
+        ArrayList<Criteria> _criteriasx = new ArrayList<Criteria>();
+        for (String crt : _criterias) {
+            if (!crt.isEmpty()) {
+                _criteriasx.add(new Criteria(crt));
+            }
         }
+        Criteria[] criterias = _criteriasx.toArray(new Criteria[0]);
         //create training subsets files
         if (monitor != null) {
             monitor.setProgress(0.04);
@@ -505,7 +508,9 @@ public abstract class UtilsTraining {
                             _exclude = !(attr.name().matches(filter) ^ _exclude);
                         }
                         if (_exclude) {
-                            connInstance.deleteAttributeAt(attr.index());
+                            if (attr.index() != connInstance.classIndex()) {
+                                connInstance.deleteAttributeAt(attr.index());
+                            }
                             break;
                         }
                     }
@@ -528,7 +533,9 @@ public abstract class UtilsTraining {
                             _exclude = !(attr.name().matches(filter) ^ _exclude);
                         }
                         if (_exclude) {
-                            criteriaInstance.get(crt).deleteAttributeAt(attr.index());
+                            if (attr.index() != criteriaInstance.get(crt).classIndex()) {
+                                criteriaInstance.get(crt).deleteAttributeAt(attr.index());
+                            }
                             break;
                         }
                     }
