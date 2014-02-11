@@ -22,6 +22,7 @@ public final class RulesManager {
     private final IpTables ipTables;
     private final List<RuleInfo> rulesMap;
     private boolean hasUncommitedChanges;
+    private CommitThread commitThread;
 
     public RulesManager() throws Exception {
         //create rulesmap and filter
@@ -39,6 +40,7 @@ public final class RulesManager {
         IpRule toChimeraChain = new IpRule();
         toChimeraChain.setJump(RulesManager.CHIMERA_CHAIN);
         this.ipTables.appendEntry(RulesManager.FORWARD_CHAIN, toChimeraChain);
+        this.commitThread = new CommitThread(this);
         this.commit();
     }
 
@@ -71,16 +73,9 @@ public final class RulesManager {
     }
 
     public synchronized void commit() {
-        boolean ok;
-        do {
-            ok = true;
-            try {
-                this.ipTables.commit();
-            } catch (Exception ex) {
-                ok = false;
-            }
-        } while (!ok);
-        this.hasUncommitedChanges = false;
+        if (this.commitThread.isAlive()) {
+            this.commitThread.start();
+        }
     }
 
     public synchronized boolean hasUncommitedChanges() {
@@ -98,5 +93,33 @@ public final class RulesManager {
 
     public ArrayList<RuleInfo> getRulesMap() {
         return new ArrayList<RuleInfo>(this.rulesMap);
+    }
+
+    private class CommitThread extends Thread {
+
+        public final RulesManager manager;
+
+        public CommitThread(RulesManager manager) {
+            this.manager = manager;
+        }
+
+        public synchronized void run() {
+            synchronized (this.manager) {
+                boolean ok;
+                do {
+                    ok = true;
+                    try {
+                        this.manager.ipTables.commit();
+                    } catch (Exception ex) {
+                        ok = false;
+                        try {
+                            this.sleep(1000);
+                        } catch (Exception ex1) {
+                        }
+                    }
+                } while (!ok);
+                this.manager.hasUncommitedChanges = false;
+            }
+        }
     }
 }
