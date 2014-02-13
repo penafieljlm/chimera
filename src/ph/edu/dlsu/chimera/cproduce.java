@@ -114,8 +114,9 @@ public class cproduce {
             //execute
             Chimera.cproduce(monitorProduction, modelFile, syslog, syslogport, active);
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.err.println(ex.getMessage());
-            System.out.println("Type 'cgather /help' to see usage.");
+            System.out.println("Type 'cproduce /help' to see usage.");
         }
     }
 }

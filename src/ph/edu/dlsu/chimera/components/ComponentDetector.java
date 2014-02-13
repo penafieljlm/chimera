@@ -68,8 +68,11 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
 
     private void evaluate(PduAtomic input) throws Exception {
         //connection evaluation
+        i++;
+        boolean atk = false;
         if (!this.evaluateAgainstConnection(input)) {
             //attack
+            atk = true;
             this.logConnectionViolation(input);
             if (this.rulesManager != null) {
                 //add rules
@@ -88,6 +91,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
             CriteriaInstance inst = crt.createInstance(input.packet);
             if (!crtEval.get(crt)) {
                 //attack
+                atk = true;
                 this.logCriteriaViolation(input, crt, input.getConnection());
                 if (this.rulesManager != null) {
                     //create rules
@@ -101,6 +105,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                 }
             }
         }
+        System.out.println(i + "," + input.getProtocolName() + "," + ((atk) ? "Attack" : "Normal"));
     }
 
     @Override
@@ -206,8 +211,9 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         return report;
     }
 
+    int i = 0;
+
     protected void logConnectionViolation(PduAtomic pkt) {
-        System.out.println("Conn Attack");
         LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());
         this.logs.add(log);
         if (this.syslogLogger != null) {
@@ -216,7 +222,6 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     }
 
     protected void logCriteriaViolation(PduAtomic pkt, Criteria criteria, Statistics statistics) {
-        System.out.println("Crit Attack");
         LogAttackCriteria log = new LogAttackCriteria(new Date(), criteria, pkt.packet, statistics);
         this.logs.add(log);
         if (this.syslogLogger != null) {

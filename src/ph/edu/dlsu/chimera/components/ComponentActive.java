@@ -62,6 +62,7 @@ public abstract class ComponentActive extends Thread implements Component {
         try {
             this.componentRun();
         } catch (Exception ex) {
+            ex.printStackTrace();
             this.errors.add(ex);
             Logger.getLogger(ComponentActive.class.getName()).log(Level.WARNING, null, ex);
         }
