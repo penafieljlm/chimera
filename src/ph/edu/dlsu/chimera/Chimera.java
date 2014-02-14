@@ -42,6 +42,7 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.messages.CommandDiagnose;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.core.PduAtomic;
+import ph.edu.dlsu.chimera.core.TrainingOutputResult;
 import ph.edu.dlsu.chimera.messages.CommandQuit;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorTraining;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
@@ -208,7 +209,7 @@ public class Chimera {
         return dumper.getProcessed();
     }
 
-    public static TrainingResult ctrain(PhaseMonitorTraining _monitor, String _input, String _output, String _filter, boolean _exclude) throws Exception {
+    public static TrainingOutputResult ctrain(PhaseMonitorTraining _monitor, String _input, String _output, String _filter, boolean _exclude) throws Exception {
         //check parameters
         if (_input == null) {
             throw new Exception("The argument '-input' must be provided.");
@@ -245,7 +246,7 @@ public class Chimera {
         }
 
         //return
-        return result;
+        return new TrainingOutputResult(result, modelFile);
     }
 
     public static Log[] cproduce(PhaseMonitorProduction _monitor, String _input, String _syslog, Integer _syslogport, boolean _active) throws Exception {
