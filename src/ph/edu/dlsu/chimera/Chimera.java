@@ -223,11 +223,8 @@ public class Chimera {
         //model file
         File modelFile = new File(_output + ".cmodel");
 
-        //filter
-        String filter = (_filter != null) ? _filter : "";
-
         //create model
-        TrainingResult result = UtilsTraining.train(_monitor, trainingFile, filter, _exclude);
+        TrainingResult result = UtilsTraining.train(_monitor, trainingFile, _filter, _exclude);
 
         //try write
         if (result != null) {
