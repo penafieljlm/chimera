@@ -22,7 +22,7 @@ public final class RulesManager {
     private final IpTables ipTables;
     private final List<RuleInfo> rulesMap;
     private boolean hasUncommitedChanges;
-    private CommitThread commitThread;
+    private final CommitThread commitThread;
 
     public RulesManager() throws Exception {
         //create rulesmap and filter
@@ -41,8 +41,8 @@ public final class RulesManager {
         toChimeraChain.setJump(RulesManager.CHIMERA_CHAIN);
         this.ipTables.appendEntry(RulesManager.FORWARD_CHAIN, toChimeraChain);
         this.commitThread = new CommitThread(this);
+        this.commitThread.start();
         this.commit();
-        this.commitThread.join();
     }
 
     public synchronized boolean isTampered() throws Exception {
@@ -73,9 +73,11 @@ public final class RulesManager {
         return this.rulesMap.remove(index);
     }
 
+    int i = 0;
+
     public synchronized void commit() {
-        if (this.commitThread.isAlive()) {
-            this.commitThread.start();
+        synchronized (this.commitThread) {
+            this.commitThread.notify();
         }
     }
 
@@ -99,29 +101,53 @@ public final class RulesManager {
     private class CommitThread extends Thread {
 
         public final RulesManager manager;
+        private boolean isRunning;
 
         public CommitThread(RulesManager manager) {
             this.manager = manager;
+            this.isRunning = false;
+        }
+
+        @Override
+        public synchronized void start() {
+            this.isRunning = true;
+            super.start();
+        }
+
+        public synchronized void kill() {
+            this.isRunning = false;
         }
 
         @Override
         public synchronized void run() {
-            synchronized (this.manager) {
-                boolean ok;
-                do {
-                    ok = true;
-                    try {
-                        this.manager.ipTables.commit();
-                    } catch (Exception ex) {
-                        ok = false;
-                        try {
-                            Thread.sleep(1000);
-                        } catch (Exception ex1) {
-                        }
+            while (this.isRunning) {
+                try {
+                    System.out.println("before");
+                    this.wait();
+                    System.out.println("after");
+                    synchronized (this.manager) {
+                        boolean ok;
+                        do {
+                            ok = true;
+                            try {
+                                this.manager.ipTables.commit();
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                ok = false;
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (Exception ex1) {
+                                    ex1.printStackTrace();
+                                }
+                            }
+                        } while (!ok);
+                        this.manager.hasUncommitedChanges = false;
                     }
-                } while (!ok);
-                this.manager.hasUncommitedChanges = false;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
+            System.out.println("Yeah");
         }
     }
 }
