@@ -118,26 +118,25 @@ public class ctrain {
 
             //monitor
             PhaseMonitorTraining monitorTraining = (verbose) ? new PhaseMonitorTraining(200) {
-
                 @Override
                 protected void update() {
                     System.out.print("[" + (this.getProgress() * 100) + "] " + this.getStatus() + "\r");
                 }
             } : new PhaseMonitorTraining(200) {
-
                 @Override
                 protected void update() {
                 }
             };
 
             //execute
-            TrainingResult result = Chimera.ctrain(monitorTraining, trainingFile, modelFile, filter, exclude);
+            TrainingResult result = Chimera.ctrain(monitorTraining, trainingFile, modelFile, filter, exclude).result;
 
             //print results
             if (verbose) {
                 UtilsPrinting.printTrainingResult(result);
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'ctrain /help' to see usage.");
         }
