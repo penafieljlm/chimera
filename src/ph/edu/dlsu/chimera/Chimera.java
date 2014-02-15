@@ -153,8 +153,8 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("gather.stats", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("gather.states", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
+        components.put("gather.statsd", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put("gather.statesd", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
 
         //pipeline
         components.put("gather.sniff", new ComponentSniffer(gatherSniffOut, ifProtected, accessFilter, _allow));
@@ -284,8 +284,8 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("produce.stats", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("produce.states", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
+        components.put("produce.statsd", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put("produce.statesd", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
 
         //pipeline
         components.put("produce.sniff", new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
