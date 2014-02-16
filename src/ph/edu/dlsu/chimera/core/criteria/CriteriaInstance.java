@@ -24,16 +24,9 @@ public final class CriteriaInstance {
     }
 
     public String getStringId() {
-        StringBuilder id = new StringBuilder("|");
-        for (Object o : this.criteriaId) {
-            if (o instanceof Object[]) {
-                Object[] oba = (Object[]) o;
-                for (Object obae : oba) {
-                    id = id.append("[").append(obae.toString()).append("]");
-                }
-            } else {
-                id = id.append(o.toString());
-            }
+        StringBuilder id = new StringBuilder();
+        for (BigInteger o : this.criteriaId) {
+            id = id.append("[").append(o.toString(16)).append("]");
         }
         return id.toString();
     }
