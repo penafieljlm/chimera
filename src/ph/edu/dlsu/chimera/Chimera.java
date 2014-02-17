@@ -113,7 +113,7 @@ public class Chimera {
         return nics.toArray(new NicData[0]);
     }
 
-    public static long cgather(PhaseMonitorGathering _monitor, String _output, String _protected, String _access, boolean _allow, String _training, boolean _attack) throws Exception {
+    public static File cgather(PhaseMonitorGathering _monitor, String _output, String _protected, String _access, boolean _allow, String _training, boolean _attack) throws Exception {
         //check parameters
         if (_output == null) {
             throw new Exception("The argument '-output' must be provided.");
@@ -169,6 +169,9 @@ public class Chimera {
         gatherStatsOut.setReader((ComponentActive) components.get("gather.dumper"));
 
         //controller
+        if (_monitor != null) {
+            _monitor.setComponents(components);
+        }
         ComponentController controller = new ComponentController(components, config.controlPort);
 
         //start components
@@ -206,7 +209,7 @@ public class Chimera {
         }
 
         //return monitor
-        return dumper.getProcessed();
+        return trainingDumpFile;
     }
 
     public static TrainingOutputResult ctrain(PhaseMonitorTraining _monitor, String _input, String _output, String _filter, boolean _exclude) throws Exception {
@@ -300,6 +303,9 @@ public class Chimera {
         produceStatsOut.setReader((ComponentActive) components.get("produce.detect"));
 
         //controller
+        if (_monitor != null) {
+            _monitor.setComponents(components);
+        }
         ComponentController controller = new ComponentController(components, config.controlPort);
 
         //start components
