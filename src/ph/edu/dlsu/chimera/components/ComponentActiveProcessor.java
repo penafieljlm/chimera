@@ -7,6 +7,8 @@ package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
 import ph.edu.dlsu.chimera.core.Diagnostic;
+import ph.edu.dlsu.chimera.core.Pdu;
+import ph.edu.dlsu.chimera.core.Statistics;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
@@ -15,20 +17,16 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  * @param <TInput>
  * @param <TOutput>
  */
-public abstract class ComponentActiveProcessor<TInput, TOutput> extends ComponentActive {
+public abstract class ComponentActiveProcessor<TInput, TOutput extends Pdu> extends ComponentActive {
 
     public final IntermodulePipe<TInput> inQueue;
     public final IntermodulePipe<TOutput> outQueue;
-    protected long processed;
+    public final Statistics stats;
 
     public ComponentActiveProcessor(IntermodulePipe<TInput> inQueue, IntermodulePipe<TOutput> outQueue) {
         this.inQueue = inQueue;
         this.outQueue = outQueue;
-        this.processed = 0;
-    }
-
-    public long getProcessed() {
-        return this.processed;
+        this.stats = new Statistics(System.currentTimeMillis() * 1000000);
     }
 
     @Override
@@ -47,8 +45,8 @@ public abstract class ComponentActiveProcessor<TInput, TOutput> extends Componen
                         TOutput out = this.process(in);
                         if (this.outQueue != null && out != null) {
                             this.outQueue.add(out);
+                            this.stats.commitEncounter(out);
                         }
-                        this.processed++;
                     }
                 }
             } else {
@@ -61,7 +59,7 @@ public abstract class ComponentActiveProcessor<TInput, TOutput> extends Componen
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = super.getDiagnostics();
-        diag.add(new Diagnostic("processed", "Processed", this.processed));
+        diag.addAll(this.stats.getDiagnostics());
         return diag;
     }
 

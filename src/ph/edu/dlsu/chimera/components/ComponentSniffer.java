@@ -110,7 +110,6 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
             if (this.outQueue != null && out != null) {
                 this.outQueue.add(out);
             }
-            this.processed++;
         } catch (Exception ex) {
         }
     }

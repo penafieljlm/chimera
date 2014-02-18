@@ -190,8 +190,8 @@ public class Chimera {
         if (_monitor != null) {
             while (dumper.isAlive()) {
                 Thread.sleep(_monitor.updateInterval);
-                if (_monitor.getInstancesGathered() != dumper.getProcessed()) {
-                    _monitor.setInstancesGathered(dumper.getProcessed());
+                if (_monitor.getInstancesGathered() != dumper.stats.getTotalEncounters()) {
+                    _monitor.setInstancesGathered(dumper.stats.getTotalEncounters());
                 }
                 if (_monitor.isTerminated()) {
                     Chimera.cquit(components);
