@@ -32,7 +32,7 @@ import weka.core.Instances;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
+public class ComponentDetector extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
     public final ModelLive model;
     public final RulesManager rulesManager;
@@ -40,6 +40,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
     public final Instances connDataInstances;
     public final HashMap<Criteria, Instances> criteriaDataInstances;
     public final ConcurrentLinkedQueue<Log> logs;
+    int __x = 0;
 
     public ComponentDetector(IntermodulePipe<PduAtomic> inQueue,
             ModelLive model,
@@ -68,7 +69,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
 
     private void evaluate(PduAtomic input) throws Exception {
         //connection evaluation
-        i++;
+        __x++;
         boolean atk = false;
         if (!this.evaluateAgainstConnection(input)) {
             //attack
@@ -105,7 +106,7 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
                 }
             }
         }
-        System.out.println(i + "," + input.getProtocolName() + "," + ((atk) ? "Attack" : "Normal"));
+        System.out.println(__x + "," + input.getProtocolName() + "," + ((atk) ? "Attack" : "Normal"));
     }
 
     @Override
@@ -210,8 +211,6 @@ public class ComponentDetector extends ComponentActiveProcessor<PduAtomic, PduAt
         }
         return report;
     }
-
-    int i = 0;
 
     protected void logConnectionViolation(PduAtomic pkt) {
         LogAttackConnection log = new LogAttackConnection(new Date(), pkt.getConnection());

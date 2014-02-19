@@ -18,7 +18,7 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentStatisticsCalculator extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
+public class ComponentStatisticsCalculator extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
     public final Criteria[] criterias;
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
@@ -48,7 +48,7 @@ public class ComponentStatisticsCalculator extends ComponentActiveProcessor<PduA
                             }
                             if (this.statsTable.containsKey(pktcrt)) {
                                 //update criteria statsTable
-                                this.statsTable.get(pktcrt).commitEncounter(input);
+                                this.statsTable.get(pktcrt).commitEncounter(input.timestampInNanos, input.size());
                             }
                             //associate criteria to packet
                             input.addStatistics(crt, this.statsTable.get(pktcrt));

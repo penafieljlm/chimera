@@ -20,7 +20,7 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public final class ComponentStateTracker extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
+public final class ComponentStateTracker extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
     public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
 

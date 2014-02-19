@@ -133,7 +133,7 @@ public final class Connection extends Statistics implements Serializable {
     public synchronized void update(PduAtomic pkt) {
         if (!this.done) {
             Tcp tcp = pkt.packet.getHeader(new Tcp());
-            super.commitEncounter(pkt);
+            super.commitEncounter(pkt.timestampInNanos, pkt.size());
             if (pkt.direction == TrafficDirection.Ingress) {
                 this.ingressEncounters++;
                 this.ingressTotalSize += pkt.packet.size();

@@ -37,11 +37,11 @@ public class Statistics implements IDiagnosable, Serializable {
         return this.totalSize;
     }
 
-    public synchronized void commitEncounter(Pdu pkt) {
+    public synchronized void commitEncounter(long timestampInNanos, long size) {
         this.totalEncounters++;
-        this.totalSize += pkt.size();
+        this.totalSize += size;
         this.lastLastEncounterNanos = this.lastEncounterNanos;
-        this.lastEncounterNanos = pkt.timestampInNanos;
+        this.lastEncounterNanos = timestampInNanos;
     }
 
     public synchronized long getTimeExistedMs() {
