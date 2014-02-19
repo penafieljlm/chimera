@@ -21,7 +21,7 @@ import ph.edu.dlsu.chimera.util.UtilsArray;
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
-public class ComponentDumper extends ComponentActiveProcessor<PduAtomic, PduAtomic> {
+public class ComponentDumper extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
     public final String inPcapIf;
     public final Criteria[] criterias;

@@ -17,7 +17,7 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
  * @param <TInput>
  * @param <TOutput>
  */
-public abstract class ComponentActiveProcessor<TInput, TOutput extends Pdu> extends ComponentActive {
+public abstract class ComponentActiveProcessor<TInput, TOutput> extends ComponentActive {
 
     public final IntermodulePipe<TInput> inQueue;
     public final IntermodulePipe<TOutput> outQueue;
@@ -45,8 +45,8 @@ public abstract class ComponentActiveProcessor<TInput, TOutput extends Pdu> exte
                         TOutput out = this.process(in);
                         if (this.outQueue != null && out != null) {
                             this.outQueue.add(out);
-                            this.stats.commitEncounter(out);
                         }
+                        this.stats.commitEncounter(this.getProcessedTimestampInNanos(in), this.getProcessedSize(in));
                     }
                 }
             } else {
@@ -55,6 +55,10 @@ public abstract class ComponentActiveProcessor<TInput, TOutput extends Pdu> exte
         }
         this.postLoop();
     }
+
+    public abstract long getProcessedTimestampInNanos(TInput input);
+
+    public abstract long getProcessedSize(TInput input);
 
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {

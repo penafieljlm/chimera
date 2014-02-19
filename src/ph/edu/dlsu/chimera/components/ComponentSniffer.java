@@ -124,4 +124,14 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
         }
         return diag;
     }
+
+    @Override
+    public long getProcessedTimestampInNanos(PcapPacket input) {
+        return input.getCaptureHeader().timestampInNanos();
+    }
+
+    @Override
+    public long getProcessedSize(PcapPacket input) {
+        return input.size();
+    }
 }
