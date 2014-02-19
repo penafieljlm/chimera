@@ -84,4 +84,13 @@ public class Statistics implements IDiagnosable, Serializable {
         diag.add(new Diagnostic("idletime", "Idle Time", (this.getLastEncounterTimeNs() < 0) ? "N/A" : this.getTimeSinceLastEncounterMs() + "ms"));
         return diag;
     }
+
+    public Statistics copy() {
+        Statistics s = new Statistics(this.timeCreatedNanos);
+        s.lastEncounterNanos = this.lastEncounterNanos;
+        s.lastLastEncounterNanos = this.lastLastEncounterNanos;
+        s.totalEncounters = this.totalEncounters;
+        s.totalSize = this.totalSize;
+        return s;
+    }
 }
