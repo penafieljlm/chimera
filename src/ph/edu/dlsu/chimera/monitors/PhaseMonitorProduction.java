@@ -12,7 +12,7 @@ import ph.edu.dlsu.chimera.core.logs.Log;
  *
  * @author AMD
  */
-public abstract class PhaseMonitorProduction extends PhaseMonitor {
+public class PhaseMonitorProduction extends PhaseMonitorStatistics {
 
     private ConcurrentLinkedQueue<Log> logs;
 

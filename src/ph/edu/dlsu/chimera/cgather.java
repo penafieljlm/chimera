@@ -14,6 +14,12 @@ import ph.edu.dlsu.chimera.util.UtilsParse;
  */
 public class cgather {
 
+    public static final String MODULE_STATSD = "gather.statsd";
+    public static final String MODULE_STATESD = "gather.statesd";
+    public static final String MODULE_SNIFF = "gather.sniff";
+    public static final String MODULE_STATES = "gather.states";
+    public static final String MODULE_STATS = "gather.stats";
+    public static final String MODULE_DUMPER = "gather.dumper";
     public static final String USAGE = ""
             + "\nCHIMERA Gather Command Usage (cgather)"
             + "\nDescription:"
@@ -157,17 +163,11 @@ public class cgather {
 
             //monitor
             PhaseMonitorGathering monitorGathering = (verbose) ? new PhaseMonitorGathering(200) {
-
                 @Override
                 protected void update() {
                     System.out.print("Training Data Instances Gathered: " + this.getInstancesGathered() + "\r");
                 }
-            } : new PhaseMonitorGathering(200) {
-
-                @Override
-                protected void update() {
-                }
-            };
+            } : new PhaseMonitorGathering(200);
 
             //execute
             Chimera.cgather(monitorGathering, output, ifProtected, accessFilter, allowFiltered, trainingFilter, tagFilteredAsAttacks);

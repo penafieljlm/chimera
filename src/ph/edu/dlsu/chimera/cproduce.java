@@ -15,6 +15,12 @@ import ph.edu.dlsu.chimera.util.UtilsParse;
  */
 public class cproduce {
 
+    public static final String MODULE_STATSD = "produce.statsd";
+    public static final String MODULE_STATESD = "produce.statesd";
+    public static final String MODULE_SNIFF = "produce.sniff";
+    public static final String MODULE_STATES = "produce.states";
+    public static final String MODULE_STATS = "produce.stats";
+    public static final String MODULE_DETECT = "produce.detect";
     public static final String USAGE = ""
             + "\nCHIMERA Produce Command Usage (ctrain)"
             + "\nDescription:"
@@ -98,11 +104,7 @@ public class cproduce {
             PhaseMonitorProduction monitorProduction = (verbose) ? new PhaseMonitorProduction(200) {
                 @Override
                 protected void update() {
-                    while (!this.getLogs().isEmpty()) {
-                        Log log = this.getLogs().poll();
-//                        System.out.println(JsonWriter.toJson(log));
-//                        System.out.println();
-                    }
+                    this.getLogs().clear();
                 }
             } : new PhaseMonitorProduction(200) {
                 @Override
@@ -114,7 +116,6 @@ public class cproduce {
             //execute
             Chimera.cproduce(monitorProduction, modelFile, syslog, syslogport, active);
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'cproduce /help' to see usage.");
         }

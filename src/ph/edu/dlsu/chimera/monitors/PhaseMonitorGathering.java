@@ -9,7 +9,7 @@ package ph.edu.dlsu.chimera.monitors;
  *
  * @author AMD
  */
-public abstract class PhaseMonitorGathering extends PhaseMonitor {
+public class PhaseMonitorGathering extends PhaseMonitorStatistics {
 
     private long instancesGathered;
 

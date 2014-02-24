@@ -44,6 +44,7 @@ import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.core.TrainingOutputResult;
 import ph.edu.dlsu.chimera.messages.CommandQuit;
+import ph.edu.dlsu.chimera.monitors.PhaseMonitor;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorTraining;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.rules.RulesManager;
@@ -153,26 +154,32 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("gather.statsd", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("gather.statesd", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
+        components.put(cgather.MODULE_STATSD, new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put(cgather.MODULE_STATESD, new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
 
         //pipeline
-        components.put("gather.sniff", new ComponentSniffer(gatherSniffOut, ifProtected, accessFilter, _allow));
-        components.put("gather.states", new ComponentStateTracker(gatherSniffOut, gatherStateOut, stateTable));
-        components.put("gather.stats", new ComponentStatisticsCalculator(gatherStateOut, gatherStatsOut, criterias, statsTableAtomic));
-        components.put("gather.dumper", new ComponentDumper(gatherStatsOut, ifProtected, criterias, trainingDumpFile, trainingFilter, _attack));
-        gatherSniffOut.setWriter((ComponentActive) components.get("gather.sniff"));
-        gatherSniffOut.setReader((ComponentActive) components.get("gather.states"));
-        gatherStateOut.setWriter((ComponentActive) components.get("gather.states"));
-        gatherStateOut.setReader((ComponentActive) components.get("gather.stats"));
-        gatherStatsOut.setWriter((ComponentActive) components.get("gather.stats"));
-        gatherStatsOut.setReader((ComponentActive) components.get("gather.dumper"));
+        components.put(cgather.MODULE_SNIFF, new ComponentSniffer(gatherSniffOut, ifProtected, accessFilter, _allow));
+        components.put(cgather.MODULE_STATES, new ComponentStateTracker(gatherSniffOut, gatherStateOut, stateTable));
+        components.put(cgather.MODULE_STATS, new ComponentStatisticsCalculator(gatherStateOut, gatherStatsOut, criterias, statsTableAtomic));
+        components.put(cgather.MODULE_DUMPER, new ComponentDumper(gatherStatsOut, ifProtected, criterias, trainingDumpFile, trainingFilter, _attack));
+        gatherSniffOut.setWriter((ComponentActive) components.get(cgather.MODULE_SNIFF));
+        gatherSniffOut.setReader((ComponentActive) components.get(cgather.MODULE_STATES));
+        gatherStateOut.setWriter((ComponentActive) components.get(cgather.MODULE_STATES));
+        gatherStateOut.setReader((ComponentActive) components.get(cgather.MODULE_STATS));
+        gatherStatsOut.setWriter((ComponentActive) components.get(cgather.MODULE_STATS));
+        gatherStatsOut.setReader((ComponentActive) components.get(cgather.MODULE_DUMPER));
 
         //controller
         if (_monitor != null) {
             _monitor.setComponents(components);
         }
         ComponentController controller = new ComponentController(components, config.controlPort);
+
+        //set monitor stats
+        if (_monitor != null) {
+            ComponentSniffer sniffer = (ComponentSniffer) components.get(cgather.MODULE_SNIFF);
+            _monitor.setStatsMonitor(sniffer.egressStats);
+        }
 
         //start components
         for (String c : components.keySet()) {
@@ -184,14 +191,14 @@ public class Chimera {
         controller.start();
 
         //get dumper
-        ComponentDumper dumper = (ComponentDumper) components.get("gather.dumper");
+        ComponentDumper dumper = (ComponentDumper) components.get(cgather.MODULE_DUMPER);
 
         //update monitor
         if (_monitor != null) {
             while (dumper.isAlive()) {
                 Thread.sleep(_monitor.updateInterval);
-                if (_monitor.getInstancesGathered() != dumper.stats.getTotalEncounters()) {
-                    _monitor.setInstancesGathered(dumper.stats.getTotalEncounters());
+                if (_monitor.getInstancesGathered() != dumper.ingressStats.getTotalEncounters()) {
+                    _monitor.setInstancesGathered(dumper.ingressStats.getTotalEncounters());
                 }
                 if (_monitor.isTerminated()) {
                     Chimera.cquit(components);
@@ -287,26 +294,32 @@ public class Chimera {
         HashMap<String, Component> components = new HashMap<String, Component>();
 
         //daemons
-        components.put("produce.statsd", new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
-        components.put("produce.statesd", new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
+        components.put(cproduce.MODULE_STATSD, new ComponentStatisticsDaemon(criterias, statsTableAtomic, config.statsTimeoutMs));
+        components.put(cproduce.MODULE_STATESD, new ComponentStateDaemon(stateTable, config.stateTimeoutMs));
 
         //pipeline
-        components.put("produce.sniff", new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
-        components.put("produce.states", new ComponentStateTracker(produceSniffOut, produceStateOut, stateTable));
-        components.put("produce.stats", new ComponentStatisticsCalculator(produceStateOut, produceStatsOut, criterias, statsTableAtomic));
-        components.put("produce.detect", new ComponentDetector(produceStatsOut, modelLive, rulesManager, syslogServ, syslogPort));
-        produceSniffOut.setWriter((ComponentActive) components.get("produce.sniff"));
-        produceSniffOut.setReader((ComponentActive) components.get("produce.states"));
-        produceStateOut.setWriter((ComponentActive) components.get("produce.states"));
-        produceStateOut.setReader((ComponentActive) components.get("produce.stats"));
-        produceStatsOut.setWriter((ComponentActive) components.get("produce.stats"));
-        produceStatsOut.setReader((ComponentActive) components.get("produce.detect"));
+        components.put(cproduce.MODULE_SNIFF, new ComponentSniffer(produceSniffOut, modelLive.protectedInterface));
+        components.put(cproduce.MODULE_STATES, new ComponentStateTracker(produceSniffOut, produceStateOut, stateTable));
+        components.put(cproduce.MODULE_STATS, new ComponentStatisticsCalculator(produceStateOut, produceStatsOut, criterias, statsTableAtomic));
+        components.put(cproduce.MODULE_DETECT, new ComponentDetector(produceStatsOut, modelLive, rulesManager, syslogServ, syslogPort));
+        produceSniffOut.setWriter((ComponentActive) components.get(cproduce.MODULE_SNIFF));
+        produceSniffOut.setReader((ComponentActive) components.get(cproduce.MODULE_STATES));
+        produceStateOut.setWriter((ComponentActive) components.get(cproduce.MODULE_STATES));
+        produceStateOut.setReader((ComponentActive) components.get(cproduce.MODULE_STATS));
+        produceStatsOut.setWriter((ComponentActive) components.get(cproduce.MODULE_STATS));
+        produceStatsOut.setReader((ComponentActive) components.get(cproduce.MODULE_DETECT));
 
         //controller
         if (_monitor != null) {
             _monitor.setComponents(components);
         }
         ComponentController controller = new ComponentController(components, config.controlPort);
+
+        //set monitor stats
+        if (_monitor != null) {
+            ComponentSniffer sniffer = (ComponentSniffer) components.get(cproduce.MODULE_SNIFF);
+            _monitor.setStatsMonitor(sniffer.egressStats);
+        }
 
         //start components
         for (String c : components.keySet()) {
@@ -318,7 +331,7 @@ public class Chimera {
         controller.start();
 
         //get detector
-        ComponentDetector detector = (ComponentDetector) components.get("produce.detect");
+        ComponentDetector detector = (ComponentDetector) components.get(cproduce.MODULE_DETECT);
 
         //update monitor
         if (_monitor != null) {

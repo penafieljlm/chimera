@@ -52,8 +52,13 @@ public class IntermodulePipe<TData> {
         }
     }
 
-    public TData poll() {
+    public TData poll() throws InterruptedException {
         if (this.reader != null && this.writer != null) {
+            while (this.queue.isEmpty()) {
+                synchronized (this.reader) {
+                    this.reader.wait();
+                }
+            }
             return this.queue.poll();
         } else {
             throw new IllegalStateException("Reader and writer must be set before performing any operations.");
@@ -66,5 +71,9 @@ public class IntermodulePipe<TData> {
 
     public int size() {
         return this.queue.size();
+    }
+
+    public void clear() {
+        this.queue.clear();
     }
 }
