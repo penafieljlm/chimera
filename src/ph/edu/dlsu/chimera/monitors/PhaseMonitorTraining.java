@@ -9,7 +9,7 @@ package ph.edu.dlsu.chimera.monitors;
  *
  * @author AMD
  */
-public abstract class PhaseMonitorTraining extends PhaseMonitor {
+public class PhaseMonitorTraining extends PhaseMonitor {
 
     private double progress;
     private String status;
