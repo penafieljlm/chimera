@@ -106,9 +106,11 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
     @Override
     public void nextPacket(PcapPacket packet, Pcap user) {
         try {
+            super.ingressStats.commitEncounter(this.getProcessedTimestampInNanos(packet), this.getProcessedSize(packet));
             PduAtomic out = this.process(packet);
             if (this.outQueue != null && out != null) {
                 this.outQueue.add(out);
+                super.egressStats.commitEncounter(out.timestampInNanos, out.size());
             }
         } catch (Exception ex) {
         }

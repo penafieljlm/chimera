@@ -178,7 +178,7 @@ public class Chimera {
         //set monitor stats
         if (_monitor != null) {
             ComponentSniffer sniffer = (ComponentSniffer) components.get(cgather.MODULE_SNIFF);
-            _monitor.setStatsMonitor(sniffer.egressStats);
+            _monitor.setStatsMonitor(sniffer.ingressStats);
         }
 
         //start components
@@ -318,7 +318,7 @@ public class Chimera {
         //set monitor stats
         if (_monitor != null) {
             ComponentSniffer sniffer = (ComponentSniffer) components.get(cproduce.MODULE_SNIFF);
-            _monitor.setStatsMonitor(sniffer.egressStats);
+            _monitor.setStatsMonitor(sniffer.ingressStats);
         }
 
         //start components
