@@ -206,7 +206,7 @@ public class Chimera {
                 }
             }
         }
-
+        
         //join threads
         for (String c : components.keySet()) {
             Component _c = components.get(c);
@@ -371,6 +371,7 @@ public class Chimera {
             if (_c instanceof ComponentActive) {
                 ComponentActive _ca = (ComponentActive) _c;
                 _ca.kill();
+                _ca.join();
             }
         }
     }
