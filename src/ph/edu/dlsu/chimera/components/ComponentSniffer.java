@@ -136,4 +136,10 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
     public long getProcessedSize(PcapPacket input) {
         return input.size();
     }
+
+    @Override
+    public synchronized void kill() {
+        super.kill();
+        this.pcap.breakloop();
+    }
 }
