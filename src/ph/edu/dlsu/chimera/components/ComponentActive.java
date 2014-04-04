@@ -1,12 +1,10 @@
 package ph.edu.dlsu.chimera.components;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import ph.edu.dlsu.chimera.core.Diagnostic;
 import java.util.ArrayList;
 
 /**
- * An instance of this class constitutes a ComponentActive which runs on its own
+ * An instance of this class constitutes a Component which runs on its own
  * separate Thread.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
@@ -14,14 +12,17 @@ import java.util.ArrayList;
 public abstract class ComponentActive extends Thread implements Component {
 
     /**
-     * String array of errors.
+     * String array of errors
      */
     public final ArrayList<Exception> errors;
     /**
-     * Flags whether or not the ComponentActive object is running.
+     * Flags whether or not the ComponentActive object is running
      */
     protected boolean running;
 
+    /**
+     * Constructs a new ComponentActive object.
+     */
     public ComponentActive() {
         this.errors = new ArrayList<Exception>();
         this.running = false;
@@ -34,9 +35,6 @@ public abstract class ComponentActive extends Thread implements Component {
         this.running = false;
     }
 
-    /**
-     * @return a report on the current state of the ComponentActive object.
-     */
     @Override
     public synchronized ArrayList<Diagnostic> getDiagnostics() {
         ArrayList<Diagnostic> diag = new ArrayList<Diagnostic>();
@@ -45,15 +43,16 @@ public abstract class ComponentActive extends Thread implements Component {
         return diag;
     }
 
+    /**
+     * @return An ArrayList of Exception objects caught while the
+     * ComponentActive object was running.
+     */
     public synchronized ArrayList<Exception> pollErrors() {
         ArrayList<Exception> errs = new ArrayList<Exception>(this.errors);
         this.errors.clear();
         return errs;
     }
 
-    /**
-     * Set running flags when component is started.
-     */
     @Override
     public void run() {
         synchronized (this) {
@@ -70,7 +69,8 @@ public abstract class ComponentActive extends Thread implements Component {
     }
 
     /**
-     * The task of the component.
+     * The task to be performed by the ComponentActive object.
+     *
      * @throws java.lang.Exception
      */
     protected abstract void componentRun() throws Exception;

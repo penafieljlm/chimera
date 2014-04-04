@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core;
 
 import de.tbsol.iptablesjava.rules.IpRule;
@@ -13,16 +9,38 @@ import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
 /**
+ * An instance of this class constitutes an object which identifies a pair of
+ * TCP Sockets (a pair of IP Address and port number).
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class TcpSocketPair implements Serializable {
 
+    /**
+     * Source IP Address
+     */
     public final InetAddress source;
+    /**
+     * Source Port
+     */
     public final int sourcePort;
+    /**
+     * Destination IP Address
+     */
     public final InetAddress destination;
+    /**
+     * Destination Port
+     */
     public final int destinationPort;
 
+    /**
+     * Constructs a new TcpSocketPair object.
+     *
+     * @param source Source IP Address
+     * @param sourcePort Source Port
+     * @param destination Destination IP Address
+     * @param destinationPort Destination Port
+     */
     public TcpSocketPair(InetAddress source, int sourcePort, InetAddress destination, int destinationPort) {
         this.source = source;
         this.destination = destination;
@@ -30,6 +48,14 @@ public final class TcpSocketPair implements Serializable {
         this.destinationPort = destinationPort;
     }
 
+    /**
+     * Constructs a new TcpSocketPaid object from an IPv4 header and a TCP
+     * header.
+     *
+     * @param ip4 The IPv4 header
+     * @param tcp The TCP header
+     * @throws UnknownHostException
+     */
     public TcpSocketPair(Ip4 ip4, Tcp tcp) throws UnknownHostException {
         this(
                 InetAddress.getByAddress(ip4.source()),
@@ -54,6 +80,11 @@ public final class TcpSocketPair implements Serializable {
                 ^ ((this.destination.hashCode() ^ this.destinationPort)));
     }
 
+    /**
+     *
+     * @return An iptables rule which matches packets having the same socket
+     * pair of this TcpSocketPair object
+     */
     public IpRule createRule() {
         try {
             IpRule rule = new IpRule();

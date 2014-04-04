@@ -1,17 +1,23 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core;
 
 /**
+ * Enumerates the three possible directions of traffic in the system: Ingress
+ * (Network Inbound), Egress (Network Outbound), and None (System Generated)
  *
- * @author AMD
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public enum TrafficDirection {
 
+    /**
+     * Network Inbound (Traffic coming into the network)
+     */
     Ingress,
+    /**
+     * Network Outbound (Traffic going out of the network)
+     */
     Egress,
+    /**
+     * None (Error or system generated traffic)
+     */
     None
 }

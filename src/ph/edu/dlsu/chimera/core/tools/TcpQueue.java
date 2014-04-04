@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core.tools;
 
 import java.util.Collections;
@@ -11,6 +7,9 @@ import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.PduAtomic;
 
 /**
+ * An instance of this class constitutes an object which can arrange the
+ * contents of a TCP Stream. Still in experimental mode. Not used in the first.
+ * release.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
@@ -19,11 +18,20 @@ public final class TcpQueue {
     private final List<PduAtomic> inQueue;
     private int inNextSequenceNo; // or number of bytes I have received so far
 
+    /**
+     * Constructs a new TcpQueue object
+     */
     public TcpQueue() {
         this.inQueue = Collections.synchronizedList(Collections.EMPTY_LIST);
         this.inNextSequenceNo = 1;
     }
 
+    /**
+     * Adds a new packet to this TCP Stream.
+     *
+     * @param packet The packet
+     * @return True if successful
+     */
     public boolean add(PduAtomic packet) {
         try {
             if (packet.packet.hasHeader(new Tcp())) {
@@ -42,6 +50,10 @@ public final class TcpQueue {
         return false;
     }
 
+    /**
+     *
+     * @return The next packet in the TCP Stream
+     */
     public PduAtomic poll() {
         for (PduAtomic p : this.inQueue) {
             Tcp ptcp = p.packet.getHeader(new Tcp());
@@ -54,6 +66,12 @@ public final class TcpQueue {
         return null;
     }
 
+    /**
+     * Checks if this TCPQueue contains the specified TCP header
+     *
+     * @param tcp The tcp header of the packet
+     * @return
+     */
     public boolean contains(Tcp tcp) {
         for (PduAtomic p : this.inQueue) {
             Tcp ptcp = p.packet.getHeader(new Tcp());
@@ -64,6 +82,10 @@ public final class TcpQueue {
         return false;
     }
 
+    /**
+     *
+     * @return True if this TCPQueue is empty
+     */
     public boolean isEmpty() {
         return this.inQueue.isEmpty();
     }

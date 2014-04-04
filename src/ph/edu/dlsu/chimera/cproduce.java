@@ -1,15 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
-import ph.edu.dlsu.chimera.core.logs.Log;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 
 /**
+ * The cproduce class contains the entry point for the cproduce command.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */

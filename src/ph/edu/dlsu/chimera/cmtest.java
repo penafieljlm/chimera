@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import java.io.FileInputStream;
@@ -16,8 +11,9 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 /**
+ * The cmtest class contains the entry point for the cmtest command.
  *
- * @author AMD
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class cmtest {
 
@@ -117,7 +113,6 @@ public class cmtest {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'cmtest /help' to see usage.");
         }

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import au.com.bytecode.opencsv.CSVWriter;
@@ -18,19 +14,51 @@ import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 import ph.edu.dlsu.chimera.util.UtilsArray;
 
 /**
+ * An instance of this class constitutes a Component which places the
+ * preprocessed data of a PDU onto a training set file.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class ComponentDumper extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
+    /**
+     * The name of the interface where packets are received
+     */
     public final String inPcapIf;
+    /**
+     * The set of criteria for which statistics are measured for
+     */
     public final Criteria[] criterias;
+    /**
+     * An object pointing to the training set file
+     */
     public final File trainingFile;
+    /**
+     * A packet filter used to set whether or not matching packets are attacks
+     */
     public final PacketFilter trainingFilter;
+    /**
+     * If true, packets that match the trainingFilter are tagged as attack; if
+     * false, packets that match the trainingFilter are tagged as normal
+     */
     public final boolean tagFilteredAsAttack;
     private CSVWriter writer;
     private String[] headers;
 
+    /**
+     * Constructs a new ComponentDumper object.
+     *
+     * @param inQueue The input queue
+     * @param inPcapIf The name of the interface where packets are received
+     * @param criterias The set of criteria for which statistics are measured
+     * for
+     * @param trainingFile An object pointing to the training set file
+     * @param trainingFilter A packet filter used to set whether or not matching
+     * packets are attacks
+     * @param tagFilteredAsAttack If true, packets that match the trainingFilter
+     * are tagged as attack; if false, packets that match the trainingFilter are
+     * tagged as normal
+     */
     public ComponentDumper(IntermodulePipe<PduAtomic> inQueue,
             String inPcapIf,
             Criteria[] criterias,

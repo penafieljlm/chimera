@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
@@ -16,14 +12,27 @@ import ph.edu.dlsu.chimera.core.TrafficDirection;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
- * Tracks states and ensures TCP delivery.
+ * An instance of this class constitutes a Component which invokes functions
+ * that create, update, and delete statistic monitors for TCP streams.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class ComponentStateTracker extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
+    /**
+     * A Hashmap which assigns Connection statistic monitors to TcpSocketPair
+     * objects
+     */
     public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
 
+    /**
+     * Constructs a new ComponentStateTracker object.
+     *
+     * @param inQueue The input queue
+     * @param outQueue The output queue
+     * @param stateTable A Hashmap which assigns Connection statistic monitors
+     * to TcpSocketPair objects
+     */
     public ComponentStateTracker(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             ConcurrentHashMap<TcpSocketPair, Connection> stateTable) {

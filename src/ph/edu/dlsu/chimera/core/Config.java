@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core;
 
 import com.cedarsoftware.util.io.JsonReader;
@@ -13,17 +9,37 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
+ * An instance of this class constitutes an object which describes the system
+ * configuration.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class Config {
 
+    /**
+     * The port to listen for control messages during deployment
+     */
     public int controlPort;
+    /**
+     * The name of the interface facing the protected network
+     */
     public String ifProtected;
+    /**
+     * The amount of time that a criteria instance is allowed to be idle
+     */
     public long statsTimeoutMs;
+    /**
+     * The amount of time that a TCP state is allowed to be idle
+     */
     public long stateTimeoutMs;
+    /**
+     * The default syslog UDP port number
+     */
     public int syslogPort;
 
+    /**
+     * Constructs a new Config object with all the default values.
+     */
     public Config() {
         this.controlPort = 9999;
         this.ifProtected = null;
@@ -32,6 +48,14 @@ public final class Config {
         this.syslogPort = 514;
     }
 
+    /**
+     * Loads the contents of the system configuration file onto a Config object.
+     * Creates a new system configuration file with default values if none is
+     * found.
+     *
+     * @return The Config object loaded
+     * @throws Exception
+     */
     public static Config loadConfig() throws Exception {
         //config file
         Config _config = null;
@@ -52,6 +76,14 @@ public final class Config {
         return _config;
     }
 
+    /**
+     * Saves the contents of the provided Config object onto the system
+     * configuration file. Creates a new file with the provided values if no old
+     * system configuration file is found.
+     *
+     * @param config The Config object to be saved
+     * @throws Exception
+     */
     public static void saveConfig(Config config) throws Exception {
         File configFile = new File("chimera.config");
         if (configFile.exists()) {

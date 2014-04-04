@@ -1,13 +1,10 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import ph.edu.dlsu.chimera.core.nic.NicData;
 import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
 /**
+ * The cifaces class contains the entry point for the cifaces command.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */

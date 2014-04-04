@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.util;
 
 import java.net.InetAddress;
@@ -14,11 +10,18 @@ import org.jnetpcap.protocol.tcpip.Udp;
 import ph.edu.dlsu.chimera.core.TcpSocketPair;
 
 /**
+ * This utility class provide functions dealing with packets.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class UtilsPacket {
 
+    /**
+     * Gets the TcpSocketPair from the specified packet.
+     *
+     * @param pkt The packet
+     * @return The TcpSocketPair from the specified packet
+     */
     public static TcpSocketPair getSocketPair(PcapPacket pkt) {
         try {
             if (pkt.hasHeader(new Ip4())) {
@@ -36,6 +39,14 @@ public abstract class UtilsPacket {
         return null;
     }
 
+    /**
+     * Gets the IP Address from the specified packet.
+     *
+     * @param pkt The packet
+     * @param source True if the address to be acquired is the source IP, else,
+     * it shall be the destination address
+     * @return
+     */
     public static InetAddress getIpAddress(PcapPacket pkt, boolean source) {
         try {
             if (pkt.hasHeader(new Ip4())) {
@@ -54,6 +65,13 @@ public abstract class UtilsPacket {
         return null;
     }
 
+    /**
+     * Reverses the source and destination MAC addresses of the given Ethernet
+     * header,
+     *
+     * @param arg The Ethernet header
+     * @return The reversed header
+     */
     public static Ethernet reverse(Ethernet arg) {
         byte[] src = arg.source();
         byte[] dst = arg.destination();
@@ -62,6 +80,13 @@ public abstract class UtilsPacket {
         return arg;
     }
 
+    /**
+     * Reverses the source and destination IP addresses of the given IPv4
+     * header,
+     *
+     * @param arg The IPv4 header
+     * @return The reversed header
+     */
     public static Ip4 reverse(Ip4 arg) {
         byte[] src = arg.source();
         byte[] dst = arg.destination();
@@ -70,6 +95,12 @@ public abstract class UtilsPacket {
         return arg;
     }
 
+    /**
+     * Reverses the source and destination ports of the given TCP header,
+     *
+     * @param arg The TCP header
+     * @return The reversed header
+     */
     public static Tcp reverse(Tcp arg) {
         int src = arg.source();
         int dst = arg.destination();
@@ -78,6 +109,12 @@ public abstract class UtilsPacket {
         return arg;
     }
 
+    /**
+     * Reverses the source and destination ports of the given UDP header,
+     *
+     * @param arg The UDP header
+     * @return The reversed header
+     */
     public static Udp reverse(Udp arg) {
         int src = arg.source();
         int dst = arg.destination();

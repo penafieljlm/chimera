@@ -13,7 +13,9 @@ import ph.edu.dlsu.chimera.messages.MessageBlank;
 import ph.edu.dlsu.chimera.messages.Command;
 
 /**
- * An instance of this class constitutes a session between a client and the server.
+ * An instance of this class constitutes a session between a client and the
+ * server.
+ *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class Session extends Thread {
@@ -21,6 +23,13 @@ public class Session extends Thread {
     private final Transceiver transceiver;
     private final HashMap<String, Component> assembly;
 
+    /**
+     * Constructs a new Session object used to handle sessions between a client
+     * and the management server.
+     *
+     * @param client The connecting client
+     * @param assembly The collection of deployed components
+     */
     public Session(Socket client, HashMap<String, Component> assembly) {
         this.transceiver = new Transceiver(client);
         this.assembly = assembly;
@@ -45,8 +54,9 @@ public class Session extends Thread {
     }
 
     /**
-     * Handles received Message object.
-     * Handles exceptions on the handling of the said object.
+     * Handles received Message object. Handles exceptions on the handling of
+     * the said object.
+     *
      * @param received - the received Message object.
      * @return the reply of the handling process.
      */
@@ -63,6 +73,7 @@ public class Session extends Thread {
 
     /**
      * Sends the reply Message object.
+     *
      * @param reply - the reply Message object.
      * @return true to continue to listen to message, false to terminate session
      */

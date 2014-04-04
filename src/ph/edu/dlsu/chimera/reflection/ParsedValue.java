@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.reflection;
 
 import java.math.BigInteger;
@@ -9,17 +5,26 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
+ * An instance of this class constitutes an object which deals with arbitrary
+ * values used in reflection.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class ParsedValue {
 
+    /**
+     * The value
+     */
     public final BigInteger value;
 
-    //value formats
-    //ip:<ip-address>
-    //dec:<decimal value>
-    //hex:<hex value>
+    /**
+     * Constructs a new ParsedValue object using the provided value expression
+     * which could have one for the following formats: ip:<ip-address> ;
+     * dec:<decimal value> ; hex:<hex value>
+     *
+     * @param value The value to be parsed
+     * @throws Exception
+     */
     public ParsedValue(String value) throws Exception {
         String v = value.toLowerCase();
         int boundaryIdx = v.indexOf(":");

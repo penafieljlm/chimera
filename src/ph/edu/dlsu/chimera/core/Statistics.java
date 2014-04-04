@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core;
 
 import java.io.Serializable;
@@ -10,17 +6,31 @@ import java.util.Date;
 import ph.edu.dlsu.chimera.util.UtilsTime;
 
 /**
+ * An instance of this class constitutes an object which keeps track of
+ * statistics information. These statistics information can be bound to other
+ * identifier objects using HashMaps. Some examples of identifier objects are
+ * TcpSocketPairs, and CriteriaInstances. This class is also called the
+ * statistics monitor.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class Statistics implements IDiagnosable, Serializable {
 
+    /**
+     * Time when this statistics monitor has been created (in nanos)
+     */
     public final long timeCreatedNanos;
     protected long totalEncounters;
     protected long totalSize;
     protected long lastEncounterNanos;
     protected long lastLastEncounterNanos;
 
+    /**
+     * Create a new Statistics object.
+     *
+     * @param timeCreatedNano Time when this statistics monitor has been created
+     * (in nanos)
+     */
     public Statistics(long timeCreatedNano) {
         this.timeCreatedNanos = timeCreatedNano;
         this.totalEncounters = 0;
@@ -29,14 +39,30 @@ public class Statistics implements IDiagnosable, Serializable {
         this.lastLastEncounterNanos = -1;
     }
 
+    /**
+     *
+     * @return The total number of times that an encounter has been committed
+     */
     public long getTotalEncounters() {
         return this.totalEncounters;
     }
 
+    /**
+     *
+     * @return The total size of all commits performed
+     */
     public long getTotalSize() {
         return this.totalSize;
     }
 
+    /**
+     * Function used to notify this statistics monitor that an encounter had
+     * occurred.
+     *
+     * @param timestampInNanos The timestamp in nanos when the encounter had
+     * happened
+     * @param size The size of the encountered obejct
+     */
     public synchronized void commitEncounter(long timestampInNanos, long size) {
         this.totalEncounters++;
         this.totalSize += size;

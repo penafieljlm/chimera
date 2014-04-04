@@ -1,28 +1,45 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core.criteria;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
+ * An instance of this class constitutes the values associated with the packet
+ * fields enumerated in a Criteria object.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class CriteriaInstance {
 
-    public static final String CHAIN_PREFIX = "ccrtinstchain(";
-    public static final String CHAIN_SUFFIX = ")";
+    private static final String CHAIN_PREFIX = "ccrtinstchain(";
+    private static final String CHAIN_SUFFIX = ")";
+    /**
+     * The set of identifying values associated with the packet fields
+     * enumerated in the Criteria object
+     */
     public final BigInteger[] criteriaId;
+    /**
+     * The Criteria object which this CriteriaInstance object is associated with
+     */
     public final Criteria criteria;
 
+    /**
+     * Constructs a new CriteriaInstance object.
+     *
+     * @param criteriaId The set of identifying values associated with the
+     * packet fields enumerated in the Criteria object
+     * @param criteria The Criteria object which this CriteriaInstance object is
+     * associated with
+     */
     public CriteriaInstance(BigInteger[] criteriaId, Criteria criteria) {
         this.criteriaId = criteriaId;
         this.criteria = criteria;
     }
 
+    /**
+     *
+     * @return A String representation of the criteriaId.
+     */
     public String getStringId() {
         StringBuilder id = new StringBuilder();
         for (BigInteger o : this.criteriaId) {
@@ -55,13 +72,5 @@ public final class CriteriaInstance {
             return false;
         }
         return true;
-    }
-
-    public String getChainName() {
-        StringBuilder id = new StringBuilder();
-        for (BigInteger o : this.criteriaId) {
-            id.append(o).append(".");
-        }
-        return CriteriaInstance.CHAIN_PREFIX + id.substring(0, id.length() - 1) + CriteriaInstance.CHAIN_SUFFIX;
     }
 }

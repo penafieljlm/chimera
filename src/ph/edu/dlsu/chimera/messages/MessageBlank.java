@@ -12,6 +12,9 @@ import ph.edu.dlsu.chimera.core.Session;
  */
 public class MessageBlank implements Response, Command {
 
+    /**
+     * Constructs a new MessageBlank object.
+     */
     public MessageBlank() {
     }
 

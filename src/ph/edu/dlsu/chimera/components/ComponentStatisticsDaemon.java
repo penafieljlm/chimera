@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
@@ -12,15 +8,37 @@ import ph.edu.dlsu.chimera.core.criteria.Criteria;
 import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 
 /**
+ * An instance of this class constitutes a Component which enforces the
+ * expiration of tracked criteria instances.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class ComponentStatisticsDaemon extends ComponentActive {
 
+    /**
+     * The set of criteria which statistics are being measured for
+     */
     public final Criteria[] criterias;
+    /**
+     * A Hashmap which assigns criteria statistic monitors to CriteriaInstance
+     * objects
+     */
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
+    /**
+     * The amount of time a criteria instance is allowed to be inactive
+     */
     public final long statsTimeoutMs;
 
+    /**
+     * Constructs a new ComponentStatisticsDaemon object.
+     *
+     * @param criterias The set of criteria which statistics are being measured
+     * for
+     * @param statsTable A Hashmap which assigns criteria statistic monitors to
+     * CriteriaInstance objects
+     * @param statsTimeoutMs The amount of time a criteria instance is allowed
+     * to be inactive
+     */
     public ComponentStatisticsDaemon(Criteria[] criterias,
             ConcurrentHashMap<CriteriaInstance, Statistics> statsTable,
             long statsTimeoutMs) {

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core.nic;
 
 import java.io.Serializable;
@@ -11,16 +7,36 @@ import java.util.logging.Logger;
 import org.jnetpcap.PcapIf;
 
 /**
+ * An instance of this class constitutes an object containing information
+ * regarding a Network Interface Card. Allows information inside a PcapIf object
+ * to be serializable.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class NicData implements Serializable {
-    
+
+    /**
+     * The name of the NIC
+     */
     public final String name;
+    /**
+     * The description of the NIC
+     */
     public final String description;
+    /**
+     * The MAC address of the NIC
+     */
     public final String hardwareAddress;
+    /**
+     * The list of addresses of the NIC
+     */
     public final ArrayList<NicDataAddress> addresses;
 
+    /**
+     * Constructs a new NicData object.
+     *
+     * @param pcapif A PcapIf object from which to extract information from
+     */
     public NicData(PcapIf pcapif) {
         this.name = pcapif.getName();
         this.description = pcapif.getDescription();

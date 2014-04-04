@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.reflection;
 
 import java.util.ArrayList;
@@ -10,14 +6,31 @@ import java.util.regex.Pattern;
 import org.jnetpcap.packet.PcapPacket;
 
 /**
+ * An instance of this class constitutes a PacketFilter which deals with
+ * compound PacketFilters (Packet Filters made out of multiple Packet Filters).
+ * The PacketFilters within are separated by boolean operators.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class PacketFilterExpression extends PacketFilter {
 
+    /**
+     * Sub packet filters
+     */
     public final PacketFilter[] filters;
+    /**
+     * Operations between the filters; must be filters.length - 1 in length
+     */
     public final OperationsBoolean[] operations;
 
+    /**
+     * Construct a new PacketFilterCondition using the provided expression
+     * String which has the following format:
+     * <exp-1><operation><exp-2><operation><exp-3>.
+     *
+     * @param expression The packet filter expression String
+     * @throws Exception
+     */
     public PacketFilterExpression(String expression) throws Exception {
         String exp = expression;
         if (expression.startsWith("(") && expression.endsWith(")")) {

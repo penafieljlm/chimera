@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
@@ -11,6 +7,7 @@ import ph.edu.dlsu.chimera.util.UtilsParse;
 import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
 /**
+ * The ctrain class contains the entry point for the ctrain command.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
@@ -39,14 +36,14 @@ public class ctrain {
             + "\n    -filter"
             + "\n        DESCRIPTION"
             + "\n            Attribute filter regular expression."
-            + "\n            May be used to exclude certain attributesd from the training set."
+            + "\n            May be used to exclude certain attributes from the training set."
             + "\n            If provided, the following apply:"
             + "\n                If the /exclude flag is set, the following apply:"
             + "\n                    Matching attributes are excluded."
             + "\n                    Non matching attributes are included."
             + "\n                If the /exclude flag is not set, the following apply:"
             + "\n                    Matching attributes are not included."
-            + "\n                    Non matching attrbitues are excluded."
+            + "\n                    Non matching attributes are excluded."
             + "\n            If not provided, the following apply:"
             + "\n                If the /exclude flag is set, the following apply:"
             + "\n                    All attributes are excluded."
@@ -132,7 +129,6 @@ public class ctrain {
                 UtilsPrinting.printTrainingResult(result);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(ex.getMessage());
             System.out.println("Type 'ctrain /help' to see usage.");
         }

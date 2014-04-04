@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.reflection;
 
 import java.lang.reflect.Constructor;
@@ -9,13 +5,26 @@ import org.jnetpcap.packet.JHeader;
 import org.jnetpcap.packet.PcapPacket;
 
 /**
+ * An instance of this class constitutes a PacketFilter which deals with
+ * filtering packets based on their protocol.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class PacketFilterProtocol extends PacketFilter {
 
+    /**
+     * The constructor of the header type being filtered
+     */
     public final Constructor headerConstructor;
 
+    /**
+     * Construct a new PacketFilterProtocol using the provided expression String
+     * which has the following format:
+     * <package-1>.<...>.<package-n>.<headername>.
+     *
+     * @param expression The packet filter expression String
+     * @throws Exception
+     */
     public PacketFilterProtocol(String expression) throws Exception {
         Class c = null;
         try {

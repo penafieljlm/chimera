@@ -13,6 +13,9 @@ import ph.edu.dlsu.chimera.core.Session;
  */
 public class MessageFinished implements Response, Command {
 
+    /**
+     * Constructs a new MessageFinished object.
+     */
     public MessageFinished() {
     }
 

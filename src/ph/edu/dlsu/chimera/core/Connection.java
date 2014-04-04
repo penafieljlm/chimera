@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core;
 
 import java.io.Serializable;
@@ -11,12 +7,22 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import ph.edu.dlsu.chimera.util.UtilsTime;
 
 /**
+ * An instance of this class constitutes a Statistics monitor object which is
+ * meant to work on TCP Streams. An instance of this class also keeps track the
+ * states of a TCP stream in order to detect whether or not it should be cleaned
+ * up.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class Connection extends Statistics implements Serializable {
 
+    /**
+     * The pair of TCP Sockets involved in the stream being monitored
+     */
     public final TcpSocketPair sockets;
+    /**
+     * The direction that the TCP stream being monitored was created
+     */
     public final TrafficDirection direction;
     private long ingressEncounters;
     private long egressEncounters;
@@ -30,6 +36,16 @@ public final class Connection extends Statistics implements Serializable {
     private byte inFin; //0 - none; 1 - fin,ack; 2 - ack
     private byte egFin; //0 - none; 1 - fin,ack; 2 - ack
 
+    /**
+     * Constructs a new Connection object.
+     *
+     * @param sockets The pair of TCP Sockets involved in the stream being
+     * monitored
+     * @param timeCreatedNanos The time which the TCP Stream object monitor was
+     * created
+     * @param direction The direction that the TCP stream being monitored was
+     * created
+     */
     public Connection(TcpSocketPair sockets, long timeCreatedNanos, TrafficDirection direction) {
         super(timeCreatedNanos);
         this.sockets = sockets;
@@ -54,25 +70,42 @@ public final class Connection extends Statistics implements Serializable {
         this.egFin = 0;
     }
 
+    /**
+     *
+     * @return The number of network inbound packets encountered
+     */
     public synchronized long ingressEncounters() {
         return this.ingressEncounters;
     }
 
+    /**
+     *
+     * @return The number of network outbound packets encountered
+     */
     public synchronized long egressEncounters() {
         return this.egressEncounters;
     }
 
+    /**
+     *
+     * @return The total size of network inbound traffic in bytes
+     */
     public synchronized long ingressTotalSize() {
         return this.ingressTotalSize;
     }
 
+    /**
+     *
+     * @return The total size of network outbound traffic in bytes
+     */
     public synchronized long egressTotalSize() {
         return this.egressTotalSize;
     }
 
     /**
-     * @return the ingress rate of this Connection measured as packet per
-     * second.
+     *
+     * @return The traffic rate of network inbound traffic measured as packets
+     * per second
      */
     public synchronized double ingressRatePerSec() {
         double sec = this.getTimeExistedMs() / 1000;
@@ -80,7 +113,9 @@ public final class Connection extends Statistics implements Serializable {
     }
 
     /**
-     * @return the egress rate of this Connection measured as packet per second.
+     *
+     * @return The traffic rate of network outbound traffic measured as packets
+     * per second
      */
     public synchronized double egressRatePerSec() {
         double sec = this.getTimeExistedMs() / 1000;
@@ -88,47 +123,79 @@ public final class Connection extends Statistics implements Serializable {
     }
 
     /**
-     * @return the average size of ingress traffic
+     *
+     * @return The average size of network inbound traffic in bytes
      */
     public synchronized double ingressAverageSize() {
         return (this.ingressEncounters > 0) ? this.ingressTotalSize / this.ingressEncounters : this.ingressTotalSize;
     }
 
     /**
-     * @return the average size of egress traffic
+     *
+     * @return The average size of network outbound traffic in bytes
      */
     public synchronized double egressAverageSize() {
         return (this.egressEncounters > 0) ? this.egressTotalSize / this.egressEncounters : this.egressTotalSize;
     }
 
+    /**
+     *
+     * @return The last time a network inbound packet had been encountered in
+     * milliseconds
+     */
     public synchronized long ingressLastEncounterTimeNs() {
         return this.ingressLastEncounterNanos;
     }
 
+    /**
+     *
+     * @return The last time a network outbound packet had been encountered in
+     * milliseconds
+     */
     public synchronized long egressLastEncounterTimeNs() {
         return this.egressLastEncounterNanos;
     }
 
+    /**
+     *
+     * @return The amount of time since a network ingress packet had been
+     * encountered in milliseconds
+     */
     public synchronized double ingressTimeSinceLastEncounterMs() {
         return UtilsTime.nowMs() - UtilsTime.nsToMs(this.ingressLastEncounterNanos);
     }
 
+    /**
+     *
+     * @return The amount of time since a network outbound packet had been
+     * encountered in milliseconds
+     */
     public synchronized double egressTimeSinceLastEncounterMs() {
         return UtilsTime.nowMs() - UtilsTime.nsToMs(this.egressLastEncounterNanos);
     }
 
+    /**
+     *
+     * @return Time interval between the last network inbound packet encounter
+     * and the network outbound packet encounter before that in nanoseconds
+     */
     public synchronized long ingressLastEncounterDeltaNs() {
         return (this.ingressLastLastEncounterNanos < 0) ? -1 : this.ingressLastEncounterNanos - this.ingressLastLastEncounterNanos;
     }
 
+    /**
+     *
+     * @return Time interval between the last network outbound packet encounter
+     * and the network outbound packet encounter before that in nanoseconds
+     */
     public synchronized long egressLastEncounterDeltaNs() {
         return (this.egressLastLastEncounterNanos < 0) ? -1 : this.egressLastEncounterNanos - this.egressLastLastEncounterNanos;
     }
 
     /**
-     * Updates the connection data based on the received packet.
+     * Updates the monitor values based on the received packet.
      *
-     * @param pkt - the received packet.
+     * @param pkt The received packet.
      */
     public synchronized void update(PduAtomic pkt) {
         if (!this.done) {
@@ -163,6 +230,10 @@ public final class Connection extends Statistics implements Serializable {
         }
     }
 
+    /**
+     *
+     * @return True if the TCP stream being monitored has finished.
+     */
     public synchronized boolean isDone() {
         return this.done;
     }
