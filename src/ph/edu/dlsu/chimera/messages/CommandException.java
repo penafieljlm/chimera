@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.messages;
 
 import java.io.PrintWriter;
@@ -13,15 +9,36 @@ import ph.edu.dlsu.chimera.components.Component;
 import ph.edu.dlsu.chimera.components.ComponentActive;
 
 /**
+ * An instance of this class constitutes a Command which requests for exceptions
+ * in the deployed system.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class CommandException implements Command {
 
+    /**
+     * The component to query for exceptions
+     */
     public final String component;
+    /**
+     * Set to true if the command should return the stack trace of the exception
+     */
     public final boolean printStackTrace;
+    /**
+     * Set to true if the queried exceptions will be removed from the deployed
+     * system
+     */
     public final boolean pollErrors;
 
+    /**
+     * Constructs a new CommandException object.
+     *
+     * @param component The name of the component to query for exception from
+     * @param printStackTrace Set to true if the command should return the stack
+     * trace of the exception
+     * @param pollErrors Set to true if the queried exceptions will be removed
+     * from the deployed system
+     */
     public CommandException(String component, boolean printStackTrace, boolean pollErrors) {
         this.component = component;
         this.printStackTrace = printStackTrace;

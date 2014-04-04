@@ -1,18 +1,27 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.rules;
 
 /**
+ * This class constitutes information about iptables rules placed on a chain.
  *
- * @author Nikkol
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class RuleInfo {
 
+    /**
+     * The id identifying the rule
+     */
     public final Object id;
+    /**
+     * The time that the rule was created
+     */
     public final long timeCreatedMs;
 
+    /**
+     * Constructs a new RuleInfo object.
+     *
+     * @param id The id identifying the rule
+     * @param timeCreated The time that the rule was created
+     */
     public RuleInfo(Object id, long timeCreated) {
         this.id = id;
         this.timeCreatedMs = timeCreated;

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.util;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -31,20 +27,21 @@ import weka.core.converters.CSVLoader;
 import weka.core.converters.ConverterUtils.DataSource;
 
 /**
+ * This utility class provide functions dealing with the Training phase.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class UtilsTraining {
 
-    public static String CLASSIFIER_OPTIONS = "-C 0.25 -M 2";
-    public static final String[] CORE_HEADERS = {"protocol",
+    private static String CLASSIFIER_OPTIONS = "-C 0.25 -M 2";
+    private static final String[] CORE_HEADERS = {"protocol",
         "weekday",
         "timeofday",
         "pdu_size",
         "dest_tcp",
         "dest_udp",
         "flag_tcp"};
-    public static final String[] CONN_HEADERS = {"conn.in_enc_timed",
+    private static final String[] CONN_HEADERS = {"conn.in_enc_timed",
         "conn.ou_enc_timed",
         "conn.in_enc_count",
         "conn.ou_enc_count",
@@ -54,8 +51,16 @@ public abstract class UtilsTraining {
         "conn.ou_asize",
         "conn.in_rateps",
         "conn.ou_rateps"};
-    public static final String ATTK_HEADER = "attack";
+    private static final String ATTK_HEADER = "attack";
 
+    /**
+     * Gets the core training instance from the given packet and instances
+     * object.
+     *
+     * @param packet Packet
+     * @param instances Training instance
+     * @return Core training instance
+     */
     public static Object[] getCoreInstance(PduAtomic packet, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         Tcp tcp = packet.packet.getHeader(new Tcp());
@@ -84,6 +89,14 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
+    /**
+     * Gets the core training instance from the given instance and instances
+     * object.
+     *
+     * @param instance Training instance
+     * @param instances Instances object
+     * @return Core training instance
+     */
     public static Object[] getCoreInstance(Object[] instance, Instances instances) {
         int coreHeadersCt = UtilsTraining.CORE_HEADERS.length;
         if (instances != null) {
@@ -99,6 +112,14 @@ public abstract class UtilsTraining {
         return subinst;
     }
 
+    /**
+     * Gets the connection training instance from the given packet and instances
+     * object.
+     *
+     * @param packet The packet
+     * @param instances The instance object
+     * @return Connection training instance
+     */
     public static Object[] getConnectionInstance(PduAtomic packet, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         Connection conn = packet.getConnection();
@@ -135,6 +156,14 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
+    /**
+     * Gets the connection training instance from the given training instance
+     * and instances object.
+     *
+     * @param instance The training instance
+     * @param instances The instance object
+     * @return The connection training instance
+     */
     public static Object[] getConnectionInstance(Object[] instance, Instances instances) {
         int coreHeadersCt = UtilsTraining.CORE_HEADERS.length;
         if (instances != null) {
@@ -159,6 +188,13 @@ public abstract class UtilsTraining {
         return subinst;
     }
 
+    /**
+     * Gets the criteria headers from the given criteria and instances object.
+     *
+     * @param criteria The criteria
+     * @param instances The instances object
+     * @return The criteria headers
+     */
     public static String[] getCriteriaHeaders(Criteria criteria, Instances instances) {
         ArrayList<String> headers = new ArrayList<String>();
         String exp = criteria.expression.replaceAll(" ", "");
@@ -180,6 +216,15 @@ public abstract class UtilsTraining {
         return headers.toArray(new String[0]);
     }
 
+    /**
+     * Gets the criteria instance from the given criteria, packet, and instances
+     * object.
+     *
+     * @param criteria The criteria
+     * @param packet The packet
+     * @param instances The instances object
+     * @return The criteria instance
+     */
     public static Object[] getCriteriaInstance(Criteria criteria, PduAtomic packet, Instances instances) {
         String exp = criteria.expression.replaceAll(" ", "");
         ArrayList<Object> instance = new ArrayList<Object>();
@@ -202,6 +247,16 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
+    /**
+     * Gets the criteria instance object from the given criteria, headers,
+     * instance, and instances object.
+     *
+     * @param criteria The criteria
+     * @param headers The headers
+     * @param instance The instance
+     * @param instances The instances object
+     * @return The criteria instance
+     */
     public static Object[] getCriteriaInstance(Criteria criteria, Object[] headers, Object[] instance, Instances instances) {
         if (headers.length != instance.length) {
             return null;
@@ -221,6 +276,14 @@ public abstract class UtilsTraining {
         return subinst;
     }
 
+    /**
+     * Gets the criteria headers from the given set of criteria and instances
+     * object.
+     *
+     * @param criterias The criteria set
+     * @param instances The instances object
+     * @return The criteria headers
+     */
     public static String[] getCriteriasHeaders(Criteria[] criterias, Instances instances) {
         ArrayList<String> headers = new ArrayList<String>();
         for (Criteria crt : criterias) {
@@ -229,6 +292,15 @@ public abstract class UtilsTraining {
         return headers.toArray(new String[0]);
     }
 
+    /**
+     * Gets the criteria instance from the given criteria set, packet, and
+     * instances object.
+     *
+     * @param criterias The criteria set
+     * @param packet The packet
+     * @param instances The instances object
+     * @return The criteria instance
+     */
     public static Object[] getCriteriasInstance(Criteria[] criterias, PduAtomic packet, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         for (Criteria crt : criterias) {
@@ -237,6 +309,14 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
+    /**
+     * Gets the training headers from the given criteria set and instances
+     * object.
+     *
+     * @param criterias The criteria set
+     * @param instances The instances object
+     * @return The training headers
+     */
     public static String[] getHeaders(Criteria[] criterias, Instances instances) {
         ArrayList<String> headers = new ArrayList<String>();
         headers.addAll(Arrays.asList(UtilsTraining.CORE_HEADERS));
@@ -248,6 +328,16 @@ public abstract class UtilsTraining {
         return headers.toArray(new String[0]);
     }
 
+    /**
+     * Gets the training instance from the given criteria set, packet, attack
+     * tagging policy, and instances object.
+     *
+     * @param criterias The criteria set
+     * @param packet The packet
+     * @param tagAsAttack True if instance to be created is tagged as attack
+     * @param instances The instances object
+     * @return The training instance
+     */
     public static Object[] getInstance(Criteria[] criterias, PduAtomic packet, boolean tagAsAttack, Instances instances) {
         ArrayList<Object> instance = new ArrayList<Object>();
         instance.addAll(Arrays.asList(UtilsTraining.getCoreInstance(packet, instances)));
@@ -259,6 +349,19 @@ public abstract class UtilsTraining {
         return instance.toArray(new Object[0]);
     }
 
+    /**
+     * The training process.
+     *
+     * @param monitor Monitor used for reporting the current state of the
+     * training process as well as terminating it.
+     * @param trainingFile The training file where to retrieve the training set.
+     * @param filter Attribute filter
+     * @param exclude If true, excludes filtered attributes; else, includes only
+     * filtered attributes
+     * @return A TrainingResult object containing the result of the training
+     * process
+     * @throws Exception
+     */
     public static TrainingResult train(PhaseMonitorTraining monitor, File trainingFile, String filter, boolean exclude) throws Exception {
         //open training set file
         if (monitor != null) {
@@ -592,6 +695,12 @@ public abstract class UtilsTraining {
         return new TrainingResult(new ModelLive(iface.toString(), connSubModel, criteriaSubModels), connInstance, criteriaInstance);
     }
 
+    /**
+     * Checks if a provided training instance is null.
+     *
+     * @param instance The training instance
+     * @return True if null, false if not
+     */
     public static boolean instanceIsNull(Object[] instance) {
         for (Object i : instance) {
             if (i instanceof Number) {

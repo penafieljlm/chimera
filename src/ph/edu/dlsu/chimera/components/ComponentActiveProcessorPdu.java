@@ -1,21 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import ph.edu.dlsu.chimera.core.Pdu;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
+ * An instance of this class constitutes a ComponentActiveProcessor which works
+ * on Pdu objects.
  *
- * @author AMD
- * @param <TInput>
- * @param <TOutput>
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
+ * @param <TInput> The type of Pdu consumed
+ * @param <TOutput> The type of Pdu produced
  */
 public abstract class ComponentActiveProcessorPdu<TInput extends Pdu, TOutput extends Pdu> extends ComponentActiveProcessor<TInput, TOutput> {
 
+    /**
+     * Constructs a new ComponentActiveProcessorPdu object.
+     *
+     * @param inQueue The input queue
+     * @param outQueue The output queue
+     */
     public ComponentActiveProcessorPdu(IntermodulePipe<TInput> inQueue, IntermodulePipe<TOutput> outQueue) {
         super(inQueue, outQueue);
     }

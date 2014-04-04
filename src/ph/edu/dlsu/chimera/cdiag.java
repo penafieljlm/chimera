@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import java.util.ArrayList;
@@ -11,6 +7,7 @@ import ph.edu.dlsu.chimera.util.UtilsParse;
 import ph.edu.dlsu.chimera.util.UtilsPrinting;
 
 /**
+ * The cdiag class contains the entry point for the cdiag command.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
@@ -41,7 +38,7 @@ public class cdiag {
 
             //parse args
             HashMap<String, String> _args = UtilsParse.parseArgs(args);
-            
+
             //get parameter
             String component = _args.get("-component");
 

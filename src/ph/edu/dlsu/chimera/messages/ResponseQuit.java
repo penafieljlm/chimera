@@ -1,15 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.messages;
 
 import ph.edu.dlsu.chimera.core.ReturnParameter;
 
 /**
+ * An instance of this class constitutes an Response which acknowledges that the
+ * system had stopped its deployment process.
  *
- * @author User
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class ResponseQuit implements Response {
 

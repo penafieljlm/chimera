@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.util;
 
 import java.util.HashMap;
@@ -18,15 +13,32 @@ import weka.classifiers.trees.J48;
 import weka.core.Instances;
 
 /**
+ * This utility class provide functions dealing with printing.
  *
- * @author AMD
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class UtilsPrinting {
 
+    /**
+     * Prints the provided TrainingResult object onto the command line screen.
+     *
+     * @param result The TrainingResult object to be printed
+     * @throws Exception
+     */
     public static void printTrainingResult(TrainingResult result) throws Exception {
         UtilsPrinting.printModel(result.model, result.connectionInstances, result.criteriaInstances);
     }
 
+    /**
+     * Prints the provided ModelLive object onto the command line screen.
+     *
+     * @param model The ModelLive object to be printed
+     * @param connectionInstances Connection instances used to conduct tests on
+     * the model
+     * @param criteriaInstances Criteria instances used to conduct tests on the
+     * criteria set
+     * @throws Exception
+     */
     public static void printModel(ModelLive model, Instances connectionInstances, HashMap<Criteria, Instances> criteriaInstances) throws Exception {
         System.out.println("Interface....................... " + model.protectedInterface);
         if (model.connectionSubModel.tree != null) {
@@ -37,6 +49,15 @@ public abstract class UtilsPrinting {
         }
     }
 
+    /**
+     * Prints the provided tree using the provided data instances.
+     *
+     * @param name The tree name
+     * @param tree The tree
+     * @param data The testing data
+     * @param attackClass The class which is considered an attack
+     * @throws Exception
+     */
     public static void printTree(String name, J48 tree, Instances data, double attackClass) throws Exception {
         System.out.println("Tree............................ " + name);
         System.out.println("    Number of Leaves............ " + tree.measureNumLeaves());
@@ -73,6 +94,12 @@ public abstract class UtilsPrinting {
         System.out.println("        " + codeBuilder);
     }
 
+    /**
+     * Prints diagnostics. Recursive function.
+     *
+     * @param diags List of diagnostics
+     * @param prefix Prefix for this iteration
+     */
     public static void printDiagnostics(List diags, String prefix) {
         int maxNameLen = 0;
         for (Object o : diags) {
@@ -102,6 +129,11 @@ public abstract class UtilsPrinting {
         }
     }
 
+    /**
+     * Prints the information from the provided NicData array.
+     *
+     * @param cifaces The NicDataArray
+     */
     public static void printInterfaces(NicData[] cifaces) {
         System.out.println("CHIMERA Network Interfaces:");
         int intctr = 0;
@@ -119,6 +151,11 @@ public abstract class UtilsPrinting {
         }
     }
 
+    /**
+     * Prints the contents of an array.
+     *
+     * @param a The array
+     */
     public static void printArray(Object[] a) {
         StringBuilder b = new StringBuilder();
         for (Object c : a) {

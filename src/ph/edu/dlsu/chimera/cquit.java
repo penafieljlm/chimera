@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 /**
+ * The cquit class contains the entry point for the cquit command.
  *
- * @author User
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class cquit {
 
@@ -33,7 +29,7 @@ public class cquit {
             Chimera.cquit();
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
-            System.out.println("Type 'cdiag /help' to see usage.");
+            System.out.println("Type 'cquit /help' to see usage.");
         }
     }
 }

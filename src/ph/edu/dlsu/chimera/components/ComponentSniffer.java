@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
@@ -18,18 +14,40 @@ import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 
 /**
+ * An instance of this class constitutes a Component which captures packets from
+ * a network interface.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket, PduAtomic> implements PcapPacketHandler<Pcap> {
 
+    /**
+     * The name of the network interface to capture packets from
+     */
     public final String pcapIf;
+    /**
+     * A packet filter used to control the type of packets that are captured
+     */
     public final PacketFilter accessFilter;
+    /**
+     * If true, packets matching the accessFilter are captured; if false,
+     * packets matching the access filter are not captured
+     */
     public final boolean allowFiltered;
     private Pcap pcap;
     private StringBuilder errBuff;
     private byte[] interfaceMacAddress;
 
+    /**
+     * Constructs a new ComponentSniffer object.
+     *
+     * @param outQueue The output queue
+     * @param inPcapIf The name of the network interface to capture packets from
+     * @param accessFilter A packet filter used to control the type of packets
+     * that are captured
+     * @param allowFiltered If true, packets matching the accessFilter are
+     * captured; if false, packets matching the access filter are not captured
+     */
     public ComponentSniffer(IntermodulePipe<PduAtomic> outQueue,
             String inPcapIf,
             PacketFilter accessFilter,
@@ -41,6 +59,12 @@ public final class ComponentSniffer extends ComponentActiveProcessor<PcapPacket,
         this.allowFiltered = allowFiltered;
     }
 
+    /**
+     * Constructs a new ComponentSniffer object.
+     *
+     * @param outQueue The output queue
+     * @param inPcapIf The name of the network interface to capture packets from
+     */
     public ComponentSniffer(IntermodulePipe<PduAtomic> outQueue,
             String inPcapIf) {
         this(outQueue, inPcapIf, null, true);

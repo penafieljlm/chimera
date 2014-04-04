@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import java.io.File;
@@ -44,7 +39,6 @@ import ph.edu.dlsu.chimera.monitors.PhaseMonitorProduction;
 import ph.edu.dlsu.chimera.core.PduAtomic;
 import ph.edu.dlsu.chimera.core.TrainingOutputResult;
 import ph.edu.dlsu.chimera.messages.CommandQuit;
-import ph.edu.dlsu.chimera.monitors.PhaseMonitor;
 import ph.edu.dlsu.chimera.monitors.PhaseMonitorTraining;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 import ph.edu.dlsu.chimera.rules.RulesManager;
@@ -53,11 +47,29 @@ import ph.edu.dlsu.chimera.util.UtilsPcap;
 import ph.edu.dlsu.chimera.util.UtilsTraining;
 
 /**
+ * The Chimera class contains the general functionalities that the CHIMERA
+ * system offers.
  *
- * @author AMD
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class Chimera {
 
+    /**
+     * The cconfig function returns the state of a specified component. The
+     * command will only work if there is an ongoing phase.
+     *
+     * @param _port The port to listen for control messages during deployment
+     * @param _protected The name of the interface facing the protected network
+     * @param _statetimeout The amount of time before a TCP state is allowed to
+     * be idle
+     * @param _statstimeout The amount of time before a criteria instance is
+     * allowed to be idle
+     * @param _syslogport The UDP port number of default syslog server
+     * applications to contact
+     * @return An object which contains information regarding the applied
+     * configuration
+     * @throws Exception
+     */
     public static Config cconfig(Integer _port, String _protected, Long _statetimeout, Long _statstimeout, Integer _syslogport) throws Exception {
         //load config
         Config config = Config.loadConfig();
@@ -85,6 +97,15 @@ public class Chimera {
         return config;
     }
 
+    /**
+     * The cdiag function returns the state of a specified component. The
+     * command will only work if there is an ongoing phase.
+     *
+     * @param _component The name of the component to be diagnosed
+     * @return An ArrayList containing the Diagnostics information for the
+     * specified component
+     * @throws Exception
+     */
     public static ArrayList<Diagnostic> cdiag(String _component) throws Exception {
         //check parameters
         if (_component == null) {
@@ -106,6 +127,13 @@ public class Chimera {
         throw new Exception("Returned object is not ArrayList<Diagnostic>");
     }
 
+    /**
+     * The cifaces function returns the configuration of all detected
+     * interfaces.
+     *
+     * @return The configuration of all detected interfaces
+     * @throws Exception
+     */
     public static NicData[] cifaces() throws Exception {
         ArrayList<NicData> nics = new ArrayList<NicData>();
         for (PcapIf nic : UtilsPcap.getInterfaces()) {
@@ -114,6 +142,57 @@ public class Chimera {
         return nics.toArray(new NicData[0]);
     }
 
+    /**
+     * The cgather function performs the CHIMERA's Data Gathering phase. The
+     * training set used in the Training Phase is compiled in this phase. This
+     * phase produces the said training set using the traffic captured. Training
+     * set produced is stored on a .csv file.
+     *
+     * @param _monitor An object which the cgather function can notify regarding
+     * its progress
+     * @param _output The output file name of the training set to be produced.
+     * Automatically ends with '.ctset'.
+     * @param _protected The name of the interface facing the protected network.
+     * Refer to the output of the 'cifaces' command.
+     * @param _access A CHIMERA-JNetPcap Packet Filter Expression. If provided,
+     * the following apply: If the /allow flag is set, the following apply:
+     * Matching packets are included in the training set. Non matching packets
+     * are excluded from the training set. If the /allow flag is not set, the
+     * following apply: Matching packets are excluded from the training set. Non
+     * matching packets are included in the training set. If not provided, the
+     * following apply: If the /allow flag is set, the following apply: All
+     * packets are included in the training set. If the /allow flag is not set,
+     * the following apply: All packets are excluded from the training set.
+     * @param _allow If true, the following apply: If -access is provided, the
+     * following apply: Packets matching -access are included in the training
+     * set. Packets not matching -access are not included in the training set.
+     * If -access is not provided, the following apply: All packets are included
+     * in the training set. If not set, the following apply: If -access is
+     * provided, the following apply: Packets matching -access are not included
+     * in the training set. Packets not matching -access are included in the
+     * training set. If -access is not provided, the following apply: All
+     * packets are not included in the training set.
+     * @param _training A CHIMERA-JNetPcap Packet Filter Expression. If
+     * provided, the following apply: If the /attack flag is set, the following
+     * apply: Matching packets are flagged as attacks. Non matching packets are
+     * flagged as normal. If the /attack flag is not set, the following apply:
+     * Matching packets are flagged as normal. Non matching packets are flagged
+     * as attacks. If not provided, the following apply: If the /attack flag is
+     * set, the following apply: All packets are flagged as attacks. If the
+     * /attack flag is not set, the following apply: All packets are flagged as
+     * normal.
+     * @param _attack If true, the following apply: If -training is provided,
+     * the following apply: Packets matching -training are flagged as attacks.
+     * Packets not matching -training are flagged as normal. If -training is not
+     * provided, the following apply: All packets are flagged as attacks. If not
+     * set, the following apply: If -training is provided, the following apply:
+     * Packets matching -training are flagged as normal. Packets not matching
+     * -training are flagged as attacks. If -training is not provided, the
+     * following apply: All packets are flagged as normal.
+     * @return A File object pointing to the file containing the gathered data
+     * set
+     * @throws Exception
+     */
     public static File cgather(PhaseMonitorGathering _monitor, String _output, String _protected, String _access, boolean _allow, String _training, boolean _attack) throws Exception {
         //check parameters
         if (_output == null) {
@@ -206,7 +285,7 @@ public class Chimera {
                 }
             }
         }
-        
+
         //join threads
         for (String c : components.keySet()) {
             Component _c = components.get(c);
@@ -219,6 +298,37 @@ public class Chimera {
         return trainingDumpFile;
     }
 
+    /**
+     * The ctrain function performs the CHIMERA's model building phase. The
+     * 'normal' model used in the Production Phase is built in this phase. This
+     * phase produces the said model using the training set captured during Data
+     * Gathering. The model produced is stored on a .cmodel file.
+     *
+     * @param _monitor An object which the ctrain function can notify regarding
+     * its progress
+     * @param _input The input file name of the training set file. Automatically
+     * ends with '.ctset'.
+     * @param _output The output file name of the model to be produced.
+     * Automatically ends with '.cmodel'.
+     * @param _filter Attribute filter regular expression. May be used to
+     * exclude certain attributes from the training set. If provided, the
+     * following apply: If the /exclude flag is set, the following apply:
+     * Matching attributes are excluded. Non matching attributes are included.
+     * If the /exclude flag is not set, the following apply: Matching attributes
+     * are not included. Non matching attributes are excluded. If not provided,
+     * the following apply: If the /exclude flag is set, the following apply:
+     * All attributes are excluded. If the /exclude flag is not set, the
+     * following apply: All attributes are included.
+     * @param _exclude If set, the following apply:" If -filter is provided, the
+     * following apply:" Attributes matching -filter are excluded." Attributes
+     * not matching -filter are included." If -filter is not provided, the
+     * following apply:" If not set, the following apply:" If -filter is
+     * provided, the following apply:" Attributes matching -filter are
+     * included." Attributes not matching -filter are excluded." If -filter is
+     * not provided, the following apply:" All attributes are included."
+     * @return An object containing the results of the training process
+     * @throws Exception
+     */
     public static TrainingOutputResult ctrain(PhaseMonitorTraining _monitor, String _input, String _output, String _filter, boolean _exclude) throws Exception {
         //check parameters
         if (_input == null) {
@@ -259,12 +369,31 @@ public class Chimera {
         return new TrainingOutputResult(result, modelFile);
     }
 
+    /**
+     * The cproduce function performs the CHIMERA's Production phase. The
+     * 'normal' model produced in the Training Phase is used in this phase. This
+     * phase checks network traffic for possible Denial-of-Service attacks. Upon
+     * the discovery of an attack, logs and rules can optionally be created.
+     *
+     * @param _monitor An object which the cproduce function can notify
+     * regarding its progress
+     * @param _input The input file name of the model to be used. Automatically
+     * ends with '.cmodel'.
+     * @param _syslog Hostname or IP Address of the Syslog server to send logs
+     * to.
+     * @param _syslogport UDP port number of the Syslog server application.
+     * @param _active If set, the following apply: Linux kernel firewall rules
+     * are created to block detected DoS attacks. If not set, the following
+     * apply: Linux kernel firewall rules are not created to block detected DoS
+     * attacks.
+     * @return An array of logs generated during the production process
+     * @throws Exception
+     */
     public static Log[] cproduce(PhaseMonitorProduction _monitor, String _input, String _syslog, Integer _syslogport, boolean _active) throws Exception {
         //check parameters
         if (_input == null) {
             throw new Exception("The argument '-input' must be provided.");
         }
-
         //load config
         Config config = Config.loadConfig();
 
@@ -357,6 +486,12 @@ public class Chimera {
         return detector.logs.toArray(new Log[0]);
     }
 
+    /**
+     * The cquit function stops any running phases. The command will only work
+     * if there is an ongoing phase.
+     *
+     * @throws Exception
+     */
     public static void cquit() throws Exception {
         //load config
         Config config = Config.loadConfig();
@@ -365,6 +500,13 @@ public class Chimera {
         Object result = UtilsCommand.send(config.controlPort, new CommandQuit());
     }
 
+    /**
+     * The cquit function stops any running phases. The command will only work
+     * if there is an ongoing phase.
+     *
+     * @param assembly The set of components to be stopped
+     * @throws Exception
+     */
     public static void cquit(HashMap<String, Component> assembly) throws Exception {
         for (String c : assembly.keySet()) {
             Component _c = assembly.get(c);

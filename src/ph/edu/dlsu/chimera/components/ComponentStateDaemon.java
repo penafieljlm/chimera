@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
@@ -12,14 +8,31 @@ import ph.edu.dlsu.chimera.core.Connection;
 import ph.edu.dlsu.chimera.core.TrafficDirection;
 
 /**
+ * An instance of this class constitutes a Component which enforces the
+ * expiration of tracked TCP streams/states/sessions.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class ComponentStateDaemon extends ComponentActive {
 
+    /**
+     * A Hashmap which assigns Connection statistic monitors to TcpSocketPair
+     * objects
+     */
     public final ConcurrentHashMap<TcpSocketPair, Connection> stateTable;
+    /**
+     * The amount of time a TCP stream is allowed to be inactive
+     */
     public final long stateTimeoutMs;
 
+    /**
+     * Constructs a new ComponentStateDaemon object.
+     *
+     * @param stateTable A Hashmap which assigns Connection statistic monitors
+     * to TcpSocketPair objects
+     * @param stateTimeoutMs The amount of time a TCP stream is allowed to be
+     * inactive
+     */
     public ComponentStateDaemon(ConcurrentHashMap<TcpSocketPair, Connection> stateTable, long stateTimeoutMs) {
         this.setPriority(Thread.MIN_PRIORITY);
         this.stateTable = stateTable;

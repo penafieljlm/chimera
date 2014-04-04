@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.util;
 
 import java.io.File;
@@ -11,11 +7,19 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 
 /**
+ * This utility class provide functions dealing with files.
  *
- * @author jenoocide
+ * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public abstract class UtilsFile {
 
+    /**
+     * Copies the content of a file onto another.
+     *
+     * @param sourceFile The source file
+     * @param destFile The destination file
+     * @throws IOException
+     */
     public static void copyFile(File sourceFile, File destFile) throws IOException {
         if (!destFile.exists()) {
             destFile.createNewFile();

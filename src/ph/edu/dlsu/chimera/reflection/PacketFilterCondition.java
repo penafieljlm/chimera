@@ -1,23 +1,36 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.reflection;
 
 import java.math.BigInteger;
 import org.jnetpcap.packet.PcapPacket;
 
 /**
+ * An instance of this class constitutes a PacketFilter which deals with
+ * comparing PacketField values to arbitrary values.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class PacketFilterCondition extends PacketFilter {
 
+    /**
+     * The PacketField being referenced
+     */
     public final PacketField subject;
+    /**
+     * The comparative operation to be preformed
+     */
     public final OperationsCompare operation;
+    /**
+     * The arbitrary value
+     */
     public final BigInteger value;
 
-    //syntax: <field>=<value>
+    /**
+     * Construct a new PacketFilterCondition using the provided expression
+     * String which has the following format: <field><operation><value>.
+     *
+     * @param expression The packet filter expression String
+     * @throws Exception
+     */
     public PacketFilterCondition(String expression) throws Exception {
         String[] e = expression.split("((==)|(!=)|(<=)|(>=)|(<)|(>))");
         if (e.length != 2) {

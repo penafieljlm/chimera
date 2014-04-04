@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.core.criteria;
 
 import de.tbsol.iptablesjava.rules.IpRule;
@@ -18,21 +14,52 @@ import ph.edu.dlsu.chimera.reflection.PacketField;
 import ph.edu.dlsu.chimera.reflection.PacketFilter;
 
 /**
+ * An instance of this class constitutes an object which describes a group of
+ * packet attributes. An instance of this class has the capability to create a
+ * CriteriaInstance object. A Criteria is an object which handles certain packet
+ * fields, while a CriteriaInstance object handles certain values associated
+ * with those fields.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class Criteria {
 
-    public static final String EXP_SUBJECT = "subject[(]((([^,()]+)([,]))*([^,()]+))[)]";
-    public static final String EXP_FILTER = "filter[(]((([^,()]+)([,]))*([^,()]+))[)]";
-    public static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
+    private static final String EXP_SUBJECT = "subject[(]((([^,()]+)([,]))*([^,()]+))[)]";
+    private static final String EXP_FILTER = "filter[(]((([^,()]+)([,]))*([^,()]+))[)]";
+    private static final String EXP_EXPRESSION = Criteria.EXP_SUBJECT + "( " + Criteria.EXP_FILTER + "){0,1}";
+    /**
+     * The Criteria expression
+     */
     public final String expression;
+    /**
+     * The subjects field of the Criteria expression
+     */
     public final String expressionSubjects;
+    /**
+     * The filter field of the Criteria expression
+     */
     public final String expressionFilter;
+    /**
+     * Parsed packet attributes from the subjects field of the Criteria
+     * expression
+     */
     public final PacketField[] subjects;
+    /**
+     * Parsed packet filter from the filter field of the Criteria expression
+     */
     public final PacketFilter filter;
 
-    //syntax: subject(<subject 1>, ... , <subject n>) filter(<filter 1>, ... , <filter n>)
+    /**
+     * Constructs a new Criteria object from the given Criteria expression. The
+     * criteria expression follows the following format: subject(<subject 1>,
+     * ... , <subject n>) filter(<filter 1>, ... , <filter n>). See the
+     * PacketField class for the format of the subjects and the PacketFilter
+     * class for the format of the filters.
+     *
+     * @param expression The criteria expression from which to derive the
+     * Criteria object to be created from
+     * @throws Exception
+     */
     public Criteria(String expression) throws Exception {
         if (Pattern.matches(Criteria.EXP_EXPRESSION, expression)) {
             Pattern subjpattern = Pattern.compile(Criteria.EXP_SUBJECT);
@@ -71,6 +98,13 @@ public final class Criteria {
         }
     }
 
+    /**
+     *
+     * @param pkt The packet
+     * @return A CriteriaInstance derived from the fields described by this
+     * Criteria object and the field values of the packet provided.
+     * @throws Exception
+     */
     public CriteriaInstance createInstance(PcapPacket pkt) throws Exception {
         if (this.filter != null) {
             if (!this.filter.matches(pkt)) {
@@ -87,6 +121,12 @@ public final class Criteria {
         return new CriteriaInstance(cId, this);
     }
 
+    /**
+     *
+     * @param pkt The packet
+     * @return An iptables rule using the combination of the PacketFields of
+     * this Criteria and the field values of the packet provided
+     */
     public IpRule createRule(PcapPacket pkt) {
         IpRule rule = new IpRule();
         rule.setProtocol(IpRule.IpProto.IPPROTO_ALL);
@@ -98,6 +138,13 @@ public final class Criteria {
         return rule;
     }
 
+    /**
+     * Loads Criteria objects from the 'criterias.config' file. If the file does
+     * not exist, a new file with the default Criteria expressions is created.
+     *
+     * @return The loaded Criteria objects
+     * @throws Exception
+     */
     public static Criteria[] loadCriterias() throws Exception {
         File criteriasFile = new File("criterias.config");
         ArrayList<String> expressions = new ArrayList<String>();
@@ -139,6 +186,12 @@ public final class Criteria {
         return criterias;
     }
 
+    /**
+     * Saves the provided Criteria expressions in the 'criterias.config' file.
+     *
+     * @param criterias The Criteria expression
+     * @throws Exception
+     */
     public static void saveCriterias(String[] criterias) throws Exception {
         File criteriasFile = new File("criterias.config");
         if (criteriasFile.exists()) {

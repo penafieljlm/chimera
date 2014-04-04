@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.components;
 
 import java.util.ArrayList;
@@ -15,14 +11,34 @@ import ph.edu.dlsu.chimera.core.criteria.CriteriaInstance;
 import ph.edu.dlsu.chimera.core.tools.IntermodulePipe;
 
 /**
+ * An instance of this class constitutes a Component which invokes functions
+ * that create, update, and delete statistic monitors for a user-specified set
+ * of criteria.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public class ComponentStatisticsCalculator extends ComponentActiveProcessorPdu<PduAtomic, PduAtomic> {
 
+    /**
+     * The set of criteria which statistics are being measured for
+     */
     public final Criteria[] criterias;
+    /**
+     * A Hashmap which assigns criteria statistic monitors to CriteriaInstance
+     * objects
+     */
     public final ConcurrentHashMap<CriteriaInstance, Statistics> statsTable;
 
+    /**
+     * Constructs a new ComponentStatisticsCalculator object.
+     *
+     * @param inQueue The input queue
+     * @param outQueue The output queue
+     * @param criterias The set of criteria for which statistics are being
+     * measured for
+     * @param statsTable A Hashmap which assigns criteria statistic monitors to
+     * CriteriaInstance objects
+     */
     public ComponentStatisticsCalculator(IntermodulePipe<PduAtomic> inQueue,
             IntermodulePipe<PduAtomic> outQueue,
             Criteria[] criterias,

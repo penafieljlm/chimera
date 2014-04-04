@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera.reflection;
 
 import de.tbsol.iptablesjava.rules.IpRule;
@@ -21,16 +17,32 @@ import org.jnetpcap.protocol.tcpip.Tcp;
 import org.jnetpcap.protocol.tcpip.Udp;
 
 /**
+ * An instance of this class constitutes an attribute that could be extracted
+ * from a packet.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
 public final class PacketField {
 
+    /**
+     * The class of the header from which the packet field could be extracted
+     * from
+     */
     public final Class headerClass;
+    /**
+     * The name of the field being referred to
+     */
     public final String fieldName;
     private final Constructor headerConstructor;
 
-    //syntax: <header packages (optinal)>.<class name>.<field name>
+    /**
+     * Constructs a new PacketField object from the given PacketField
+     * expression. The PacketField expression syntax follows the following
+     * format: <header packages (optinal)>.<class name>.<field name>.
+     *
+     * @param expression The PacketField expression
+     * @throws Exception
+     */
     public PacketField(String expression) throws Exception {
         String[] e = expression.split("[.]");
         if (e.length < 2) {
@@ -90,6 +102,13 @@ public final class PacketField {
         this.fieldName = field;
     }
 
+    /**
+     * Extracts the value of the field being referred to by this PacketField
+     * object from the provided PcapPacket.
+     *
+     * @param pkt The provided PcapPacket
+     * @return The value of the field being referred to
+     */
     public BigInteger getFieldValue(PcapPacket pkt) {
         try {
             JHeader type = (JHeader) this.headerConstructor.newInstance();
@@ -111,6 +130,14 @@ public final class PacketField {
         return null;
     }
 
+    /**
+     * Applies the value of the field being referred to by this PacketField
+     * object from the provided PcapPacket onto the provided IpRule object.
+     *
+     * @param rule The iptables rule to apply the values to
+     * @param pkt The provided PcapPacket
+     * @return
+     */
     public boolean applyRule(IpRule rule, PcapPacket pkt) {
         try {
             JHeader type = (JHeader) this.headerConstructor.newInstance();

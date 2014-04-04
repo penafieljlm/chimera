@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package ph.edu.dlsu.chimera;
 
 import java.util.HashMap;
@@ -9,6 +5,7 @@ import ph.edu.dlsu.chimera.core.Config;
 import ph.edu.dlsu.chimera.util.UtilsParse;
 
 /**
+ * The cconfig class contains the entry point for the cconfig command.
  *
  * @author John Lawrence M. Penafiel <penafieljlm@gmail.com>
  */
@@ -17,7 +14,7 @@ public class cconfig {
     public static final String USAGE = ""
             + "\nCHIMERA Configure Command Usage (cconfig)"
             + "\nDescription:"
-            + "\n    The cdiag command prints the state of a specified component."
+            + "\n    The cconfig command prints the state of a specified component."
             + "\n    The command will only work if there is an ongoing phase."
             + "\nSyntax:"
             + "\n    cconfig (((-<varname> <value>) | (/<flag>))[ ])*(((-<varname> <value>) | (/<flag>)))"
@@ -37,19 +34,19 @@ public class cconfig {
             + "\n        DEFAULT CONFIG.. null"
             + "\n    -statetimeout"
             + "\n        DESCRIPTION"
-            + "\n            The amount of time before a TCP state is allowed to be idle."
+            + "\n            The amount of time that a TCP state is allowed to be idle."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n        DEFAULT CONFIG.. 300000"
             + "\n    -statstimeout"
             + "\n        DESCRIPTION"
-            + "\n             The amount of time before a criteria instance is allowed to be idle."
+            + "\n             The amount of time that a criteria instance is allowed to be idle."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n        DEFAULT CONFIG.. 300000"
             + "\n    -syslogport"
             + "\n        DESCRIPTION"
-            + "\n             The UDP port number of default syslog server applications to contact."
+            + "\n             The default syslog UDP port number."
             + "\n        REQUIRED........ No"
             + "\n        DEFAULT VALUE... N/A"
             + "\n        DEFAULT CONFIG.. 514"
